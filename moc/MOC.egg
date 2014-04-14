@@ -145,9 +145,10 @@ BLOC -> occbra INSTS ccbra;
 -- instructions
 INSTS -> ;
 INSTS -> INST INSTS;
+
 -- declaration de variable locale avec ou sans init
-INST -> TYPE ident  AFFX semicolumn;
--- instruction expression (affectation and appel de procedure)
+INST -> TYPE ident AFFX semicolumn;
+-- instruction expression (affectation et appel de procedure)
 INST -> E semicolumn;
 -- bloc d'instructions
 INST -> BLOC;
@@ -156,10 +157,10 @@ INST -> if opar E cpar BLOC ELSE;
 ELSE -> else BLOC;
 ELSE -> ;
 -- retour de fonction
-INST -> return  E semicolumn;
+INST -> return E semicolumn;
 
 -- inline asm
-INST -> asm   #tds ASM #gen;
+INST -> asm  #tds ASM #gen;
 #tds {
     do
         -- A remplacer par la table courante pour que
@@ -207,8 +208,8 @@ OPADD -> plus;
 OPADD -> minus;
 OPADD -> or;
 -- multiplication, ...
-T -> F  TX;
-TX -> OPMUL  F TX;
+T -> F TX;
+TX -> OPMUL F TX;
 TX -> ;
 -- operateurs multiplicatifs
 OPMUL -> mult;
@@ -254,11 +255,11 @@ ARGSX -> comma  E ARGSX;
 ----attributs
 --ATTRIBUTS -> ;
 --ATTRIBUTS -> TYPE ident semicolumn ATTRIBUTS;
--- -- mandhodes
+-- -- methodes
 --METHODES -> ;
 --METHODES -> METHODE  METHODES;
 --METHODE -> QUAL PTYPE   MFUNC_PARAMETERS BLOC;
--- --qualificateur attribut or mandhode :  + = de class, - = d'instance
+-- --qualificateur attribut or methode :  + = de class, - = d'instance
 --QUAL -> plus;
 --QUAL -> minus;
 -- --type class
@@ -267,9 +268,9 @@ ARGSX -> comma  E ARGSX;
 --STYPE-> bool;
 -- -- type "any"
 --TYPE -> id;
----- type argument (or return) de mandhode entre parentheses
+---- type argument (or return) de methode entre parentheses
 --PTYPE-> opar TYPE cpar;
----- paramandres de mandhodes
+---- paramandres de methodes
 --MFUNC_PARAMETERS -> ;
 --MFUNC_PARAMETERS -> MFUNC_PARAMETER MFUNC_PARAMETERS;
 -- -- selecteur sans paramandre
@@ -287,11 +288,11 @@ ARGSX -> comma  E ARGSX;
 --  --self = this de Java
 --F -> self;
 --F -> super;
--- -- Appel de mandhode
+-- -- Appel de methode
 --F -> osbra F MARGS csbra;
----- pour appel mandhode de class
+---- pour appel methode de class
 --F -> osbra classident MARGS csbra;
----- arguments appel de mandhode
+---- arguments appel de methode
 --MARGS -> ;
 --MARGS -> MARG MARGS;
 -- -- selecteur + arg
