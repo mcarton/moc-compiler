@@ -7,7 +7,7 @@ option version = 0.0.1;
 option k=2;
 
 -- le fichier source
-inh source : MOCSourceFile for PROGRAMME;
+inh source : MOCSourceFile for PROGRAM;
 -- la machine cible pour la generation de code
 inh machine : IMachine for 
          ENTITES, FONCTION, INST, BLOC, INSTS, SIX,
@@ -32,7 +32,7 @@ sugar opar         is "\(";
 sugar cpar         is "\)";
 sugar occbra       is "\{";
 sugar ccbra        is "\}";
-sugar comma        is "," aka $,$;
+sugar comma        is ",";
 sugar semicolumn   is "\;";
 sugar affect       is "=";
 sugar if           is "if";
@@ -85,14 +85,14 @@ term ident         is "[a-z][_0-9A-Za-z]*";
 compil ASM;
 
 --production rules
-PROGRAMME -> #init ENTITES #gen;
+PROGRAM -> #init ENTITES #gen;
 global
    machine : IMachine; -- machine cible (choisie par l'option -m au lancement)
 #init {
     do
-        machine := PROGRAMME^source.getMachine();
+        machine := PROGRAM^source.getMachine();
         if machine = null then
-            error(NO_MACH, PROGRAMME^source.getMachName());
+            error(NO_MACH, PROGRAM^source.getMachName());
         else
             ENTITES^machine := machine;
         end
@@ -101,7 +101,7 @@ global
 -- ecrit le code dans un fichier
 #gen {
     do
-        machine.writeCode(PROGRAMME^source.getFileName(),"; no code\n");
+        machine.writeCode(PROGRAM^source.getFileName(),"; no code\n");
     end
 }
 

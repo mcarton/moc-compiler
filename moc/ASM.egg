@@ -79,7 +79,7 @@ ADR -> var  #gen;
         if ADR^tds_asm = null then
             -- write "pas de TDS\n"
         else
-            i := ADR^tds_asm.chercherGlobalement(var^txt.substring(1));
+            i := ADR^tds_asm.globalSearch(var^txt.substring(1));
             if i /= nil then
                 match i
                     with INFOVAR then
@@ -88,7 +88,7 @@ ADR -> var  #gen;
                     e := v.getEmpl();
                     r := e.getReg();
                     ADR^code_asm :=
-                        "("+ t.getTaille() + ") "
+                        "("+ t.getSize() + ") "
                       + e.getDep()
                       + "["+ r.getName()+ "]";
                 else

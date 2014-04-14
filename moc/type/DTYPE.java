@@ -1,23 +1,16 @@
 package moc.type;
 
 public interface DTYPE {
-	/**
-	 * La taille du type de donnee : depend de la machine
-	 * @return
-	 */
-	public int getTaille();
+    /**
+     * La taille du type de donnee : depend de la machine.
+     */
+    public int getSize();
 
-	/**
-	 * @return
-	 */
-	public String getNom();
+    public String getName();
 
-	/**
-	 * Fonction de compatibilié avec l'autre type
-	 * @param autre
-	 * @return
-	 */
-	public boolean compareTo(DTYPE autre);
-
-	public String toString();
+    /**
+     * Fonction de compatibilié avec l'autre type.
+     */
+    public boolean compareTo(DTYPE autre);
 }
+
