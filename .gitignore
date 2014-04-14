@@ -1,3 +1,14 @@
 *.swp
 *.class
 moc/egg
+tests/*.tam
+tests/*.s
+rapport/*.log
+rapport/*.aux
+rapport/*.log
+rapport/*.nav
+rapport/*.out
+rapport/*.snm
+rapport/*.toc
+rapport/*.vrb
+rapport/*.pdf
