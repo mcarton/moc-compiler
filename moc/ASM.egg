@@ -71,7 +71,7 @@ ADR -> var  #gen;
     local
         i : INFO;
         v : INFOVAR;
-        e : Emplacement;
+        e : Location;
         r : Register;
         t : DTYPE;
     do

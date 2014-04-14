@@ -1,6 +1,6 @@
 package moc.tds;
 
-import moc.gc.Emplacement;
+import moc.gc.Location;
 import moc.type.DTYPE;
 
 /**
@@ -18,9 +18,9 @@ public class INFOVAR implements INFO {
     /**
      * Represente un emplacement memoire : depend de la machine.
      */
-    protected Emplacement empl;
+    protected Location empl;
 
-    public Emplacement getEmpl() {
+    public Location getEmpl() {
         return empl;
     }
 
@@ -35,7 +35,7 @@ public class INFOVAR implements INFO {
     /**
      * Une variable a un type et un emplacement pour sa valeur.
      */
-    public INFOVAR(DTYPE t, Emplacement e) {
+    public INFOVAR(DTYPE t, Location e) {
         type = t;
         empl = e;
     }
