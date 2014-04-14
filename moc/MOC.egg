@@ -4,24 +4,24 @@
 --options
 option auto = true;
 option version = 0.0.1;
-option k=2;
+option k = 2;
 
 -- le fichier source
 inh source : MOCSourceFile for PROGRAM;
 -- la machine cible pour la generation de code
 inh machine : IMachine for 
-         ENTITES, FONCTION, INST, BLOC, INSTS, SIX,
-         PARFS, PARF, PARFSX, ARGS,ARGSX, 
+         ENTITIES, FUNCTION, INST, BLOC, INSTS, ELSE,
+         FUNC_PARAMETERS, FUNC_PARAMETER, FUNC_PARAMETERSX, ARGS,ARGSX, 
          E, AFFX, A, AX, R, RX, T, TX, F
 -- TODO:MOC:
 --       ,IMPLEMENTATION, METHODES, METHODE, ATTRIBUTS,
---       MPARF, MPARFS,MARG, MARGS
+--       MFUNC_PARAMETER, MFUNC_PARAMETERS,MARG, MARGS
 ;
 
 -- ces attributs permandtent de recuperer les instructions du code ASM inline
 syn code_asm : STRING for ASM;
 
--- la TDS courrante
+-- la TDS courante
 inh tds_asm : TDS for ASM;
 
 --terminals
@@ -85,7 +85,7 @@ term ident         is "[a-z][_0-9A-Za-z]*";
 compil ASM;
 
 --production rules
-PROGRAM -> #init ENTITES #gen;
+PROGRAM -> #init ENTITIES #gen;
 global
    machine : IMachine; -- machine cible (choisie par l'option -m au lancement)
 #init {
@@ -94,7 +94,7 @@ global
         if machine = null then
             error(NO_MACH, PROGRAM^source.getMachName());
         else
-            ENTITES^machine := machine;
+            ENTITIES^machine := machine;
         end
     end
 }
@@ -105,12 +105,12 @@ global
     end
 }
 
-ENTITES -> ;
-ENTITES -> asm #tds ASM ENTITES #gen;
+ENTITIES -> ;
+ENTITIES -> asm #tds ASM ENTITIES #gen;
 #tds {
     do
-        -- Remplacer 'null' par la table courrante pour que
-        -- le code  ASM puisse acceder aux variables de MC or MOC
+        -- Remplacer 'null' par la table courante pour que
+        -- le code  ASM puisse acceder aux variables de MC ou MOC
         ASM^tds_asm := null;
     end
 }
@@ -120,17 +120,18 @@ ENTITES -> asm #tds ASM ENTITES #gen;
     end
 }
 
-ENTITES -> FONCTION ENTITES;
+ENTITIES -> FUNCTION ENTITIES;
 
 --fonctions
-FONCTION -> TYPE ident  opar PARFS cpar BLOC;
--- paramandres de fonctions
-PARFS -> ;
-PARFS -> PARF PARFSX;
-PARFSX -> ;
-PARFSX -> comma PARF PARFSX;
-PARF -> TYPE ident;
--- les types (de base and pointeurs)
+FUNCTION -> TYPE ident  opar FUNC_PARAMETERS cpar BLOC;
+-- paramètres de fonctions
+FUNC_PARAMETERS -> ;
+FUNC_PARAMETERS -> FUNC_PARAMETER FUNC_PARAMETERSX;
+FUNC_PARAMETERSX -> ;
+FUNC_PARAMETERSX -> comma FUNC_PARAMETER FUNC_PARAMETERSX;
+FUNC_PARAMETER -> TYPE ident;
+
+-- les types (de base et pointeurs)
 TYPE -> STYPE  REFS;
 REFS -> ;
 REFS -> mult REFS;
@@ -139,29 +140,29 @@ STYPE-> void;
 STYPE-> int;
 STYPE-> char;
 
--- corps de mandhode and bloc d'instructions
+-- corps de methode and bloc d'instructions
 BLOC -> occbra INSTS ccbra;
 -- instructions
 INSTS -> ;
 INSTS -> INST INSTS;
--- declaration de variable locale avec or sans init
+-- declaration de variable locale avec ou sans init
 INST -> TYPE ident  AFFX semicolumn;
--- instruction expresifon (affectation and appel de procedure)
+-- instruction expression (affectation and appel de procedure)
 INST -> E semicolumn;
 -- bloc d'instructions
 INST -> BLOC;
 -- conditionnelle
-INST -> if opar E cpar BLOC SIX;
-SIX -> else BLOC;
-SIX -> ;
--- return de fonction
+INST -> if opar E cpar BLOC ELSE;
+ELSE -> else BLOC;
+ELSE -> ;
+-- retour de fonction
 INST -> return  E semicolumn;
 
 -- inline asm
 INST -> asm   #tds ASM #gen;
 #tds {
     do
-        -- A remplacer par la table courrante pour que
+        -- A remplacer par la table courante pour que
         -- l'assembleur puisse acceder aux varaibles
         ASM^tds_asm := null;
     end
@@ -174,13 +175,13 @@ INST -> asm   #tds ASM #gen;
     end
 }
 
--- les expresifons
+-- les expressions
 -----------------------------------------------------------------------
--- E = expresifon (y compris l'affectation)
--- A = expresifon figurant dans une affectation
--- R = expresifon figurant dans une expreifon relationnelle
--- T = expresifon figurant dans une expresifon additive (TERME)
--- F = expresifon figurant dans une expresifon multiplicative (FACTEUR)
+-- E = expression (y compris l'affectation)
+-- A = expression figurant dans une affectation
+-- R = expression figurant dans une expreifon relationnelle
+-- T = expression figurant dans une expression additive (TERME)
+-- F = expression figurant dans une expression multiplicative (FACTEUR)
 -----------------------------------------------------------------------
 E -> A  AFFX;
 -- affectation
@@ -214,14 +215,14 @@ OPMUL -> mult;
 OPMUL -> div;
 OPMUL -> mod;
 OPMUL -> and;
--- expresifons de base
+-- expressions de base
 -- Constante integere
 F -> integer;
 -- Constante string
 F -> string;
 -- Constante character
 F -> character;
--- expresifon unaire
+-- expression unaire
 F -> OPUN  F;
 -- operateurs unaires
 OPUN -> plus;
@@ -229,7 +230,7 @@ OPUN -> minus;
 OPUN -> not;
 -- pointeur NULL
 F -> null;
--- expresifon parenthesee
+-- expression parenthesee
 F -> opar E cpar;
 F -> opar TYPE cpar  F;
 -- appel de sors-programme
@@ -244,7 +245,7 @@ ARGSX -> ;
 ARGSX -> comma  E ARGSX;
 
 -- TODO:MOC:
---ENTITES -> IMPLEMENTATION ENTITES;
+--ENTITIES -> IMPLEMENTATION ENTITIES;
 ---- deendition d'une class
 --IMPLEMENTATION -> class classident SUPER occbra ATTRIBUTS ccbra METHODES end;
 ---- surclass
@@ -256,7 +257,7 @@ ARGSX -> comma  E ARGSX;
 -- -- mandhodes
 --METHODES -> ;
 --METHODES -> METHODE  METHODES;
---METHODE -> QUAL PTYPE   MPARFS BLOC;
+--METHODE -> QUAL PTYPE   MFUNC_PARAMETERS BLOC;
 -- --qualificateur attribut or mandhode :  + = de class, - = d'instance
 --QUAL -> plus;
 --QUAL -> minus;
@@ -269,12 +270,12 @@ ARGSX -> comma  E ARGSX;
 ---- type argument (or return) de mandhode entre parentheses
 --PTYPE-> opar TYPE cpar;
 ---- paramandres de mandhodes
---MPARFS -> ;
---MPARFS -> MPARF MPARFS;
+--MFUNC_PARAMETERS -> ;
+--MFUNC_PARAMETERS -> MFUNC_PARAMETER MFUNC_PARAMETERS;
 -- -- selecteur sans paramandre
---MPARF -> ident;
+--MFUNC_PARAMETER -> ident;
 -- -- selecteur  + type paramandre + nom paramandre
---MPARF -> ident colon  PTYPE ident;
+--MFUNC_PARAMETER -> ident colon  PTYPE ident;
 ---- object nil
 --F -> nil;
 ----Constante 'YES'
