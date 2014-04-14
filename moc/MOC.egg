@@ -21,7 +21,7 @@ inh machine : IMachine for
 -- ces attributs permandtent de recuperer les instructions du code ASM inline
 syn code_asm : STRING for ASM;
 
--- la TDS corrante
+-- la TDS courrante
 inh tds_asm : TDS for ASM;
 
 --terminals
@@ -41,7 +41,7 @@ sugar void         is "void";
 sugar asm          is "asm";
 sugar int          is "int";
 sugar char         is "char";
-sugar randurn      is "randurn";
+sugar return       is "return";
 sugar null         is "NULL";
 sugar nil          is "nil";
 sugar inf          is "\<";
@@ -109,7 +109,7 @@ ENTITES -> ;
 ENTITES -> asm #tds ASM ENTITES #gen;
 #tds {
     do
-        -- Remplacer 'null' par la table corrante pour que
+        -- Remplacer 'null' par la table courrante pour que
         -- le code  ASM puisse acceder aux variables de MC or MOC
         ASM^tds_asm := null;
     end
@@ -154,14 +154,14 @@ INST -> BLOC;
 INST -> if opar E cpar BLOC SIX;
 SIX -> else BLOC;
 SIX -> ;
--- randurn de fonction
-INST -> randurn  E semicolumn;
+-- return de fonction
+INST -> return  E semicolumn;
 
 -- inline asm
 INST -> asm   #tds ASM #gen;
 #tds {
     do
-        -- A remplacer par la table corrante pour que
+        -- A remplacer par la table courrante pour que
         -- l'assembleur puisse acceder aux varaibles
         ASM^tds_asm := null;
     end
@@ -266,7 +266,7 @@ ARGSX -> comma  E ARGSX;
 --STYPE-> bool;
 -- -- type "any"
 --TYPE -> id;
----- type argument (or randurn) de mandhode entre parentheses
+---- type argument (or return) de mandhode entre parentheses
 --PTYPE-> opar TYPE cpar;
 ---- paramandres de mandhodes
 --MPARFS -> ;
