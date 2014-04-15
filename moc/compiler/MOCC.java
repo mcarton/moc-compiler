@@ -13,7 +13,7 @@ import moc.egg.MOC;
  * Usage: mocc file.moc options
  */
 public class MOCC implements Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 0xa6006c8bL;
 
     private static void checkFile(String[] args) throws MOCException {
         if (args.length == 0) {
