@@ -1,11 +1,11 @@
 #--------------------------------------------------------
-# la grammaire (voir src)
+# the grammar (see src)
 XMOC=MOC
 XASM=ASM
 #--------------------------------------------------------
-# repertoires contenant egg
+# directories containing egg
 EDIR=.
-# les jars associes
+# associated jars
 EJAR=$(EDIR)/eggc-5.3.1.jar
 GJAR=$(EJAR):.
 #--------------------------------------------------------
@@ -15,11 +15,11 @@ JDIR=/usr/bin
 all : src att class
 
 pdf:
-	cd rapport; make pdf
+	cd report; make pdf
 
 src :
-	(cd moc ; $(JDIR)/java -jar ../$(EJAR) $(XMOC).egg) 
-	(cd moc ; $(JDIR)/java -jar ../$(EJAR) $(XASM).egg) 
+	(cd moc ; $(JDIR)/java -jar ../$(EJAR) $(XMOC).egg)
+	(cd moc ; $(JDIR)/java -jar ../$(EJAR) $(XASM).egg)
 
 att :
 	$(JDIR)/javac -classpath $(GJAR) moc/compiler/*.java
@@ -36,5 +36,4 @@ clean :
 	rm -f moc/type/*.class
 	rm -f moc/gc/*.class
 	rm -rf moc/egg
-	cd rapport; make clean
-
+	cd report; make clean

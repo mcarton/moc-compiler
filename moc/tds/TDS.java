@@ -5,38 +5,37 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Une TDS hiérarchique.
- * 
- * @author marcel
+ * A hierarchical symbols table
  */
-public class TDS {
+public class TDS
+{
     private static final long serialVersionUID = 0x5a7a79a;
     private HashMap<String, INFO> map;
     private TDS mother;
 
     /**
-     * Constructeur pour une TDS sans parente.
+     * Constructor for a symbols table without mother
      */
     public TDS() {
         this(null);
     }
 
     /**
-     * Constructeur pour une TDS fille de p.
+     * Constructor for a TDS daughter of p
      */
     public TDS(TDS p) {
         mother = p;
     }
 
     /**
-     * Recherche de n dans la TDS courante uniquement.
+     * Look for n in the current TDS only
      */
     public INFO localSearch(String n) {
         return map.get(n);
     }
 
     /**
-     * Recherche de n dans la TDS courante et ses parentes.
+     * Look for n in the current TDS and its ancestors
      */
     public INFO globalSearch(String n) {
         INFO i = localSearch(n);
@@ -47,10 +46,9 @@ public class TDS {
     }
 
     /**
-     * Ajoute le nom n et son information i dans la TDS.
+     * Add n ad its info i in the TDS
      */
     public void insert(String n, INFO i) {
         map.put(n, i);
     }
 }
-

@@ -1,6 +1,6 @@
 rapport.pdf: pdf
 pdf:
-	pdflatex rapport.tex
+	pdflatex report.tex
 
 clean:
 	rm -f *.aux

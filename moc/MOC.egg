@@ -1,27 +1,27 @@
 -----------------------------------------------------
--- Grammaires de MC and MOC                         --
+-- MC and MOC grammars                             --
 -----------------------------------------------------
 --options
 option auto = true;
 option version = 0.0.1;
 option k = 2;
 
--- le fichier source
+-- the source file
 inh source : MOCSourceFile for PROGRAM;
--- la machine cible pour la generation de code
-inh machine : IMachine for 
+-- the target machine for code generation
+inh machine : IMachine for
          ENTITIES, FUNCTION, INST, BLOC, INSTS, ELSE,
-         FUNC_PARAMETERS, FUNC_PARAMETER, FUNC_PARAMETERSX, ARGS,ARGSX, 
+         FUNC_PARAMETERS, FUNC_PARAMETER, FUNC_PARAMETERSX, ARGS,ARGSX,
          E, AFFX, A, AX, R, RX, T, TX, F
 -- TODO:MOC:
 --       ,IMPLEMENTATION, METHODES, METHODE, ATTRIBUTS,
 --       MFUNC_PARAMETER, MFUNC_PARAMETERS,MARG, MARGS
 ;
 
--- ces attributs permandtent de recuperer les instructions du code ASM inline
+-- these attributes allow to get ASM inline
 syn code_asm : STRING for ASM;
 
--- la TDS courante
+-- the current symbols table
 inh tds_asm : TDS for ASM;
 
 --terminals
@@ -81,13 +81,13 @@ term ident         is "[a-z][_0-9A-Za-z]*";
 --term classident  is "[A-Z][_0-9A-Za-z]*";  -- nom de class
 --term stringo     is "@\"[^\"]*\"";         -- string MOC
 
--- pour les instructions en assembleur 'inline'
+-- for inline assembly
 compil ASM;
 
 --production rules
 PROGRAM -> #init ENTITIES #gen;
 global
-   machine : IMachine; -- machine cible (choisie par l'option -m au lancement)
+   machine : IMachine; -- target machine (chosen with -m at startup)
 #init {
     do
         machine := PROGRAM^source.getMachine();
@@ -98,7 +98,7 @@ global
         end
     end
 }
--- ecrit le code dans un fichier
+-- write the code in a file
 #gen {
     do
         machine.writeCode(PROGRAM^source.getFileName(),"; no code\n");
@@ -109,14 +109,14 @@ ENTITIES -> ;
 ENTITIES -> asm #tds ASM ENTITIES #gen;
 #tds {
     do
-        -- Remplacer 'null' par la table courante pour que
-        -- le code  ASM puisse acceder aux variables de MC ou MOC
+        -- Replace null with the current symbols table so that the ASM
+        -- code can access MC or MOC variables
         ASM^tds_asm := null;
     end
 }
 #gen {
     do
-        -- ASM^code_asm contient le code ASM inline;
+        -- ASM^code_asm contains the inline ASM
     end
 }
 
@@ -131,7 +131,7 @@ FUNC_PARAMETERSX -> ;
 FUNC_PARAMETERSX -> comma FUNC_PARAMETER FUNC_PARAMETERSX;
 FUNC_PARAMETER -> TYPE ident;
 
--- les types (de base et pointeurs)
+-- base types and pointers
 TYPE -> STYPE  REFS;
 REFS -> ;
 REFS -> mult REFS;
@@ -140,49 +140,48 @@ STYPE-> void;
 STYPE-> int;
 STYPE-> char;
 
--- corps de methode and bloc d'instructions
+-- method body and instructions blocks
 BLOC -> occbra INSTS ccbra;
 -- instructions
 INSTS -> ;
 INSTS -> INST INSTS;
 
--- declaration de variable locale avec ou sans init
+-- local variable declaration with or without initialisation
 INST -> TYPE ident AFFX semicolumn;
--- instruction expression (affectation et appel de procedure)
+-- expression instruction (affectation and procedure call)
 INST -> E semicolumn;
--- bloc d'instructions
+-- instruction block
 INST -> BLOC;
--- conditionnelle
+-- conditional
 INST -> if opar E cpar BLOC ELSE;
 ELSE -> else BLOC;
 ELSE -> ;
--- retour de fonction
+-- function return
 INST -> return E semicolumn;
 
 -- inline asm
 INST -> asm  #tds ASM #gen;
 #tds {
     do
-        -- A remplacer par la table courante pour que
-        -- l'assembleur puisse acceder aux varaibles
+        -- to replace by the current symbols table so that inline
+        -- assembly can access variables
         ASM^tds_asm := null;
     end
 }
 #gen {
     do
-        -- ASM^code_asm contient le code assembleur inline
-        -- dans lequel les noms de variables ont ande remplaces
-        -- par leurs adresses.
+        -- ASM^code_asm contains the inline assembly in which variable
+        -- names have been replaced by their addresses
     end
 }
 
--- les expressions
+-- expressions
 -----------------------------------------------------------------------
--- E = expression (y compris l'affectation)
--- A = expression figurant dans une affectation
--- R = expression figurant dans une expreifon relationnelle
--- T = expression figurant dans une expression additive (TERME)
--- F = expression figurant dans une expression multiplicative (FACTEUR)
+-- E = expression (including affectation)
+-- A = expression figuring in an affectation
+-- R = expression figuring in a relational expression
+-- T = expression figuring in an additive expression (TERME)
+-- F = expression figuring in a multiplicative expression (FACTEUR)
 -----------------------------------------------------------------------
 E -> A  AFFX;
 -- affectation
@@ -192,7 +191,7 @@ AFFX -> ;
 A -> R AX;
 AX -> OPREL R;
 AX -> ;
--- operateurs relationnels
+-- relationnal operators
 OPREL -> inf;
 OPREL -> sup;
 OPREL -> infeq;
@@ -203,7 +202,7 @@ R -> T  RX;
 -- additions ...
 RX -> OPADD  T RX;
 RX -> ;
--- operateurs additifs
+-- additive operators
 OPADD -> plus;
 OPADD -> minus;
 OPADD -> or;
@@ -211,35 +210,35 @@ OPADD -> or;
 T -> F TX;
 TX -> OPMUL F TX;
 TX -> ;
--- operateurs multiplicatifs
+-- multiplicative operators
 OPMUL -> mult;
 OPMUL -> div;
 OPMUL -> mod;
 OPMUL -> and;
--- expressions de base
--- Constante integere
+-- base expressions
+-- integer constant
 F -> integer;
--- Constante string
+-- string constant
 F -> string;
--- Constante character
+-- character constant
 F -> character;
--- expression unaire
+-- unary expression
 F -> OPUN  F;
--- operateurs unaires
+-- unary operators
 OPUN -> plus;
 OPUN -> minus;
 OPUN -> not;
--- pointeur NULL
+-- NULL pointer
 F -> null;
--- expression parenthesee
+-- parenthesised expression
 F -> opar E cpar;
 F -> opar TYPE cpar  F;
--- appel de sors-programme
+-- subprogram call
 F -> ident opar ARGS cpar;
 F -> ident;
 ---- acces zone pointee
 F -> mult F;
--- arguments appel de sors-programme
+-- subprogram call arguments
 ARGS -> ;
 ARGS -> E ARGSX;
 ARGSX -> ;
@@ -247,19 +246,19 @@ ARGSX -> comma  E ARGSX;
 
 -- TODO:MOC:
 --ENTITIES -> IMPLEMENTATION ENTITIES;
----- deendition d'une class
+---- class definition
 --IMPLEMENTATION -> class classident SUPER occbra ATTRIBUTS ccbra METHODES end;
----- surclass
+---- superclass
 --SUPER -> ;
 --SUPER -> colon classident;
-----attributs
+----attributes
 --ATTRIBUTS -> ;
 --ATTRIBUTS -> TYPE ident semicolumn ATTRIBUTS;
--- -- methodes
+-- -- methods
 --METHODES -> ;
 --METHODES -> METHODE  METHODES;
 --METHODE -> QUAL PTYPE   MFUNC_PARAMETERS BLOC;
--- --qualificateur attribut or methode :  + = de class, - = d'instance
+-- --method or attribute qualifier: + = class, - = instance
 --QUAL -> plus;
 --QUAL -> minus;
 -- --type class
@@ -268,37 +267,36 @@ ARGSX -> comma  E ARGSX;
 --STYPE-> bool;
 -- -- type "any"
 --TYPE -> id;
----- type argument (or return) de methode entre parentheses
+---- method return type between parens
 --PTYPE-> opar TYPE cpar;
----- paramandres de methodes
+---- method parameters
 --MFUNC_PARAMETERS -> ;
 --MFUNC_PARAMETERS -> MFUNC_PARAMETER MFUNC_PARAMETERS;
--- -- selecteur sans paramandre
+-- -- selector without parameters
 --MFUNC_PARAMETER -> ident;
--- -- selecteur  + type paramandre + nom paramandre
+-- -- selector  + parameter type + parameter name
 --MFUNC_PARAMETER -> ident colon  PTYPE ident;
 ---- object nil
 --F -> nil;
-----Constante 'YES'
+---- 'YES' constant
 --F -> yes;
----- Constante 'NO'
+---- 'NO' constant
 --F -> no;
--- -- string MOC (commence par @)
+-- -- string MOC (starts with @)
 --F -> stringo;
---  --self = this de Java
+--  --self = Java "this"
 --F -> self;
 --F -> super;
--- -- Appel de methode
+-- -- method call
 --F -> osbra F MARGS csbra;
----- pour appel methode de class
+---- for class method call
 --F -> osbra classident MARGS csbra;
----- arguments appel de methode
+---- method call arguments
 --MARGS -> ;
 --MARGS -> MARG MARGS;
--- -- selecteur + arg
+-- -- selector + arg
 --MARG -> ident colon  E;
--- -- selecteur sans arg
+-- -- selector without arg
 --MARG -> ident;
----- --end de MOC extenifon
+---- --end of MOC extension
 end
-

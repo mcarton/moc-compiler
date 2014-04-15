@@ -1,11 +1,12 @@
 //--------------------------------------------------
-// INFO la classe representant une info de TDS
+// INFO the class representing an info in the
+// symbols table
 //--------------------------------------------------
 package moc.tds;
 
 /**
- * Element d'une TDS
+ * Element of a symbols table
  */
-public interface INFO {
+public interface INFO
+{
 }
-

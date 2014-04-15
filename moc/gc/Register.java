@@ -1,27 +1,32 @@
 package moc.gc;
 
 /**
- * Cette classe décrit un registre d'une machine
+ * This class describes a registry of a machine
  */
-public class Register {
+public class Register
+{
     private String name;
     private int num;
 
-    public Register(String name, int num) {
+    public Register(String name, int num)
+    {
         this.name = name;
         this.num = num;
     }
 
-    public String getName() {
+    public String getName()
+    {
         return name;
     }
 
-    public int getNum() {
+    public int getNum()
+    {
         return num;
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return "Register [name=" + name + ", num=" + num + "]";
     }
 

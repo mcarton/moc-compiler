@@ -7,31 +7,32 @@ import java.io.PrintWriter;
 import moc.compiler.MOCException;
 
 /**
- * Cette classe decrit une machine cible.
- * 
- * @author marcel
+ * This class describes a target machine
  */
-public abstract class AbstractMachine implements IMachine {
+public abstract class AbstractMachine implements IMachine
+{
     /**
-     * Ecrit le code dans un fichier à partir du nom du fichier source et du
-     * suffixe
+     * Writes the code in a file from the name of the source file and the
+     * suffix
      */
     @Override
-    public void writeCode(String fname, String code) throws MOCException {
-        try {
-            // pre verifiee au lancement
+    public void writeCode(String fname, String code) throws MOCException
+    {
+        try
+        {
+            // pre-checked at startup
             int pt = fname.lastIndexOf('.');
             String name = fname.substring(0, pt);
             String asmName = name + "." + getSuffix();
-            System.err.println("Ecriture du code dans " + asmName);
+            System.err.println("Writing code in " + asmName);
             PrintWriter pw = new PrintWriter(new FileOutputStream(asmName));
             pw.print("; Generated code for " + fname
                     + ".\n; Do not modify by hand\n" + code);
             pw.close();
         }
-        catch (FileNotFoundException e) {
+        catch (FileNotFoundException e)
+        {
             throw new MOCException(e.getMessage());
         }
     }
 }
-
