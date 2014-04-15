@@ -1,7 +1,6 @@
 package moc.type;
 
-public interface DTYPE
-{
+public interface DTYPE {
     /**
      * The size of the data type: depends on the machine
      */

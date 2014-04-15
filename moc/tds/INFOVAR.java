@@ -17,33 +17,28 @@ public class INFOVAR implements INFO {
      */
     protected Location empl;
 
-    public Location getEmpl()
-    {
+    public Location getEmpl() {
         return empl;
     }
 
-    public int getSize()
-    {
+    public int getSize() {
         return getType().getSize();
     }
 
-    public DTYPE getType()
-    {
+    public DTYPE getType() {
         return type;
     }
 
     /**
      * A var has a type and a location for its value
      */
-    public INFOVAR(DTYPE t, Location e)
-    {
+    public INFOVAR(DTYPE t, Location e) {
         type = t;
         empl = e;
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "INFOVAR [type=" + type.getName() + ", empl=" + empl + "]";
     }
 }

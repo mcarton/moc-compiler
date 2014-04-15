@@ -5,8 +5,7 @@ import moc.compiler.MOCException;
 /**
  * This interface describes a target machine
  */
-public interface IMachine
-{
+public interface IMachine {
     /**
      * Target file suffix (.tam for example).
      */

@@ -7,8 +7,7 @@ import java.util.Set;
 /**
  * A hierarchical symbols table
  */
-public class TDS
-{
+public class TDS {
     private static final long serialVersionUID = 0x5a7a79a;
     private HashMap<String, INFO> map;
     private TDS mother;
@@ -40,7 +39,7 @@ public class TDS
     public INFO globalSearch(String n) {
         INFO i = localSearch(n);
         if (i == null && mother != null) {
-                return mother.globalSearch(n);
+            return mother.globalSearch(n);
         }
         return i;
     }

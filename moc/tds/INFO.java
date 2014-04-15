@@ -7,6 +7,5 @@ package moc.tds;
 /**
  * Element of a symbols table
  */
-public interface INFO
-{
+public interface INFO {
 }

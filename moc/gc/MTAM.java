@@ -3,11 +3,9 @@ package moc.gc;
 /**
  * The TAM machine and its generation functions
  */
-public class MTAM extends AbstractMachine
-{
+public class MTAM extends AbstractMachine {
     @Override
-    public String getSuffix()
-    {
+    public String getSuffix() {
         return "tam";
     }
 }
