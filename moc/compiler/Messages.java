@@ -3,25 +3,20 @@ package moc.compiler;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
-public class Messages
-{
+public class Messages {
     private static final String BUNDLE_NAME = "moc.compiler.messages"; //$NON-NLS-1$
 
     private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle
-        .getBundle(BUNDLE_NAME);
+            .getBundle(BUNDLE_NAME);
 
-    private Messages()
-    {
+    private Messages() {
     }
 
-    public static String getString(String key)
-    {
-        try
-        {
+    public static String getString(String key) {
+        try {
             return RESOURCE_BUNDLE.getString(key);
         }
-        catch (MissingResourceException e)
-        {
+        catch (MissingResourceException e) {
             return '!' + key + '!';
         }
     }

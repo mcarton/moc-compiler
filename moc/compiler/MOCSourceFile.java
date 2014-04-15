@@ -7,16 +7,14 @@ import moc.gc.MTAM;
 /**
  * Describes a MOC compilation unit
  */
-public class MOCSourceFile extends SourceUnit
-{
+public class MOCSourceFile extends SourceUnit {
     // Mandatory for a SourceUnit: filename
     private String fileName;
     // target machine
     private AbstractMachine machine;
     private String machName;
 
-    public MOCSourceFile(String[] args) throws MOCException
-    {
+    public MOCSourceFile(String[] args) throws MOCException {
         super(args[0]);
         // other arguments?
         analyze(args);
@@ -28,8 +26,7 @@ public class MOCSourceFile extends SourceUnit
      * @param a
      * @throws MOCException
      */
-    private void usage(String a) throws MOCException
-    {
+    private void usage(String a) throws MOCException {
         throw new MOCException("Incorrect option: " + a + ". "
                                + Messages.getString("MOC.usage"));
     }
@@ -40,35 +37,30 @@ public class MOCSourceFile extends SourceUnit
      * @param args
      * @throws MOCException
      */
-    public void analyze(String[] args) throws MOCException
-    {
+    public void analyze(String[] args) throws MOCException {
         int argc = args.length;
         // file name
         fileName = args[0];
         // target machine?
-        if (argc == 1)
-        {
+        if (argc == 1) {
             // default: tam machine
             setMachine("tam");
         }
-        else
-        {
+        else {
             // machine name
-            for (int i = 1; i < argc; i++)
-            {
+            for (int i = 1; i < argc; i++) {
                 String a = args[i];
-                if ("-m".equals(a))
-                { //$NON-NLS-1$
-                    if (i + 1 < argc)
-                    {
+                if ("-m".equals(a)) {
+                    //$NON-NLS-1$
+                    if (i + 1 < argc) {
                         i++;
                         setMachine(args[i]);
                     }
-                    else
+                    else {
                         usage(a);
+                    }
                 }
-                else
-                {
+                else {
                     usage(a);
                 }
             }
@@ -80,33 +72,27 @@ public class MOCSourceFile extends SourceUnit
      *
      * @param mach
      */
-    private void setMachine(String mach)
-    {
+    private void setMachine(String mach) {
         // System.err.println("mach " + mach);
         machName = mach;
-        if ("tam".equals(mach))
-        {
+        if ("tam".equals(mach)) {
             machine = new MTAM();
         }
-        else
-        {
+        else {
             // TODO if the machine is not TAM
             // machine = new ???();
         }
     }
 
-    public AbstractMachine getMachine()
-    {
+    public AbstractMachine getMachine() {
         return machine;
     }
 
-    public String getMachName()
-    {
+    public String getMachName() {
         return machName;
     }
 
-    public String getFileName()
-    {
+    public String getFileName() {
         return fileName;
     }
 
