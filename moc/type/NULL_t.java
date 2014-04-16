@@ -8,7 +8,7 @@ public class NULL_t implements DTYPE {
         return 0;
     }
 
-    public String getName() {
+    public String toString() {
         return "NULL_t";
     }
 

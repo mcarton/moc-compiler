@@ -6,8 +6,6 @@ public interface DTYPE {
      */
     public int getSize();
 
-    public String getName();
-
     /**
      * Compatibility function with the other type.
      * a.compareTo(b) == true iff we can write `aa = bb` with aa of type a and

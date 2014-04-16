@@ -13,8 +13,8 @@ public class POINTER implements DTYPE {
         return size;
     }
 
-    public String getName() {
-        return pointee.getName() + "*";
+    public String toString() {
+        return pointee.toString() + "*";
     }
 
     public DTYPE getPointee() {

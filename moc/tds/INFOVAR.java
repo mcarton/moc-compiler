@@ -39,6 +39,6 @@ public class INFOVAR implements INFO {
 
     @Override
     public String toString() {
-        return "INFOVAR [type=" + type.getName() + ", empl=" + empl + "]";
+        return "INFOVAR [type=" + type + ", empl=" + empl + "]";
     }
 }

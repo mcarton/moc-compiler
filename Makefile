@@ -17,20 +17,20 @@ all : src att class
 pdf:
 	cd report; make pdf
 
-src :
+src:
 	(cd moc ; $(JDIR)/java -jar ../$(EJAR) $(XMOC).egg)
 	(cd moc ; $(JDIR)/java -jar ../$(EJAR) $(XASM).egg)
 
-att :
+att:
 	$(JDIR)/javac -classpath $(GJAR) moc/compiler/*.java
 	$(JDIR)/javac -classpath $(GJAR) moc/tds/*.java
 	$(JDIR)/javac -classpath $(GJAR) moc/type/*.java
 	$(JDIR)/javac -classpath $(GJAR) moc/gc/*.java
 
-class :
+class:
 	$(JDIR)/javac -classpath $(GJAR) moc/egg/*.java
 
-clean :
+clean:
 	rm -f moc/compiler/*.class
 	rm -f moc/tds/*.class
 	rm -f moc/type/*.class

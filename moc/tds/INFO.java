@@ -1,11 +1,8 @@
-//--------------------------------------------------
-// INFO the class representing an info in the
-// symbols table
-//--------------------------------------------------
 package moc.tds;
 
-/**
- * Element of a symbols table
+/*
+ * Interface to represent an info in the symbol table.
  */
 public interface INFO {
 }
+

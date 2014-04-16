@@ -9,7 +9,7 @@ import java.util.Set;
  */
 public class TDS {
     private static final long serialVersionUID = 0x5a7a79a;
-    private HashMap<String, INFO> map;
+    private HashMap<String, INFO> map = new HashMap<String, INFO>();
     private TDS mother;
 
     /**

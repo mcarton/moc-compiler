@@ -12,7 +12,7 @@ inh source : MOCSourceFile for PROGRAM;
 inh machine : IMachine for
     ENTITIES, FUNCTION, INST, BLOC, INSTS, ELSE,
     FUNC_PARAMETERS, FUNC_PARAMETER, FUNC_PARAMETERSX, ARGS,ARGSX,
-    E, AFFX, A, AX, R, RX, T, TX, F,
+    E, EX, A, AX, R, RX, T, TX, F,
     REFS, STYPE, TYPE
 -- TODO:MOC:
 --       ,IMPLEMENTATION, METHODES, METHODE, ATTRIBUTS,
@@ -24,11 +24,16 @@ syn code_asm : STRING for ASM;
 
 -- the current symbols table
 inh tds_asm : TDS for ASM;
+inh tds : TDS for
+    ENTITIES, FUNCTION, BLOC, ELSE, INST, INSTS, ARGS, ARGSX,
+    F, TX, T, RX, R, AX, A, EX, E
+
+;
 
 -- types:
 syn type : DTYPE for
     TYPE, STYPE, REFS,
-    F, TX, T, RX, R, AX
+    F, TX, T, RX, R, AX, A, EX, E
 ;
 inh htype : DTYPE for
     REFS,
@@ -98,7 +103,7 @@ compil ASM;
 --production rules
 PROGRAM -> #init ENTITIES #gen;
 global
-   machine : IMachine; -- target machine (chosen with -m at startup)
+   machine : IMachine;
 #init {
     do
         machine := PROGRAM^source.getMachine();
@@ -106,6 +111,7 @@ global
             error(NO_MACH, PROGRAM^source.getMachName());
         else
             ENTITIES^machine := machine;
+            ENTITIES^tds := new TDS();
         end
     end
 }
@@ -117,6 +123,7 @@ global
 }
 
 ENTITIES -> ;
+
 ENTITIES -> asm #tds ASM ENTITIES #gen;
 #tds {
     do
@@ -135,6 +142,7 @@ ENTITIES -> FUNCTION ENTITIES;
 
 --fonctions
 FUNCTION -> TYPE ident  opar FUNC_PARAMETERS cpar BLOC;
+
 -- paramètres de fonctions
 FUNC_PARAMETERS -> ;
 FUNC_PARAMETERS -> FUNC_PARAMETER FUNC_PARAMETERSX;
@@ -191,17 +199,46 @@ STYPE -> char #gen;
 }
 
 -- method body and instructions blocks
-BLOC -> occbra INSTS ccbra;
+BLOC -> #tds occbra INSTS ccbra;
+#tds {
+    do
+        INSTS^tds := new TDS(BLOC^tds);
+    end
+}
+
 -- instructions
 INSTS -> ;
 INSTS -> INST INSTS;
 
 -- local variable declaration with or without initialisation
-INST -> TYPE ident AFFX semicolumn;
+INST -> TYPE ident EX semicolumn #tds;
+#tds {
+    local
+        info : INFO;
+    do
+        info := INST^tds.localSearch(ident^txt);
+
+        if info != null then
+            error(VAR_exists, ident^txt);
+        else
+            if(EX^type != null && !TYPE^type.compareTo(EX^type)) then
+                error(TYPE_unexpected, TYPE^type, EX^type);
+            end
+
+            -- we add the variable in the symbol table even when there is an
+            -- error in order to avoid a lot of "unknown variable"
+            -- TODO:emplacement
+            INST^tds.insert(ident^txt, new INFOVAR(TYPE^type, null));
+        end
+    end
+}
+
 -- expression instruction (affectation and procedure call)
 INST -> E semicolumn;
+
 -- instruction block
 INST -> BLOC;
+
 -- conditional
 INST -> if opar E cpar BLOC ELSE;
 ELSE -> else BLOC;
@@ -231,12 +268,35 @@ INST -> asm  #tds ASM #gen;
 -- A = expression figuring in an affectation
 -- R = expression figuring in a relational expression
 -- T = expression figuring in an additive expression (TERME)
--- F = expression figuring in a multiplicative expression (FACTEUR)
+-- F = expression figuring in a multiplicative expression (FACTOR)
 -----------------------------------------------------------------------
-E -> A  AFFX;
 -- affectation
-AFFX -> affect  A;
-AFFX -> ;
+E -> A EX #type;
+#type {
+    do
+        if EX^type = null then
+            E^type := A^type;
+        elseif A^type.compareTo(EX^type) then
+            E^type := A^type;
+        else
+            error(TYPE_unexpected, A^type, EX^type);
+        end
+    end
+}
+
+EX -> #type;
+#type {
+    do
+        EX^type := null;
+    end
+}
+
+EX -> affect A #type;
+#type {
+    do
+        EX^type := A^type;
+    end
+}
 
 -- relations
 OPREL -> inf;
@@ -246,10 +306,15 @@ OPREL -> supeq;
 OPREL -> eq;
 OPREL -> neq;
 
-A -> R #htype AX;
+A -> R #htype AX #type;
 #htype {
     do
         AX^htype := R^type;
+    end
+}
+#type {
+    do
+        A^type := AX^type;
     end
 }
 
@@ -298,7 +363,7 @@ AX -> OPREL R #type;
         end
 
         if err then
-            error(TYPE_notComparable, AX^htype.getName(), R^type.getName());
+            error(TYPE_notComparable, AX^htype, R^type);
         else
             AX^type := AX^machine.getIntType();
         end
@@ -339,10 +404,10 @@ RX -> OPADD T RX #type;
             with INTEGER_t then
                 RX^type := T^type;
             else
-                error(TYPE_unexpected, "int", T^type.getName());
+                error(TYPE_unexpected, "int", T^type);
             end
         else
-            error(TYPE_unexpected, "int", RX^htype.getName());
+            error(TYPE_unexpected, "int", RX^htype);
         end
     end
 }
@@ -382,10 +447,10 @@ TX -> OPMUL F TX #type;
             with INTEGER_t then
                 TX^type := F^type;
             else
-                error(TYPE_unexpected, "int", F^type.getName());
+                error(TYPE_unexpected, "int", F^type);
             end
         else
-            error(TYPE_unexpected, "int", TX^htype.getName());
+            error(TYPE_unexpected, "int", TX^htype);
         end
     end
 }
@@ -432,7 +497,7 @@ F -> OPUN F #type;
         with INTEGER_t then
             F^type := F1^type;
         else
-            error(TYPE_unexpected, "int", F1^type.getName());
+            error(TYPE_unexpected, "int", F1^type);
         end
     end
 }
@@ -441,7 +506,7 @@ F -> OPUN F #type;
 F -> opar E cpar #type;
 #type {
     do
-        F^type := null; --TODO:type
+        F^type := E^type;
     end
 }
 
@@ -462,8 +527,20 @@ F -> ident opar ARGS cpar #type;
 
 F -> ident #type;
 #type {
+    local
+        info : INFO;
     do
-        F^type := null; --TODO:type
+        info := F^tds.globalSearch(ident^txt);
+        if info = null then
+            error(VAR_unknown, ident^txt);
+        else
+            match info
+            with INFOVAR then
+                F^type := info.getType();
+            else
+                error(VAR_notAVariable, ident^txt);
+            end
+        end
     end
 }
 
@@ -475,7 +552,7 @@ F -> mult F #type;
         with POINTER then
             F^type := F1^type.getPointee();
         else
-            error(TYPE_notAPtr, F1^type.getName());
+            error(TYPE_notAPtr, F1^type);
         end
     end
 }

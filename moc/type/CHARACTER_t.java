@@ -11,7 +11,7 @@ public class CHARACTER_t implements DTYPE {
         return size;
     }
 
-    public String getName() {
+    public String toString() {
         return "char";
     }
 
