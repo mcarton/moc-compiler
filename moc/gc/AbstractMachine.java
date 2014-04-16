@@ -7,12 +7,12 @@ import java.io.PrintWriter;
 import moc.compiler.MOCException;
 
 /**
- * This class describes a target machine
+ * This class describes a target machine.
  */
 public abstract class AbstractMachine implements IMachine {
     /**
      * Writes the code in a file from the name of the source file and the
-     * suffix
+     * suffix.
      */
     @Override
     public void writeCode(String fname, String code) throws MOCException {
@@ -21,7 +21,7 @@ public abstract class AbstractMachine implements IMachine {
             int pt = fname.lastIndexOf('.');
             String name = fname.substring(0, pt);
             String asmName = name + "." + getSuffix();
-            System.err.println("Writing code in " + asmName);
+            System.out.println("Writing code in " + asmName);
             PrintWriter pw = new PrintWriter(new FileOutputStream(asmName));
             pw.print("; Generated code for " + fname + ".\n; Do not modify by hand\n" + code);
             pw.close();

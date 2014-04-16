@@ -12,7 +12,8 @@ public class MOCSourceFile extends SourceUnit {
     private String fileName;
     // target machine
     private AbstractMachine machine;
-    private String machName;
+    private String machName = "tam";
+    private int verbosity = 0;
 
     public MOCSourceFile(String[] args) throws MOCException {
         super(args[0]);
@@ -21,10 +22,7 @@ public class MOCSourceFile extends SourceUnit {
     }
 
     /**
-     * Print available options
-     *
-     * @param a
-     * @throws MOCException
+     * Print available options.
      */
     private void usage(String a) throws MOCException {
         throw new MOCException("Incorrect option: " + a + ". "
@@ -32,55 +30,40 @@ public class MOCSourceFile extends SourceUnit {
     }
 
     /**
-     * Analyse supplementary arguments of the compiler
-     *
-     * @param args
-     * @throws MOCException
+     * Analyse supplementary arguments of the compiler.
      */
     public void analyze(String[] args) throws MOCException {
-        int argc = args.length;
         // file name
         fileName = args[0];
-        // target machine?
-        if (argc == 1) {
-            // default: tam machine
-            setMachine("tam");
-        }
-        else {
-            // machine name
-            for (int i = 1; i < argc; i++) {
-                String a = args[i];
-                if ("-m".equals(a)) {
-                    //$NON-NLS-1$
-                    if (i + 1 < argc) {
-                        i++;
-                        setMachine(args[i]);
-                    }
-                    else {
-                        usage(a);
-                    }
+
+        int argc = args.length;
+        for(int i = 0; i < argc; ++i) {
+            if(args[i].equals("-m")) {
+                if(i+1 < argc) {
+                    machName = args[++i];
                 }
                 else {
-                    usage(a);
+                    usage(args[i]);
                 }
             }
+            else if(args[i].equals("-v")) {
+                verbosity = i+1 < argc ? verbosity = Integer.parseInt(args[++i]) : 1;
+            }
         }
+
+        setMachine(machName);
     }
 
     /**
-     * Determines and creates the target machine
-     *
-     * @param mach
+     * Determines and creates the target machine.
      */
     private void setMachine(String mach) {
-        // System.err.println("mach " + mach);
         machName = mach;
-        if ("tam".equals(mach)) {
+        if (machName.equals("tam")) {
             machine = new MTAM();
         }
-        else {
-            // TODO if the machine is not TAM
-            // machine = new ???();
+        else if(machName.equals("llvm")) {
+            // TODO:llvm
         }
     }
 
@@ -96,4 +79,7 @@ public class MOCSourceFile extends SourceUnit {
         return fileName;
     }
 
+    public int getVerbosity() {
+        return verbosity;
+    }
 }

@@ -16,21 +16,8 @@ public class MOCC implements Serializable {
     private static final long serialVersionUID = 0xa6006c8bL;
 
     private static void checkFile(String[] args) throws MOCException {
-        if (args.length == 0) {
-            throw new MOCException(Messages.getString("MOC.fileError"));
-        }
-        String a = args[0];
         // check .moc extension
-        int pt = a.lastIndexOf('.');
-        if (pt != -1) {
-            String ext = a.substring(pt + 1);
-            if (!"moc".equals(ext)) {
-                throw new MOCException(Messages.getString("MOC.extError"));
-            }
-            else {
-            }
-        }
-        else {
+        if (args.length == 0 || !args[0].endsWith(".moc")) {
             throw new MOCException(Messages.getString("MOC.extError"));
         }
     }
@@ -39,25 +26,28 @@ public class MOCC implements Serializable {
         try {
             // At least the name of the source file is needed
             checkFile(args);
+
             // Create the source
             ISourceUnit cu = new MOCSourceFile(args);
+
             // Error management
             ProblemReporter prp = new ProblemReporter(cu);
             ProblemRequestor prq = new ProblemRequestor();
-            System.err.println("Compiling " + cu.getFileName());
+            System.out.println("Compiling " + cu.getFileName());
+
             // Start compilation
             MOC compilo = new MOC(prp);
             prq.beginReporting();
             compilo.set_source((MOCSourceFile) cu);
             compilo.set_eval(true);
             compilo.compile(cu);
+
             // Handle errors
             for (IProblem problem : prp.getAllProblems()) {
                 prq.acceptProblem(problem);
             }
             prq.endReporting();
-            System.err.println(Messages.getString("MOC.ok")); //$NON-NLS-1$
-            System.exit(0);
+            System.out.println(Messages.getString("MOC.ok"));
         }
         catch (MOCException e) {
             // Internal errors
