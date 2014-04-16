@@ -199,10 +199,20 @@ STYPE -> char #gen;
 }
 
 -- method body and instructions blocks
-BLOC -> #tds occbra INSTS ccbra;
+BLOC -> #tds occbra INSTS ccbra #message;
+global
+    tds : TDS;
 #tds {
     do
-        INSTS^tds := new TDS(BLOC^tds);
+        tds := new TDS(BLOC^tds);
+        INSTS^tds := tds;
+    end
+}
+#message {
+    do
+        if BLOC^machine.verbose(5) then
+            write "Symbols: " + tds.toString()+"\n";
+        end
     end
 }
 

@@ -6,6 +6,10 @@ import moc.type.*;
  * The TAM machine and its generation functions
  */
 public class MTAM extends AbstractMachine {
+    public MTAM(int verbosity) {
+        super(verbosity);
+    }
+
     @Override
     public String getSuffix() {
         return "tam";

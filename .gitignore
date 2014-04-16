@@ -3,6 +3,7 @@
 moc/egg
 tests/*.tam
 tests/*.s
+tests/**/*.tam
 rapport/*.log
 rapport/*.aux
 rapport/*.log

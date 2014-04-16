@@ -10,6 +10,17 @@ import moc.compiler.MOCException;
  * This class describes a target machine.
  */
 public abstract class AbstractMachine implements IMachine {
+    int verbosity;
+
+    AbstractMachine(int v) {
+        verbosity = v;
+    }
+
+    @Override
+    public boolean verbose(int v) {
+        return verbosity >= v;
+    }
+
     /**
      * Writes the code in a file from the name of the source file and the
      * suffix.

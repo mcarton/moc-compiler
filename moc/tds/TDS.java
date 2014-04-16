@@ -50,4 +50,10 @@ public class TDS {
     public void insert(String n, INFO i) {
         map.put(n, i);
     }
+
+    public String toString() {
+        return mother != null
+            ? map.toString() + " with mother=" + mother.toString()
+            : map.toString();
+    }
 }

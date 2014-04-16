@@ -17,6 +17,13 @@ public interface IMachine {
      */
     void writeCode(String fileName, String code) throws MOCException;
 
+    /**
+     * Return whether the verbosity is more than v.
+     * Needed because comparison operator are not available in egg.
+     * TODO:chicken: to be removed
+     */
+    boolean verbose(int v);
+
     // type size stuffs:
     moc.type.DTYPE getCharType();
     moc.type.DTYPE getIntType();

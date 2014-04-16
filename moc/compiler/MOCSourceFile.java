@@ -60,7 +60,7 @@ public class MOCSourceFile extends SourceUnit {
     private void setMachine(String mach) {
         machName = mach;
         if (machName.equals("tam")) {
-            machine = new MTAM();
+            machine = new MTAM(verbosity);
         }
         else if(machName.equals("llvm")) {
             // TODO:llvm
