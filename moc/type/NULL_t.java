@@ -12,7 +12,7 @@ public class NULL_t implements DTYPE {
         return "NULL_t";
     }
 
-    public boolean compareTo(DTYPE autre) {
+    public boolean constructsFrom(DTYPE autre) {
         return autre instanceof NULL_t;
     }
 }

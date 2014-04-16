@@ -21,8 +21,8 @@ public class POINTER implements DTYPE {
         return pointee;
     }
 
-    public boolean compareTo(DTYPE autre) {
-        return autre instanceof POINTER && ((POINTER)autre).pointee.compareTo(pointee)
+    public boolean constructsFrom(DTYPE autre) {
+        return autre instanceof POINTER && ((POINTER)autre).pointee.constructsFrom(pointee)
             || autre instanceof NULL_t;
     }
 }

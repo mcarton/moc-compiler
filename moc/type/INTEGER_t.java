@@ -15,7 +15,7 @@ public class INTEGER_t implements DTYPE {
         return "int";
     }
 
-    public boolean compareTo(DTYPE autre) {
+    public boolean constructsFrom(DTYPE autre) {
         return autre instanceof INTEGER_t;
     }
 }

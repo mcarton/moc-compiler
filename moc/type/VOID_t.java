@@ -9,7 +9,7 @@ public class VOID_t implements DTYPE {
         return "void";
     }
 
-    public boolean compareTo(DTYPE autre) {
-        return autre instanceof VOID_t;
+    public boolean constructsFrom(DTYPE autre) {
+        return false;
     }
 }

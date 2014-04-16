@@ -8,10 +8,10 @@ public interface DTYPE {
 
     /**
      * Compatibility function with the other type.
-     * a.compareTo(b) == true iff we can write `aa = bb` with aa of type a and
+     * a.constructsFrom(b) == true iff we can write `aa = bb` with aa of type a and
      * bb of type b. It is not necessary to have `bb = aa`.
      * For example a NULL_t can be affected to a int*, but the opposite is
      * false.
      */
-    public boolean compareTo(DTYPE autre);
+    public boolean constructsFrom(DTYPE autre);
 }

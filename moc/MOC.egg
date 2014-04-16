@@ -231,7 +231,7 @@ INST -> TYPE ident EX semicolumn #tds;
         if info != null then
             error(VAR_exists, ident^txt);
         else
-            if(EX^type != null && !TYPE^type.compareTo(EX^type)) then
+            if(EX^type != null && !TYPE^type.constructsFrom(EX^type)) then
                 error(TYPE_unexpected, TYPE^type, EX^type);
             end
 
@@ -286,7 +286,7 @@ E -> A EX #type;
     do
         if EX^type = null then
             E^type := A^type;
-        elseif A^type.compareTo(EX^type) then
+        elseif A^type.constructsFrom(EX^type) then
             E^type := A^type;
         else
             error(TYPE_unexpected, A^type, EX^type);
