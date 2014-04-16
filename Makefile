@@ -31,9 +31,7 @@ class:
 	$(JDIR)/javac -classpath $(GJAR) moc/egg/*.java
 
 clean:
-	rm -f moc/compiler/*.class
-	rm -f moc/tds/*.class
-	rm -f moc/type/*.class
-	rm -f moc/gc/*.class
+	find -name "*.class" -delete
+	find -name "*.tam" -delete
 	rm -rf moc/egg
 	cd report; make clean
