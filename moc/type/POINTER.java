@@ -17,9 +17,13 @@ public class POINTER implements DTYPE {
         return pointee.getName() + "*";
     }
 
+    public DTYPE getPointee() {
+        return pointee;
+    }
+
     public boolean compareTo(DTYPE autre) {
-        return autre instanceof POINTER
-            && ((POINTER)autre).pointee.compareTo(pointee);
+        return autre instanceof POINTER && ((POINTER)autre).pointee.compareTo(pointee)
+            || autre instanceof NULL_t;
     }
 }
 

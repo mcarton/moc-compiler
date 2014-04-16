@@ -13,10 +13,10 @@ public class MTAM extends AbstractMachine {
 
     // type size stuffs:
     @Override public DTYPE getCharType() {
-        return new INTEGER_t(1);
+        return new CHARACTER_t(1);
     }
     @Override public DTYPE getIntType() {
-        return new CHARACTER_t(1);
+        return new INTEGER_t(1);
     }
     @Override public DTYPE getPtrType(DTYPE what) {
         return new POINTER(1, what);

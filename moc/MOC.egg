@@ -27,10 +27,12 @@ inh tds_asm : TDS for ASM;
 
 -- types:
 syn type : DTYPE for
-    TYPE, STYPE, REFS
+    TYPE, STYPE, REFS,
+    F, TX, T, RX, R, AX
 ;
 inh htype : DTYPE for
-    REFS
+    REFS,
+    TX, RX, AX
 ;
 
 --terminals
@@ -235,57 +237,249 @@ E -> A  AFFX;
 -- affectation
 AFFX -> affect  A;
 AFFX -> ;
--- relation
-A -> R AX;
-AX -> OPREL R;
-AX -> ;
--- relationnal operators
+
+-- relations
 OPREL -> inf;
 OPREL -> sup;
 OPREL -> infeq;
 OPREL -> supeq;
 OPREL -> eq;
 OPREL -> neq;
-R -> T  RX;
--- additions ...
-RX -> OPADD  T RX;
-RX -> ;
--- additive operators
+
+A -> R #htype AX;
+#htype {
+    do
+        AX^htype := R^type;
+    end
+}
+
+AX -> #type;
+#type {
+    do
+        AX^type := AX^htype;
+    end
+}
+
+AX -> OPREL R #type;
+#type {
+    local
+        err : boolean;
+    do
+        err := false;
+        match AX^htype
+        with INTEGER_t then
+            match R^type
+            with INTEGER_t then
+            else
+                err := true;
+            end
+        with CHARACTER_t then
+            match R^type
+            with CHARACTER_t then
+            else
+                err := true;
+            end
+        with POINTER then
+            match R^type
+            with POINTER then
+            with NULL_t then
+            else
+                err := true;
+            end
+        with NULL_t then
+            match R^type
+            with POINTER then
+            with NULL_t then
+            else
+                err := true;
+            end
+        else
+            err := true;
+        end
+
+        if err then
+            error(TYPE_notComparable, AX^htype.getName(), R^type.getName());
+        else
+            AX^type := AX^machine.getIntType();
+        end
+    end
+}
+
+-- additions
 OPADD -> plus;
 OPADD -> minus;
 OPADD -> or;
--- multiplication, ...
-T -> F TX;
-TX -> OPMUL F TX;
-TX -> ;
--- multiplicative operators
+
+R -> T #htype RX #type;
+#htype {
+    do
+        RX^htype := T^type;
+    end
+}
+#type {
+    do
+        R^type := RX^type;
+    end
+}
+
+RX -> #type;
+#type {
+    do
+        RX^type := RX^htype;
+    end
+}
+
+RX -> OPADD T RX #type;
+#type {
+    do
+        -- TODO:MOC: booleans with or
+        match RX^htype
+        with INTEGER_t then
+            match T^type
+            with INTEGER_t then
+                RX^type := T^type;
+            else
+                error(TYPE_unexpected, "int", T^type.getName());
+            end
+        else
+            error(TYPE_unexpected, "int", RX^htype.getName());
+        end
+    end
+}
+
+-- multiplication
 OPMUL -> mult;
 OPMUL -> div;
 OPMUL -> mod;
 OPMUL -> and;
+
+T -> F #htype TX #type;
+#htype {
+    do
+        TX^htype := F^type;
+    end
+}
+#type {
+    do
+        T^type := TX^type;
+    end
+}
+
+TX -> #type;
+#type {
+    do
+        TX^type := TX^htype;
+    end
+}
+
+TX -> OPMUL F TX #type;
+#type {
+    do
+        -- TODO:MOC: booleans with and
+        match TX^htype
+        with INTEGER_t then
+            match F^type
+            with INTEGER_t then
+                TX^type := F^type;
+            else
+                error(TYPE_unexpected, "int", F^type.getName());
+            end
+        else
+            error(TYPE_unexpected, "int", TX^htype.getName());
+        end
+    end
+}
+
 -- base expressions
--- integer constant
-F -> integer;
--- string constant
-F -> string;
--- character constant
-F -> character;
+F -> integer #type;
+#type {
+    do
+        F^type := F^machine.getIntType();
+    end
+}
+
+F -> string #type;
+#type {
+    do
+        -- TODO:array
+        F^type := F^machine.getPtrType(F^machine.getCharType());
+    end
+}
+
+F -> character #type;
+#type {
+    do
+        F^type := F^machine.getCharType();
+    end
+}
+
+F -> null #type;
+#type {
+    do
+        F^type := new NULL_t();
+    end
+}
+
 -- unary expression
-F -> OPUN  F;
--- unary operators
 OPUN -> plus;
 OPUN -> minus;
 OPUN -> not;
--- NULL pointer
-F -> null;
+F -> OPUN F #type;
+#type {
+    do
+        -- TODO:MOC: booleans with not
+        match F1^type
+        with INTEGER_t then
+            F^type := F1^type;
+        else
+            error(TYPE_unexpected, "int", F1^type.getName());
+        end
+    end
+}
+
 -- parenthesised expression
-F -> opar E cpar;
-F -> opar TYPE cpar  F;
+F -> opar E cpar #type;
+#type {
+    do
+        F^type := null; --TODO:type
+    end
+}
+
+F -> opar TYPE cpar F #type;
+#type {
+    do
+        F^type := null; --TODO:type
+    end
+}
+
 -- subprogram call
-F -> ident opar ARGS cpar;
-F -> ident;
----- acces zone pointee
-F -> mult F;
+F -> ident opar ARGS cpar #type;
+#type {
+    do
+        F^type := null; --TODO:type
+    end
+}
+
+F -> ident #type;
+#type {
+    do
+        F^type := null; --TODO:type
+    end
+}
+
+-- acces zone pointee
+F -> mult F #type;
+#type {
+    do
+        match F1^type
+        with POINTER then
+            F^type := F1^type.getPointee();
+        else
+            error(TYPE_notAPtr, F1^type.getName());
+        end
+    end
+}
+
 -- subprogram call arguments
 ARGS -> ;
 ARGS -> E ARGSX;
