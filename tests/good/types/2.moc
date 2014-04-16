@@ -1,14 +1,16 @@
 int main() {
     int i = 0+7;
     int j = 42/6;
-    int k = i+42;
-    int l = 42+j;
-    int m = i+j;
-    int n = i*42;
-    int o = 42*j;
-    int p = i*j;
-    int b = 42 == 6*7;
-    int c = 'a' == 'b';
-    int d = "net7" == "canapé";
+    i+42;
+    42+j;
+    i+j;
+    i*42;
+    42*j;
+    i*j;
+    42 == 6*7;
+    'a' == 'b';
+    "net7" == "canapé";
+    5 < 8;
+    "enseeiht" != NULL;
 }
 

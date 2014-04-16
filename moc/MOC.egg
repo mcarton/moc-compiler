@@ -25,7 +25,8 @@ syn code_asm : STRING for ASM;
 -- the current symbols table
 inh tds_asm : TDS for ASM;
 inh tds : TDS for
-    ENTITIES, FUNCTION, BLOC, ELSE, INST, INSTS, ARGS, ARGSX,
+    ENTITIES, BLOC, ELSE, INST, INSTS, ARGS, ARGSX,
+    FUNCTION, FUNC_PARAMETER, FUNC_PARAMETERS, FUNC_PARAMETERSX,
     F, TX, T, RX, R, AX, A, EX, E
 
 ;
@@ -142,14 +143,29 @@ ENTITIES -> asm #tds ASM ENTITIES #gen;
 ENTITIES -> FUNCTION ENTITIES;
 
 --fonctions
-FUNCTION -> TYPE ident  opar FUNC_PARAMETERS cpar BLOC;
+FUNCTION -> TYPE ident #tds opar FUNC_PARAMETERS cpar BLOC;
+#tds {
+    local
+        tds : TDS;
+    do
+        tds := new TDS(FUNCTION^tds);
+        FUNC_PARAMETERS^tds := tds;
+        BLOC^tds := tds;
+    end
+}
 
 -- paramètres de fonctions
 FUNC_PARAMETERS -> ;
 FUNC_PARAMETERS -> FUNC_PARAMETER FUNC_PARAMETERSX;
 FUNC_PARAMETERSX -> ;
 FUNC_PARAMETERSX -> comma FUNC_PARAMETER FUNC_PARAMETERSX;
-FUNC_PARAMETER -> TYPE ident;
+FUNC_PARAMETER -> TYPE ident #tds;
+#tds {
+    do
+        -- TODO:emplacement
+        FUNC_PARAMETER^tds.insert(ident^txt, new INFOVAR(TYPE^type, null));
+    end
+}
 
 -- base types and pointers
 TYPE -> STYPE #get REFS #gen;
