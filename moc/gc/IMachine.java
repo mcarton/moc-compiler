@@ -16,4 +16,9 @@ public interface IMachine {
      * suffix
      */
     void writeCode(String fileName, String code) throws MOCException;
+
+    // type size stuffs:
+    moc.type.DTYPE getCharType();
+    moc.type.DTYPE getIntType();
+    moc.type.DTYPE getPtrType(moc.type.DTYPE what);
 }

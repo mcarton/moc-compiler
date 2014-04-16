@@ -10,9 +10,10 @@ option k = 2;
 inh source : MOCSourceFile for PROGRAM;
 -- the target machine for code generation
 inh machine : IMachine for
-         ENTITIES, FUNCTION, INST, BLOC, INSTS, ELSE,
-         FUNC_PARAMETERS, FUNC_PARAMETER, FUNC_PARAMETERSX, ARGS,ARGSX,
-         E, AFFX, A, AX, R, RX, T, TX, F
+    ENTITIES, FUNCTION, INST, BLOC, INSTS, ELSE,
+    FUNC_PARAMETERS, FUNC_PARAMETER, FUNC_PARAMETERSX, ARGS,ARGSX,
+    E, AFFX, A, AX, R, RX, T, TX, F,
+    REFS, STYPE, TYPE
 -- TODO:MOC:
 --       ,IMPLEMENTATION, METHODES, METHODE, ATTRIBUTS,
 --       MFUNC_PARAMETER, MFUNC_PARAMETERS,MARG, MARGS
@@ -23,6 +24,14 @@ syn code_asm : STRING for ASM;
 
 -- the current symbols table
 inh tds_asm : TDS for ASM;
+
+-- types:
+syn type : DTYPE for
+    TYPE, STYPE, REFS
+;
+inh htype : DTYPE for
+    REFS
+;
 
 --terminals
 space separator    is "[\r\n\t ]+";
@@ -132,13 +141,52 @@ FUNC_PARAMETERSX -> comma FUNC_PARAMETER FUNC_PARAMETERSX;
 FUNC_PARAMETER -> TYPE ident;
 
 -- base types and pointers
-TYPE -> STYPE  REFS;
-REFS -> ;
-REFS -> mult REFS;
--- types de base
-STYPE-> void;
-STYPE-> int;
-STYPE-> char;
+TYPE -> STYPE #get REFS #gen;
+#get {
+    do
+        REFS^htype := STYPE^type;
+    end
+}
+#gen {
+    do
+        TYPE^type := REFS^type;
+    end
+}
+
+REFS -> #gen;
+#gen {
+    do
+        REFS^type := REFS^htype;
+    end
+}
+
+REFS -> mult REFS #gen;
+#gen {
+    do
+        REFS^type := REFS^machine.getPtrType(REFS^htype);
+    end
+}
+
+STYPE -> void #gen;
+#gen {
+    do
+        STYPE^type := new VOID_t();
+    end
+}
+
+STYPE -> int #gen;
+#gen {
+    do
+        STYPE^type := STYPE^machine.getIntType();
+    end
+}
+
+STYPE -> char #gen;
+#gen {
+    do
+        STYPE^type := STYPE^machine.getCharType();
+    end
+}
 
 -- method body and instructions blocks
 BLOC -> occbra INSTS ccbra;
