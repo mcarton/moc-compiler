@@ -15,7 +15,14 @@ public class CHARACTER_t implements DTYPE {
         return "char";
     }
 
-    public boolean constructsFrom(DTYPE autre) {
-        return autre instanceof CHARACTER_t;
+    @Override
+    public boolean constructsFrom(DTYPE other) {
+        return other instanceof CHARACTER_t;
+    }
+    
+    @Override
+    public boolean comparableWith(DTYPE other, String operator) {
+        return other instanceof CHARACTER_t;
     }
 }
+

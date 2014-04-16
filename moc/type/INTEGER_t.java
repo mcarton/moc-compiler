@@ -15,7 +15,13 @@ public class INTEGER_t implements DTYPE {
         return "int";
     }
 
+    @Override
     public boolean constructsFrom(DTYPE autre) {
         return autre instanceof INTEGER_t;
+    }
+     
+    @Override
+    public boolean comparableWith(DTYPE other, String operator) {
+        return other instanceof INTEGER_t;
     }
 }

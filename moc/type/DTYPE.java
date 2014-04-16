@@ -7,11 +7,14 @@ public interface DTYPE {
     public int getSize();
 
     /**
-     * Compatibility function with the other type.
-     * a.constructsFrom(b) == true iff we can write `aa = bb` with aa of type a and
-     * bb of type b. It is not necessary to have `bb = aa`.
-     * For example a NULL_t can be affected to a int*, but the opposite is
-     * false.
+     * True iff we can write `aa = bb` with aa of type `this` and bb of type
+     * `autre`. It is not necessary to have `bb = aa`.  For example a NULL_t
+     * can be affected to a int*, but the opposite is false.
      */
-    public boolean constructsFrom(DTYPE autre);
+    public boolean constructsFrom(DTYPE other);
+
+    /**
+     * True iff we can compare the two types with the given operator.
+     */
+    public boolean comparableWith(DTYPE other, String operator);
 }

@@ -39,6 +39,7 @@ inh htype : DTYPE for
     REFS,
     TX, RX, AX
 ;
+syn sym : String for OPREL;
 
 --terminals
 space separator    is "[\r\n\t ]+";
@@ -173,7 +174,7 @@ REFS -> #gen;
 REFS -> mult REFS #gen;
 #gen {
     do
-        REFS^type := REFS^machine.getPtrType(REFS^htype);
+        REFS^type := REFS^machine.getPtrType(REFS1^type);
     end
 }
 
@@ -309,12 +310,12 @@ EX -> affect A #type;
 }
 
 -- relations
-OPREL -> inf;
-OPREL -> sup;
-OPREL -> infeq;
-OPREL -> supeq;
-OPREL -> eq;
-OPREL -> neq;
+OPREL -> inf   #get; #get { do OPREL^sym := "<";  end }
+OPREL -> sup   #get; #get { do OPREL^sym := ">";  end }
+OPREL -> infeq #get; #get { do OPREL^sym := "<="; end }
+OPREL -> supeq #get; #get { do OPREL^sym := ">="; end }
+OPREL -> eq    #get; #get { do OPREL^sym := "=="; end }
+OPREL -> neq   #get; #get { do OPREL^sym := "!="; end }
 
 A -> R #htype AX #type;
 #htype {
@@ -337,45 +338,11 @@ AX -> #type;
 
 AX -> OPREL R #type;
 #type {
-    local
-        err : boolean;
     do
-        err := false;
-        match AX^htype
-        with INTEGER_t then
-            match R^type
-            with INTEGER_t then
-            else
-                err := true;
-            end
-        with CHARACTER_t then
-            match R^type
-            with CHARACTER_t then
-            else
-                err := true;
-            end
-        with POINTER then
-            match R^type
-            with POINTER then
-            with NULL_t then
-            else
-                err := true;
-            end
-        with NULL_t then
-            match R^type
-            with POINTER then
-            with NULL_t then
-            else
-                err := true;
-            end
-        else
-            err := true;
-        end
-
-        if err then
-            error(TYPE_notComparable, AX^htype, R^type);
-        else
+        if AX^htype.comparableWith(R^type, OPREL^sym) then
             AX^type := AX^machine.getIntType();
+        else
+            error(TYPE_notComparable, AX^htype, R^type);
         end
     end
 }

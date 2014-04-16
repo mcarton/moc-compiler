@@ -9,7 +9,14 @@ public class VOID_t implements DTYPE {
         return "void";
     }
 
+    @Override
     public boolean constructsFrom(DTYPE autre) {
         return false;
     }
+
+    @Override
+    public boolean comparableWith(DTYPE other, String operator) {
+        return false;
+    }
 }
+

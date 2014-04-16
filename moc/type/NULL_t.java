@@ -12,8 +12,14 @@ public class NULL_t implements DTYPE {
         return "NULL_t";
     }
 
-    public boolean constructsFrom(DTYPE autre) {
-        return autre instanceof NULL_t;
+    @Override
+    public boolean constructsFrom(DTYPE other) {
+        return other instanceof NULL_t;
+    }
+
+    @Override
+    public boolean comparableWith(DTYPE other, String operator) {
+        return other instanceof NULL_t || other instanceof POINTER;
     }
 }
 

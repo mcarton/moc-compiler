@@ -21,9 +21,16 @@ public class POINTER implements DTYPE {
         return pointee;
     }
 
-    public boolean constructsFrom(DTYPE autre) {
-        return autre instanceof POINTER && ((POINTER)autre).pointee.constructsFrom(pointee)
-            || autre instanceof NULL_t;
+    @Override
+    public boolean constructsFrom(DTYPE other) {
+        return other instanceof POINTER && ((POINTER)other).pointee.constructsFrom(pointee)
+            || other instanceof NULL_t;
+    }
+      
+    @Override
+    public boolean comparableWith(DTYPE other, String operator) {
+        return (   operator.equals("==") || operator.equals("!="))
+            && (other instanceof POINTER || other instanceof NULL_t);
     }
 }
 
