@@ -163,7 +163,12 @@ FUNC_PARAMETER -> TYPE ident #tds;
 #tds {
     do
         -- TODO:emplacement
-        FUNC_PARAMETER^tds.insert(ident^txt, new INFOVAR(TYPE^type, null));
+        match TYPE^type
+        with VOID_t then
+            error(TYPE_void);
+        else
+            FUNC_PARAMETER^tds.insert(ident^txt, new INFOVAR(TYPE^type, null));
+        end
     end
 }
 
@@ -250,6 +255,11 @@ INST -> TYPE ident EX semicolumn #tds;
         else
             if(EX^type != null && !TYPE^type.constructsFrom(EX^type)) then
                 error(TYPE_unexpected, TYPE^type, EX^type);
+            end
+
+            match TYPE^type
+            with VOID_t then
+                error(TYPE_void);
             end
 
             -- we add the variable in the symbol table even when there is an
