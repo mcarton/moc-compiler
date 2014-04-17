@@ -40,6 +40,10 @@ inh htype : DTYPE for
     REFS,
     TX, RX, AX
 ;
+inh types : LTYPES for
+    FUNC_PARAMETERS, FUNC_PARAMETERSX, FUNC_PARAMETER,
+    ARGS, ARGSX
+;
 syn sym : String for OPREL;
 
 --terminals
@@ -143,31 +147,61 @@ ENTITIES -> asm #tds ASM ENTITIES #gen;
 ENTITIES -> FUNCTION ENTITIES;
 
 --fonctions
-FUNCTION -> TYPE ident #tds opar FUNC_PARAMETERS cpar BLOC;
-#tds {
-    local
-        tds : TDS;
+FUNCTION -> TYPE ident #ctds opar FUNC_PARAMETERS #utds cpar BLOC;
+global
+    bloc_tds : TDS;
+    types : LTYPES;
+#ctds {
     do
-        tds := new TDS(FUNCTION^tds);
-        FUNC_PARAMETERS^tds := tds;
-        BLOC^tds := tds;
+        bloc_tds := new TDS(FUNCTION^tds);
+        types := new LTYPES();
+        FUNC_PARAMETERS^types := types;
+        FUNC_PARAMETERS^tds := bloc_tds;
+        BLOC^tds := bloc_tds;
+    end
+}
+#utds {
+    local
+        info : INFO;
+        fun : INFOFUN;
+    do
+        info := FUNCTION^tds.localSearch(ident^txt);
+
+        if info != null then
+            error(FUN_exists, ident^txt);
+        else
+            fun := new INFOFUN(new DFUNCTIONTYPE(TYPE^type, types));
+            bloc_tds.insert(ident^txt, fun);
+            FUNCTION^tds.insert(ident^txt, fun);
+        end
     end
 }
 
 -- paramètres de fonctions
 FUNC_PARAMETERS -> ;
 FUNC_PARAMETERS -> FUNC_PARAMETER FUNC_PARAMETERSX;
+
 FUNC_PARAMETERSX -> ;
 FUNC_PARAMETERSX -> comma FUNC_PARAMETER FUNC_PARAMETERSX;
+
 FUNC_PARAMETER -> TYPE ident #tds;
 #tds {
+    local
+        info : INFO;
     do
-        -- TODO:emplacement
-        match TYPE^type
-        with VOID_t then
-            error(TYPE_void);
+        info := FUNC_PARAMETER^tds.localSearch(ident^txt);
+
+        if info != null then
+            error(VAR_exists, ident^txt);
         else
-            FUNC_PARAMETER^tds.insert(ident^txt, new INFOVAR(TYPE^type, null));
+            match TYPE^type
+            with VOID_t then
+                error(TYPE_void);
+            else
+                FUNC_PARAMETER^types.add(TYPE^type);
+                -- TODO:emplacement
+                FUNC_PARAMETER^tds.insert(ident^txt, new INFOVAR(TYPE^type, null));
+            end
         end
     end
 }
@@ -516,15 +550,43 @@ F -> opar E cpar #type;
 F -> opar TYPE cpar F #type;
 #type {
     do
-        F^type := null; --TODO:type
+        if(F1^type != null && !TYPE^type.constructsFrom(F1^type)) then
+            error(TYPE_unexpected, TYPE^type, F1^type);
+        end
+        F^type := TYPE^type;
     end
 }
 
 -- subprogram call
-F -> ident opar ARGS cpar #type;
-#type {
+F -> ident opar #types ARGS cpar #type;
+global
+    types : LTYPES;
+#types {
     do
-        F^type := null; --TODO:type
+        types := new LTYPES();
+        ARGS^types := types;
+    end
+}
+#type {
+    local
+        info : INFO;
+        fun : DFUNCTIONTYPE;
+    do
+        info := F^tds.globalSearch(ident^txt);
+        if info = null then
+            error(FUN_unknown, ident^txt);
+        else
+            match info
+            with INFOFUN then
+                fun := info.getType();
+                F^type := fun.getReturnType();
+                if !fun.callableWith(types) then
+                    error(FUN_unexpected, fun.getParameterTypes(), types);
+                end
+            else
+                error(FUN_notCallable, ident^txt);
+            end
+        end
     end
 }
 
@@ -562,9 +624,20 @@ F -> mult F #type;
 
 -- subprogram call arguments
 ARGS -> ;
-ARGS -> E ARGSX;
+ARGS -> E #type ARGSX;
+#type {
+    do
+        ARGS^types.add(E^type);
+    end
+}
+
 ARGSX -> ;
-ARGSX -> comma  E ARGSX;
+ARGSX -> comma E #type ARGSX;
+#type {
+    do
+        ARGSX^types.add(E^type);
+    end
+}
 
 -- TODO:MOC:
 --ENTITIES -> IMPLEMENTATION ENTITIES;
