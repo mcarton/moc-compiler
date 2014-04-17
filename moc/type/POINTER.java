@@ -32,5 +32,10 @@ public class POINTER implements DTYPE {
         return (   operator.equals("==") || operator.equals("!="))
             && (other instanceof POINTER || other instanceof NULL_t);
     }
+
+    @Override
+    public boolean testable() {
+        return true;
+    }
 }
 

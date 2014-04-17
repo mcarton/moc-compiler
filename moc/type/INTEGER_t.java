@@ -24,4 +24,10 @@ public class INTEGER_t implements DTYPE {
     public boolean comparableWith(DTYPE other, String operator) {
         return other instanceof INTEGER_t;
     }
+
+    @Override
+    public boolean testable() {
+        return true;
+    }
 }
+

@@ -18,5 +18,9 @@ public class VOID_t implements DTYPE {
     public boolean comparableWith(DTYPE other, String operator) {
         return false;
     }
+
+    public boolean testable() {
+        return false;
+    }
 }
 

@@ -21,5 +21,10 @@ public class NULL_t implements DTYPE {
     public boolean comparableWith(DTYPE other, String operator) {
         return other instanceof NULL_t || other instanceof POINTER;
     }
+
+    @Override
+    public boolean testable() {
+        return true;
+    }
 }
 

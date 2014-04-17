@@ -1,4 +1,4 @@
-----------------------------------------------------
+-----------------------------------------------------
 -- MC and MOC grammars                             --
 -----------------------------------------------------
 --options
@@ -206,8 +206,7 @@ FUNC_PARAMETER -> TYPE ident #tds;
                 error(TYPE_void);
             else
                 FUNC_PARAMETER^types.add(TYPE^type);
-                -- TODO:emplacement
-                FUNC_PARAMETER^tds.insert(ident^txt, new INFOVAR(TYPE^type, null));
+                FUNC_PARAMETER^tds.insert(ident^txt, TYPE^type);
             end
         end
     end
@@ -314,7 +313,7 @@ INST -> TYPE ident EX semicolumn #tds;
             -- we add the variable in the symbol table even when there is an
             -- error in order to avoid a lot of "unknown variable"
             -- TODO:emplacement
-            INST^tds.insert(ident^txt,TYPE^type);
+            INST^tds.insert(ident^txt, TYPE^type);
         end
     end
 }
@@ -329,7 +328,11 @@ INST -> BLOC #returns; #returns { do INST^returns := BLOC^returns; end }
 INST -> if opar E cpar BLOC ELSE #returns;
 #returns {
     do
-        INST^returns := BLOC^returns && ELSE^returns;
+        if !E^type.testable() then
+            error(TYPE_unexpected, "int", E^type);
+        else
+            INST^returns := BLOC^returns && ELSE^returns;
+        end
     end
 }
 

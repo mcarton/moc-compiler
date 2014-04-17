@@ -13,7 +13,7 @@ public class TDS {
     private static final long serialVersionUID = 0x5a7a79a;
     private HashMap<String, INFO> map = new HashMap<String, INFO>();
     private TDS mother;
-    private INFOFUN currentFunction;
+    private DFUNCTIONTYPE currentFunction;
     private int location = 0;
     /**
      * Constructor for a symbols table without mother.
@@ -60,14 +60,14 @@ public class TDS {
     /**
      * Add t (function) and its info i in the TDS.
      */
-    public void insert(String n, INFOFUN i) {
-        map.put(n, i);
+    public void insert(String n, DFUNCTIONTYPE i) {
+        map.put(n, new INFOFUN(i));
     }
 
     /**
      * Set the current function.
      */
-    public void setCurrentFunction(String n, INFOFUN fun) {
+    public void setCurrentFunction(String n, DFUNCTIONTYPE fun) {
         currentFunction = fun;
         mother.insert(n, fun);
     }
@@ -76,7 +76,7 @@ public class TDS {
      * Return whether we can return type from the current function.
      */
     public boolean canReturn(DTYPE type) {
-        return currentFunction.getType().getReturnType().constructsFrom(type);
+        return currentFunction.getReturnType().constructsFrom(type);
     }
 
     public String toString() {

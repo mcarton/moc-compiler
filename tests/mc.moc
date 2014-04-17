@@ -41,7 +41,7 @@ int foo(int n){
     int *m = malloc(1);
     a = *m +666;
     // declare a pointer of pointer
-    int ** k = malloc(2) ;
+    int ** k /* TODO: void ptr *//* = malloc(2)*/ ;
     *k = m;
     ** k = 12;
     int b = **k + 9999;
