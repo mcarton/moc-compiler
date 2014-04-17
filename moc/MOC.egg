@@ -30,7 +30,10 @@ inh tds : TDS for
     F, TX, T, RX, R, AX, A, EX, E
 
 ;
-syn returns : boolean for INST, INSTS, BLOC, ELSE;
+
+-- 0 => empty statement, 1 => non-empty but does not return, 2 => returns
+syn returns : int for 
+    INST, INSTS, BLOC, ELSE;
 
 -- types:
 syn type : DTYPE for
@@ -177,7 +180,7 @@ global
         match TYPE^type
         with VOID_t then
         else
-            if !BLOC^returns then
+            if BLOC^returns != 2 then
                 error(FUN_missingReturn);
             end
         end
@@ -280,11 +283,20 @@ global
 }
 
 -- instructions
-INSTS -> #returns; #returns { do INSTS^returns := false; end }
+INSTS -> #returns; #returns { do INSTS^returns := 0; end }
 INSTS -> INST INSTS #returns;
 #returns {
     do
-        INSTS^returns := INST^returns || INSTS1^returns;
+        if INST^returns = 2 || INSTS1^returns = 2 then
+            INSTS^returns := 2;
+        else
+            INSTS^returns := 1;
+        end
+
+        if INST^returns = 2 && INSTS1^returns != 0
+        && INSTS^machine.hasWarning("unreachable") then
+            warning(WARN_unreachable);
+        end
     end
 }
 
@@ -294,7 +306,7 @@ INST -> TYPE ident EX semicolumn #tds;
     local
         info : INFO;
     do
-        INST^returns := false;
+        INST^returns := 1;
 
         info := INST^tds.localSearch(ident^txt);
 
@@ -319,7 +331,7 @@ INST -> TYPE ident EX semicolumn #tds;
 }
 
 -- expression instruction (affectation and procedure call)
-INST -> E semicolumn #returns; #returns { do INST^returns := false; end }
+INST -> E semicolumn #returns; #returns { do INST^returns := 1; end }
 
 -- instruction block
 INST -> BLOC #returns; #returns { do INST^returns := BLOC^returns; end }
@@ -330,20 +342,22 @@ INST -> if opar E cpar BLOC ELSE #returns;
     do
         if !E^type.testable() then
             error(TYPE_unexpected, "int", E^type);
+        elseif BLOC^returns = 2 && ELSE^returns != 1 then
+            INST^returns := 2;
         else
-            INST^returns := BLOC^returns && ELSE^returns;
+            INST^returns := 1;
         end
     end
 }
 
 ELSE -> else BLOC #returns; #returns { do ELSE^returns := BLOC^returns; end }
-ELSE -> #returns; #returns { do ELSE^returns := true -* yeah, true *-; end }
+ELSE -> #returns; #returns { do ELSE^returns := 0 ; end }
 
 -- function return
 INST -> return E semicolumn #type;
 #type {
     do
-        INST^returns := true;
+        INST^returns := 2;
         if !INST^tds.canReturn(E^type) then
             error(FUN_returnType, E^type);
         end
@@ -361,7 +375,7 @@ INST -> asm  #tds ASM #gen;
 }
 #gen {
     do
-        INST^returns := true; -- TODO: may want to actually check it
+        INST^returns := 2; -- TODO: may want to actually check it
         -- ASM^code_asm contains the inline assembly in which variable
         -- names have been replaced by their addresses
     end

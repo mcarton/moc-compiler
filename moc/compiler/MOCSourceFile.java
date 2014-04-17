@@ -1,5 +1,6 @@
 package moc.compiler;
 
+import java.util.ArrayList;
 import mg.egg.eggc.runtime.libjava.SourceUnit;
 import moc.gc.AbstractMachine;
 import moc.gc.MTAM;
@@ -14,19 +15,18 @@ public class MOCSourceFile extends SourceUnit {
     private AbstractMachine machine;
     private String machName = "tam";
     private int verbosity = 0;
+    private ArrayList<String> warnings = new ArrayList<String>();
 
     public MOCSourceFile(String[] args) throws MOCException {
         super(args[0]);
-        // other arguments?
-        analyze(args);
+        analyze(args); // other arguments?
     }
 
     /**
      * Print available options.
      */
     private void usage(String a) throws MOCException {
-        throw new MOCException("Incorrect option: " + a + ". "
-                               + Messages.getString("MOC.usage"));
+        throw new MOCException(Messages.getString("MOC.usage", a));
     }
 
     /**
@@ -37,17 +37,20 @@ public class MOCSourceFile extends SourceUnit {
         fileName = args[0];
 
         int argc = args.length;
-        for(int i = 0; i < argc; ++i) {
-            if(args[i].equals("-m")) {
-                if(i+1 < argc) {
+        for(int i = 1; i < argc; ++i) {
+            if(i+1 < argc) {
+                if(args[i].equals("-m")) {
                     machName = args[++i];
                 }
-                else {
-                    usage(args[i]);
+                else if(args[i].equals("-v")) {
+                    verbosity = Integer.parseInt(args[++i]);
+                }
+                else if(args[i].equals("-w")) {
+                    warnings.add(args[++i]);
                 }
             }
-            else if(args[i].equals("-v")) {
-                verbosity = i+1 < argc ? verbosity = Integer.parseInt(args[++i]) : 1;
+            else {
+                usage(args[i]);
             }
         }
 
@@ -60,7 +63,7 @@ public class MOCSourceFile extends SourceUnit {
     private void setMachine(String mach) {
         machName = mach;
         if (machName.equals("tam")) {
-            machine = new MTAM(verbosity);
+            machine = new MTAM(verbosity, warnings);
         }
         else if(machName.equals("llvm")) {
             // TODO:llvm

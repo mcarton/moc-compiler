@@ -12,6 +12,10 @@ public interface IMachine {
     String getSuffix();
 
     /**
+     * Return whether the warning name was given.
+     */
+    boolean hasWarning(String name);
+    /**
      * Writes the code in a file from tje source file name and the
      * suffix
      */

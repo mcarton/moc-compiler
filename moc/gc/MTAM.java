@@ -1,13 +1,14 @@
 package moc.gc;
 
+import java.util.ArrayList;
 import moc.type.*;
 
 /**
  * The TAM machine and its generation functions
  */
 public class MTAM extends AbstractMachine {
-    public MTAM(int verbosity) {
-        super(verbosity);
+    public MTAM(int verbosity, ArrayList<String> warnings) {
+        super(verbosity, warnings);
     }
 
     @Override

@@ -3,6 +3,7 @@ package moc.gc;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 
 import moc.compiler.MOCException;
 
@@ -10,10 +11,17 @@ import moc.compiler.MOCException;
  * This class describes a target machine.
  */
 public abstract class AbstractMachine implements IMachine {
+    ArrayList<String> warnings;
     int verbosity;
 
-    AbstractMachine(int v) {
+    AbstractMachine(int v, ArrayList<String> w) {
         verbosity = v;
+        warnings = w;
+    }
+
+    @Override
+    public boolean hasWarning(String name) {
+        return warnings.contains(name);
     }
 
     @Override
