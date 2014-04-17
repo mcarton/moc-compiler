@@ -6,5 +6,7 @@ int main() {
 
     char* s = "enseeiht";
     int* ip = NULL;
+
+    return j;
 }
 

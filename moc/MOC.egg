@@ -30,6 +30,7 @@ inh tds : TDS for
     F, TX, T, RX, R, AX, A, EX, E
 
 ;
+syn returns : boolean for INST, INSTS, BLOC, ELSE;
 
 -- types:
 syn type : DTYPE for
@@ -147,7 +148,7 @@ ENTITIES -> asm #tds ASM ENTITIES #gen;
 ENTITIES -> FUNCTION ENTITIES;
 
 --fonctions
-FUNCTION -> TYPE ident #ctds opar FUNC_PARAMETERS #utds cpar BLOC;
+FUNCTION -> TYPE ident #ctds opar FUNC_PARAMETERS #utds cpar BLOC #returns;
 global
     bloc_tds : TDS;
     types : LTYPES;
@@ -161,18 +162,24 @@ global
     end
 }
 #utds {
-    local
-        info : INFO;
-        fun : INFOFUN;
     do
-        info := FUNCTION^tds.localSearch(ident^txt);
-
-        if info != null then
+        if FUNCTION^tds.localSearch(ident^txt) != null then
             error(FUN_exists, ident^txt);
         else
-            fun := new INFOFUN(new DFUNCTIONTYPE(TYPE^type, types));
-            bloc_tds.insert(ident^txt, fun);
-            FUNCTION^tds.insert(ident^txt, fun);
+            bloc_tds.setCurrentFunction(
+                ident^txt, new INFOFUN(new DFUNCTIONTYPE(TYPE^type, types))
+            );
+        end
+    end
+}
+#returns {
+    do
+        match TYPE^type
+        with VOID_t then
+        else
+            if !BLOC^returns then
+                error(FUN_missingReturn);
+            end
         end
     end
 }
@@ -266,6 +273,7 @@ global
 }
 #message {
     do
+        BLOC^returns := INSTS^returns;
         if BLOC^machine.verbose(5) then
             write "Symbols: " + tds.toString()+"\n";
         end
@@ -273,8 +281,13 @@ global
 }
 
 -- instructions
-INSTS -> ;
-INSTS -> INST INSTS;
+INSTS -> #returns; #returns { do INSTS^returns := false; end }
+INSTS -> INST INSTS #returns;
+#returns {
+    do
+        INSTS^returns := INST^returns || INSTS1^returns;
+    end
+}
 
 -- local variable declaration with or without initialisation
 INST -> TYPE ident EX semicolumn #tds;
@@ -282,6 +295,8 @@ INST -> TYPE ident EX semicolumn #tds;
     local
         info : INFO;
     do
+        INST^returns := false;
+
         info := INST^tds.localSearch(ident^txt);
 
         if info != null then
@@ -305,17 +320,32 @@ INST -> TYPE ident EX semicolumn #tds;
 }
 
 -- expression instruction (affectation and procedure call)
-INST -> E semicolumn;
+INST -> E semicolumn #returns; #returns { do INST^returns := false; end }
 
 -- instruction block
-INST -> BLOC;
+INST -> BLOC #returns; #returns { do INST^returns := BLOC^returns; end }
 
 -- conditional
-INST -> if opar E cpar BLOC ELSE;
-ELSE -> else BLOC;
-ELSE -> ;
+INST -> if opar E cpar BLOC ELSE #returns;
+#returns {
+    do
+        INST^returns := BLOC^returns && ELSE^returns;
+    end
+}
+
+ELSE -> else BLOC #returns; #returns { do ELSE^returns := BLOC^returns; end }
+ELSE -> #returns; #returns { do ELSE^returns := true -* yeah, true *-; end }
+
 -- function return
-INST -> return E semicolumn;
+INST -> return E semicolumn #type;
+#type {
+    do
+        INST^returns := true;
+        if !INST^tds.canReturn(E^type) then
+            error(FUN_returnType, E^type);
+        end
+    end
+}
 
 -- inline asm
 INST -> asm  #tds ASM #gen;
@@ -328,6 +358,7 @@ INST -> asm  #tds ASM #gen;
 }
 #gen {
     do
+        INST^returns := true; -- TODO: may want to actually check it
         -- ASM^code_asm contains the inline assembly in which variable
         -- names have been replaced by their addresses
     end

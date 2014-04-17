@@ -47,7 +47,7 @@ int foo(int n){
     int b = **k + 9999;
     // cast
     m = (int *)malloc(10);
-    return m;
+    return *m;
 }
 
 // function returning a pointer

@@ -22,5 +22,9 @@ public class DFUNCTIONTYPE {
     public boolean callableWith(LTYPES params) {
         return parameterTypes.constructsFrom(params);
     }
+
+    public String toString() {
+        return parameterTypes + "->" + returnType;
+    }
 }
 

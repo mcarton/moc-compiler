@@ -12,5 +12,7 @@ int main() {
     "net7" == "canapé";
     5 < 8;
     "enseeiht" != NULL;
+
+    return j;
 }
 
