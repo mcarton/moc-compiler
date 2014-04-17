@@ -1,4 +1,4 @@
------------------------------------------------------
+----------------------------------------------------
 -- MC and MOC grammars                             --
 -----------------------------------------------------
 --options
@@ -167,7 +167,7 @@ global
             error(FUN_exists, ident^txt);
         else
             bloc_tds.setCurrentFunction(
-                ident^txt, new INFOFUN(new DFUNCTIONTYPE(TYPE^type, types))
+                ident^txt, new DFUNCTIONTYPE(TYPE^type, types)
             );
         end
     end
@@ -314,7 +314,7 @@ INST -> TYPE ident EX semicolumn #tds;
             -- we add the variable in the symbol table even when there is an
             -- error in order to avoid a lot of "unknown variable"
             -- TODO:emplacement
-            INST^tds.insert(ident^txt, new INFOVAR(TYPE^type, null));
+            INST^tds.insert(ident^txt,TYPE^type);
         end
     end
 }

@@ -3,8 +3,8 @@ package moc.tds;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-
-import moc.type.DTYPE;
+import moc.gc.*;
+import moc.type.*;
 
 /**
  * A hierarchical symbols table.
@@ -14,7 +14,7 @@ public class TDS {
     private HashMap<String, INFO> map = new HashMap<String, INFO>();
     private TDS mother;
     private INFOFUN currentFunction;
-
+    private int location = 0;
     /**
      * Constructor for a symbols table without mother.
      */
@@ -51,7 +51,16 @@ public class TDS {
     /**
      * Add n and its info i in the TDS.
      */
-    public void insert(String n, INFO i) {
+    public void insert(String n, DTYPE t) {
+        INFO i = new INFOVAR(t, new Location(location,null)); // TODO : WHAT DAT SHIT
+        location += t.getSize();
+        map.put(n, i);
+    }
+
+    /**
+     * Add t (function) and its info i in the TDS.
+     */
+    public void insert(String n, INFOFUN i) {
         map.put(n, i);
     }
 
