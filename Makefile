@@ -14,24 +14,27 @@ JDIR=/usr/bin
 #--------------------------------------------------------
 all : src att class
 
-pdf:
-	cd report; make pdf
-
-src:
-	(cd moc ; $(JDIR)/java -jar ../$(EJAR) $(XMOC).egg)
+src : 
+	(cd moc ; $(JDIR)/java -jar ../$(EJAR) $(XMOC).egg)	
 	(cd moc ; $(JDIR)/java -jar ../$(EJAR) $(XASM).egg)
 
-att:
+att :
 	$(JDIR)/javac -classpath $(GJAR) moc/compiler/*.java
 	$(JDIR)/javac -classpath $(GJAR) moc/tds/*.java
 	$(JDIR)/javac -classpath $(GJAR) moc/type/*.java
 	$(JDIR)/javac -classpath $(GJAR) moc/gc/*.java
 
-class:
+class :
 	$(JDIR)/javac -classpath $(GJAR) moc/egg/*.java
 
-clean:
-	find -name "*.class" -delete
-	find -name "*.tam" -delete
-	rm -rf moc/egg
-	cd report; make clean
+
+pdf :
+	cd report; make pdf
+
+
+
+clean :
+	find . -name "*.class" -delete 
+	find . -name "*.tam" -delete
+	rm -rf moc/egg 
+	cd report; make clean 
