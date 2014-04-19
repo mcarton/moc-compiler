@@ -48,6 +48,7 @@ public class MOCC implements Serializable {
             }
             prq.endReporting();
             System.out.println(Messages.getString("MOC.ok"));
+            System.exit(prq.getFatal());
         }
         catch (MOCException e) {
             // Internal errors
