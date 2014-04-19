@@ -32,7 +32,7 @@ inh tds : TDS for
 ;
 
 -- 0 => empty statement, 1 => non-empty but does not return, 2 => returns
-syn returns : int for 
+syn returns : int for
     INST, INSTS, BLOC, ELSE;
 
 -- types:
@@ -113,39 +113,30 @@ compil ASM;
 --production rules
 PROGRAM -> #init ENTITIES #gen;
 global
-   machine : IMachine;
+   IMachine machine;
 #init {
-    do
-        machine := PROGRAM^source.getMachine();
-        if machine = null then
-            error(NO_MACH, PROGRAM^source.getMachName());
-        else
-            ENTITIES^machine := machine;
-            ENTITIES^tds := new TDS();
-        end
-    end
+    machine = PROGRAM^source.getMachine();
+    if(machine == null) {
+        error(NO_MACH, PROGRAM^source.getMachName());
+    }
+    else {
+        ENTITIES^machine = machine;
+        ENTITIES^tds = new TDS();
+    }
 }
 -- write the code in a file
-#gen {
-    do
-        machine.writeCode(PROGRAM^source.getFileName(),"; no code\n");
-    end
-}
+#gen { machine.writeCode(PROGRAM^source.getFileName(),"; no code\n"); }
 
 ENTITIES -> ;
 
 ENTITIES -> asm #tds ASM ENTITIES #gen;
 #tds {
-    do
-        -- Replace null with the current symbols table so that the ASM
-        -- code can access MC or MOC variables
-        ASM^tds_asm := null;
-    end
+    -- Replace null with the current symbols table so that the ASM
+    -- code can access MC or MOC variables
+    ASM^tds_asm = null;
 }
 #gen {
-    do
-        -- ASM^code_asm contains the inline ASM
-    end
+    -- ASM^code_asm contains the inline ASM
 }
 
 ENTITIES -> FUNCTION ENTITIES;
@@ -153,38 +144,34 @@ ENTITIES -> FUNCTION ENTITIES;
 --fonctions
 FUNCTION -> TYPE ident #ctds opar FUNC_PARAMETERS #utds cpar BLOC #returns;
 global
-    bloc_tds : TDS;
-    types : LTYPES;
+    TDS bloc_tds;
+    LTYPES types;
 #ctds {
-    do
-        bloc_tds := new TDS(FUNCTION^tds);
-        types := new LTYPES();
-        FUNC_PARAMETERS^types := types;
-        FUNC_PARAMETERS^tds := bloc_tds;
-        BLOC^tds := bloc_tds;
-    end
+    bloc_tds = new TDS(FUNCTION^tds);
+    types = new LTYPES();
+    FUNC_PARAMETERS^types = types;
+    FUNC_PARAMETERS^tds = bloc_tds;
+    BLOC^tds = bloc_tds;
 }
 #utds {
-    do
-        if FUNCTION^tds.localSearch(ident^txt) != null then
-            error(FUN_exists, ident^txt);
-        else
-            bloc_tds.setCurrentFunction(
-                ident^txt, new DFUNCTIONTYPE(TYPE^type, types)
-            );
-        end
-    end
+    if(FUNCTION^tds.localSearch(ident^txt) != null) {
+        error(FUN_exists, ident^txt);
+    }
+    else {
+        bloc_tds.setCurrentFunction(
+        ident^txt, new DFUNCTIONTYPE(TYPE^type, types)
+        );
+    }
 }
 #returns {
-    do
-        match TYPE^type
-        with VOID_t then
-        else
-            if BLOC^returns != 2 then
+    match(TYPE^type) {
+        case VOID_t {}
+        default {
+            if(BLOC^returns != 2) {
                 error(FUN_missingReturn);
-            end
-        end
-    end
+            }
+        }
+    }
 }
 
 -- parametres de fonctions
@@ -196,189 +183,141 @@ FUNC_PARAMETERSX -> comma FUNC_PARAMETER FUNC_PARAMETERSX;
 
 FUNC_PARAMETER -> TYPE ident #tds;
 #tds {
-    local
-        info : INFO;
-    do
-        info := FUNC_PARAMETER^tds.localSearch(ident^txt);
+    INFO info = FUNC_PARAMETER^tds.localSearch(ident^txt);
 
-        if info != null then
-            error(VAR_exists, ident^txt);
-        else
-            match TYPE^type
-            with VOID_t then
+    if(info != null) {
+        error(VAR_exists, ident^txt);
+    }
+    else {
+        match(TYPE^type) {
+            case VOID_t {
                 error(TYPE_void);
-            else
+            }
+            default {
                 FUNC_PARAMETER^types.add(TYPE^type);
                 FUNC_PARAMETER^tds.insert(ident^txt, TYPE^type);
-            end
-        end
-    end
+            }
+        }
+    }
 }
 
 -- base types and pointers
 TYPE -> STYPE #get REFS #gen;
-#get {
-    do
-        REFS^htype := STYPE^type;
-    end
-}
-#gen {
-    do
-        TYPE^type := REFS^type;
-    end
-}
+#get { REFS^htype = STYPE^type; }
+#gen { TYPE^type = REFS^type; }
 
-REFS -> #gen;
-#gen {
-    do
-        REFS^type := REFS^htype;
-    end
-}
+REFS -> #gen; #gen { REFS^type = REFS^htype; }
 
-REFS -> mult REFS #gen;
-#gen {
-    do
-        REFS^type := REFS^machine.getPtrType(REFS1^type);
-    end
-}
+REFS -> mult REFS #gen; #gen { REFS^type = REFS^machine.getPtrType(REFS1^type); }
 
-STYPE -> void #gen;
-#gen {
-    do
-        STYPE^type := new VOID_t();
-    end
-}
+STYPE -> void #gen; #gen { STYPE^type = new VOID_t(); }
 
-STYPE -> int #gen;
-#gen {
-    do
-        STYPE^type := STYPE^machine.getIntType();
-    end
-}
+STYPE -> int #gen; #gen { STYPE^type = STYPE^machine.getIntType(); }
 
-STYPE -> char #gen;
-#gen {
-    do
-        STYPE^type := STYPE^machine.getCharType();
-    end
-}
+STYPE -> char #gen; #gen { STYPE^type = STYPE^machine.getCharType(); }
 
 -- method body and instructions blocks
 BLOC -> #tds occbra INSTS ccbra #message;
 global
-    tds : TDS;
+    TDS tds;
 #tds {
-    do
-        tds := new TDS(BLOC^tds);
-        INSTS^tds := tds;
-    end
+    tds = new TDS(BLOC^tds);
+    INSTS^tds = tds;
 }
 #message {
-    do
-        BLOC^returns := INSTS^returns;
-        if BLOC^machine.verbose(5) then
-            write "Symbols: " + tds.toString()+"\n";
-        end
-    end
+    BLOC^returns = INSTS^returns;
+    if(BLOC^machine.verbose(5)) {
+        write("Symbols: " + tds.toString()+"\n");
+    }
 }
 
 -- instructions
-INSTS -> #returns; #returns { do INSTS^returns := 0; end }
+INSTS -> #returns; #returns { INSTS^returns = 0; }
 INSTS -> INST INSTS #returns;
 #returns {
-    do
-        if INST^returns = 2 || INSTS1^returns = 2 then
-            INSTS^returns := 2;
-        else
-            INSTS^returns := 1;
-        end
+    if(INST^returns == 2 || INSTS1^returns == 2) {
+        INSTS^returns = 2;
+    }
+    else {
+        INSTS^returns = 1;
+    }
 
-        if INST^returns = 2 && INSTS1^returns != 0
-        && INSTS^machine.hasWarning("unreachable") then
-            warning(WARN_unreachable);
-        end
-    end
+    if(INST^returns == 2 && INSTS1^returns != 0 && INSTS^machine.hasWarning("unreachable")) {
+        warning(WARN_unreachable);
+    }
 }
 
 -- local variable declaration with or without initialisation
 INST -> TYPE ident EX semicolumn #tds;
 #tds {
-    local
-        info : INFO;
-    do
-        INST^returns := 1;
+    INST^returns = 1;
 
-        info := INST^tds.localSearch(ident^txt);
+    INFO info = INST^tds.localSearch(ident^txt);
 
-        if info != null then
-            error(VAR_exists, ident^txt);
-        else
-            if(EX^type != null && !TYPE^type.constructsFrom(EX^type)) then
-                error(TYPE_unexpected, TYPE^type, EX^type);
-            end
+    if(info != null) {
+        error(VAR_exists, ident^txt);
+    }
+    else {
+        if(EX^type != null && !TYPE^type.constructsFrom(EX^type)) {
+            error(TYPE_unexpected, TYPE^type, EX^type);
+        }
 
-            match TYPE^type
-            with VOID_t then
+        match(TYPE^type) {
+            case VOID_t {
                 error(TYPE_void);
-            end
+            }
+        }
 
-            -- we add the variable in the symbol table even when there is an
-            -- error in order to avoid a lot of "unknown variable"
-            -- TODO:emplacement
-            INST^tds.insert(ident^txt, TYPE^type);
-        end
-    end
+        -- we add the variable in the symbol table even when there is an
+        -- error in order to avoid a lot of "unknown variable"
+        -- TODO:emplacement
+        INST^tds.insert(ident^txt, TYPE^type);
+    }
 }
 
 -- expression instruction (affectation and procedure call)
-INST -> E semicolumn #returns; #returns { do INST^returns := 1; end }
+INST -> E semicolumn #returns; #returns { INST^returns = 1; }
 
 -- instruction block
-INST -> BLOC #returns; #returns { do INST^returns := BLOC^returns; end }
+INST -> BLOC #returns; #returns { INST^returns = BLOC^returns; }
 
 -- conditional
 INST -> if opar E cpar BLOC ELSE #returns;
 #returns {
-    do
-        if !E^type.testable() then
-            error(TYPE_unexpected, "int", E^type);
-        elseif BLOC^returns = 2 && ELSE^returns != 1 then
-            INST^returns := 2;
-        else
-            INST^returns := 1;
-        end
-    end
+    if(!E^type.testable()) {
+        error(TYPE_unexpected, "int", E^type);
+    }
+    elseif(BLOC^returns == 2 && ELSE^returns != 1) {
+        INST^returns = 2;
+    }
+    else {
+        INST^returns = 1;
+    }
 }
 
-ELSE -> else BLOC #returns; #returns { do ELSE^returns := BLOC^returns; end }
-ELSE -> #returns; #returns { do ELSE^returns := 0 ; end }
+ELSE -> else BLOC #returns; #returns { ELSE^returns = BLOC^returns; }
+ELSE -> #returns; #returns { ELSE^returns = 0 ; }
 
 -- function return
 INST -> return E semicolumn #type;
 #type {
-    do
-        INST^returns := 2;
-        if !INST^tds.canReturn(E^type) then
-            error(FUN_returnType, E^type);
-        end
-    end
+    INST^returns = 2;
+    if(!INST^tds.canReturn(E^type)) {
+        error(FUN_returnType, E^type);
+    }
 }
 
 -- inline asm
 INST -> asm  #tds ASM #gen;
 #tds {
-    do
-        -- to replace by the current symbols table so that inline
-        -- assembly can access variables
-        ASM^tds_asm := null;
-    end
+    -- to replace by the current symbols table so that inline
+    -- assembly can access variables
+    ASM^tds_asm = null;
 }
 #gen {
-    do
-        INST^returns := 2; -- TODO: may want to actually check it
-        -- ASM^code_asm contains the inline assembly in which variable
-        -- names have been replaced by their addresses
-    end
+    INST^returns = 2; -- TODO: may want to actually check it
+    -- ASM^code_asm contains the inline assembly in which variable
+    -- names have been replaced by their addresses
 }
 
 -- expressions
@@ -392,67 +331,43 @@ INST -> asm  #tds ASM #gen;
 -- affectation
 E -> A EX #type;
 #type {
-    do
-        if EX^type = null then
-            E^type := A^type;
-        elseif A^type.constructsFrom(EX^type) then
-            E^type := A^type;
-        else
-            error(TYPE_unexpected, A^type, EX^type);
-        end
-    end
+    if(EX^type == null) {
+        E^type = A^type;
+    }
+    elseif(A^type.constructsFrom(EX^type)) {
+        E^type = A^type;
+    }
+    else {
+        error(TYPE_unexpected, A^type, EX^type);
+    }
 }
 
-EX -> #type;
-#type {
-    do
-        EX^type := null;
-    end
-}
+EX -> #type; #type { EX^type = null; }
 
-EX -> affect A #type;
-#type {
-    do
-        EX^type := A^type;
-    end
-}
+EX -> affect A #type; #type { EX^type = A^type; }
 
 -- relations
-OPREL -> inf   #get; #get { do OPREL^sym := "<";  end }
-OPREL -> sup   #get; #get { do OPREL^sym := ">";  end }
-OPREL -> infeq #get; #get { do OPREL^sym := "<="; end }
-OPREL -> supeq #get; #get { do OPREL^sym := ">="; end }
-OPREL -> eq    #get; #get { do OPREL^sym := "=="; end }
-OPREL -> neq   #get; #get { do OPREL^sym := "!="; end }
+OPREL -> inf   #get; #get { OPREL^sym = "<"; }
+OPREL -> sup   #get; #get { OPREL^sym = ">"; }
+OPREL -> infeq #get; #get { OPREL^sym = "<="; }
+OPREL -> supeq #get; #get { OPREL^sym = ">="; }
+OPREL -> eq    #get; #get { OPREL^sym = "=="; }
+OPREL -> neq   #get; #get { OPREL^sym = "!="; }
 
 A -> R #htype AX #type;
-#htype {
-    do
-        AX^htype := R^type;
-    end
-}
-#type {
-    do
-        A^type := AX^type;
-    end
-}
+#htype { AX^htype = R^type; }
+#type { A^type = AX^type; }
 
-AX -> #type;
-#type {
-    do
-        AX^type := AX^htype;
-    end
-}
+AX -> #type; #type { AX^type = AX^htype; }
 
 AX -> OPREL R #type;
 #type {
-    do
-        if AX^htype.comparableWith(R^type, OPREL^sym) then
-            AX^type := AX^machine.getIntType();
-        else
-            error(TYPE_notComparable, AX^htype, R^type);
-        end
-    end
+    if(AX^htype.comparableWith(R^type, OPREL^sym)) {
+            AX^type = AX^machine.getIntType();
+    }
+    else {
+        error(TYPE_notComparable, AX^htype, R^type);
+    }
 }
 
 -- additions
@@ -461,40 +376,30 @@ OPADD -> minus;
 OPADD -> or;
 
 R -> T #htype RX #type;
-#htype {
-    do
-        RX^htype := T^type;
-    end
-}
-#type {
-    do
-        R^type := RX^type;
-    end
-}
+#htype { RX^htype = T^type; }
+#type { R^type = RX^type; }
 
 RX -> #type;
-#type {
-    do
-        RX^type := RX^htype;
-    end
-}
+#type { RX^type = RX^htype; }
 
 RX -> OPADD T RX #type;
 #type {
-    do
-        -- TODO:MOC: booleans with or
-        match RX^htype
-        with INTEGER_t then
-            match T^type
-            with INTEGER_t then
-                RX^type := T^type;
-            else
-                error(TYPE_unexpected, "int", T^type);
-            end
-        else
+    -- TODO:MOC: booleans with or
+    match(RX^htype) {
+        case INTEGER_t {
+            match( T^type) {
+                case INTEGER_t {
+                    RX^type = T^type;
+                }
+                default {
+                    error(TYPE_unexpected, "int", T^type);
+                }
+            }
+        }
+        default {
             error(TYPE_unexpected, "int", RX^htype);
-        end
-    end
+        }
+    }
 }
 
 -- multiplication
@@ -504,71 +409,43 @@ OPMUL -> mod;
 OPMUL -> and;
 
 T -> F #htype TX #type;
-#htype {
-    do
-        TX^htype := F^type;
-    end
-}
-#type {
-    do
-        T^type := TX^type;
-    end
-}
+#htype { TX^htype = F^type; }
+#type { T^type = TX^type; }
 
-TX -> #type;
-#type {
-    do
-        TX^type := TX^htype;
-    end
-}
+TX -> #type; #type { TX^type = TX^htype; }
 
 TX -> OPMUL F TX #type;
 #type {
-    do
-        -- TODO:MOC: booleans with and
-        match TX^htype
-        with INTEGER_t then
-            match F^type
-            with INTEGER_t then
-                TX^type := F^type;
-            else
-                error(TYPE_unexpected, "int", F^type);
-            end
-        else
+    -- TODO:MOC: booleans with and
+    match(TX^htype) {
+        case INTEGER_t {
+            match(F^type) {
+                case INTEGER_t {
+                    TX^type = F^type;
+                }
+                default {
+                    error(TYPE_unexpected, "int", F^type);
+                }
+            }
+        }
+        default {
             error(TYPE_unexpected, "int", TX^htype);
-        end
-    end
+        }
+    }
 }
 
 -- base expressions
-F -> integer #type;
-#type {
-    do
-        F^type := F^machine.getIntType();
-    end
-}
+F -> integer #type; #type { F^type = F^machine.getIntType(); }
 
 F -> string #type;
 #type {
-    do
-        -- TODO:array
-        F^type := F^machine.getPtrType(F^machine.getCharType());
-    end
+    -- TODO:array
+    F^type = F^machine.getPtrType(F^machine.getCharType());
 }
 
-F -> character #type;
-#type {
-    do
-        F^type := F^machine.getCharType();
-    end
-}
+F -> character #type; #type { F^type = F^machine.getCharType(); }
 
-F -> null #type;
-#type {
-    do
-        F^type := new NULL_t();
-    end
-}
+F -> null #type; #type { F^type = new NULL_t(); }
 
 -- unary expression
 OPUN -> plus;
@@ -576,116 +453,95 @@ OPUN -> minus;
 OPUN -> not;
 F -> OPUN F #type;
 #type {
-    do
-        -- TODO:MOC: booleans with not
-        match F1^type
-        with INTEGER_t then
-            F^type := F1^type;
-        else
+    -- TODO:MOC: booleans with not
+    match(F1^type) {
+        case INTEGER_t {
+            F^type = F1^type;
+        }
+        default {
             error(TYPE_unexpected, "int", F1^type);
-        end
-    end
+        }
+    }
 }
 
 -- parenthesised expression
-F -> opar E cpar #type;
-#type {
-    do
-        F^type := E^type;
-    end
-}
+F -> opar E cpar #type; #type { F^type = E^type; }
 
 F -> opar TYPE cpar F #type;
 #type {
-    do
-        if(F1^type != null && !TYPE^type.constructsFrom(F1^type)) then
-            error(TYPE_unexpected, TYPE^type, F1^type);
-        end
-        F^type := TYPE^type;
-    end
+    if(F1^type != null && !TYPE^type.constructsFrom(F1^type)) {
+        error(TYPE_unexpected, TYPE^type, F1^type);
+    }
+    F^type = TYPE^type;
 }
 
 -- subprogram call
 F -> ident opar #types ARGS cpar #type;
 global
-    types : LTYPES;
+    LTYPES types;
 #types {
-    do
-        types := new LTYPES();
-        ARGS^types := types;
-    end
+    types = new LTYPES();
+    ARGS^types = types;
 }
 #type {
-    local
-        info : INFO;
-        fun : DFUNCTIONTYPE;
-    do
-        info := F^tds.globalSearch(ident^txt);
-        if info = null then
-            error(FUN_unknown, ident^txt);
-        else
-            match info
-            with INFOFUN then
-                fun := info.getType();
-                F^type := fun.getReturnType();
-                if !fun.callableWith(types) then
+    INFO info  = F^tds.globalSearch(ident^txt);
+    DFUNCTIONTYPE fun;
+    if(info == null) {
+        error(FUN_unknown, ident^txt);
+    }
+    else {
+        match(info) {
+            case INFOFUN {
+                fun = info.getType();
+                F^type = fun.getReturnType();
+                if(!fun.callableWith(types)) {
                     error(FUN_unexpected, fun.getParameterTypes(), types);
-                end
-            else
+                }
+            }
+            default {
                 error(FUN_notCallable, ident^txt);
-            end
-        end
-    end
+            }
+        }
+    }
 }
 
 F -> ident #type;
 #type {
-    local
-        info : INFO;
-    do
-        info := F^tds.globalSearch(ident^txt);
-        if info = null then
-            error(VAR_unknown, ident^txt);
-        else
-            match info
-            with INFOVAR then
-                F^type := info.getType();
-            else
+    INFO info = F^tds.globalSearch(ident^txt);
+    if(info == null) {
+        error(VAR_unknown, ident^txt);
+    }
+    else {
+        match(info) {
+            case INFOVAR {
+                F^type = info.getType();
+            }
+            default {
                 error(VAR_notAVariable, ident^txt);
-            end
-        end
-    end
+            }
+        }
+    }
 }
 
 -- acces zone pointee
 F -> mult F #type;
 #type {
-    do
-        match F1^type
-        with POINTER then
-            F^type := F1^type.getPointee();
-        else
+    match(F1^type) {
+        case POINTER {
+            F^type = F1^type.getPointee();
+        }
+        default {
             error(TYPE_notAPtr, F1^type);
-        end
-    end
+        }
+    }
 }
 
 -- subprogram call arguments
 ARGS -> ;
-ARGS -> E #type ARGSX;
-#type {
-    do
-        ARGS^types.add(E^type);
-    end
-}
+ARGS -> E #type ARGSX; #type { ARGS^types.add(E^type); }
 
 ARGSX -> ;
-ARGSX -> comma E #type ARGSX;
-#type {
-    do
-        ARGSX^types.add(E^type);
-    end
-}
+ARGSX -> comma E #type ARGSX; #type { ARGSX^types.add(E^type); }
 
 -- TODO:MOC:
 --ENTITIES -> IMPLEMENTATION ENTITIES;
@@ -742,4 +598,3 @@ ARGSX -> comma E #type ARGSX;
 -- -- selector without arg
 --MARG -> ident;
 ---- --end of MOC extension
-end

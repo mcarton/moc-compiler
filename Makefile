@@ -6,7 +6,7 @@ XASM=ASM
 # directories containing egg
 EDIR=.
 # associated jars
-EJAR=$(EDIR)/eggc-5.3.1.jar
+EJAR=$(EDIR)/eggc-6.0.0.jar
 GJAR=$(EJAR):.
 #--------------------------------------------------------
 # java, javac, jar
