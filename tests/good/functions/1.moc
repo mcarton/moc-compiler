@@ -1,5 +1,5 @@
-int main(int a, char b) {
-    int a;
+Int main(Int a, Char b) {
+    Int a;
     return a;
 }
 

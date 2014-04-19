@@ -1,4 +1,4 @@
-int main(int a) {
+Int main(Int a) {
     main("enseeiht");
 }
 

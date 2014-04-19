@@ -51,17 +51,23 @@ public class TDS {
     /**
      * Add n and its info i in the TDS.
      */
-    public void insert(String n, DTYPE t) {
-        INFO i = new INFOVAR(t, new Location(location,null)); // TODO : WHAT DAT SHIT
+    public void insertVar(String n, DTYPE t) {
         location += t.getSize();
-        map.put(n, i);
+        map.put(n, new INFOVAR(t, new Location(location, null))); // TODO
     }
 
     /**
      * Add t (function) and its info i in the TDS.
      */
-    public void insert(String n, DFUNCTIONTYPE i) {
+    public void insertFun(String n, DFUNCTIONTYPE i) {
         map.put(n, new INFOFUN(i));
+    }
+
+    /**
+     * Add a type alias to the TDS.
+     */
+    public void insertType(String n, DTYPE t) {
+        map.put(n, new INFOTYPE(t));
     }
 
     /**
@@ -69,7 +75,7 @@ public class TDS {
      */
     public void setCurrentFunction(String n, DFUNCTIONTYPE fun) {
         currentFunction = fun;
-        mother.insert(n, fun);
+        mother.insertFun(n, fun);
     }
 
     /**

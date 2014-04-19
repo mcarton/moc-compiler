@@ -1,11 +1,11 @@
 void main() {
-    int a = 1;
+    Int a = 1;
 
     if(1) {
-        int b = 2;
+        Int b = 2;
     }
     else {
-        char a = 'a';
+        Char a = 'a';
     }
 }
 
