@@ -12,16 +12,18 @@ import moc.compiler.MOCException;
  */
 public abstract class AbstractMachine implements IMachine {
     ArrayList<String> warnings;
+    boolean allWarnings;
     int verbosity;
 
     AbstractMachine(int v, ArrayList<String> w) {
         verbosity = v;
         warnings = w;
+        allWarnings = warnings.contains("all");
     }
 
     @Override
     public boolean hasWarning(String name) {
-        return warnings.contains(name);
+        return allWarnings || warnings.contains(name);
     }
 
     @Override

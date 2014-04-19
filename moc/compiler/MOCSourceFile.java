@@ -46,7 +46,9 @@ public class MOCSourceFile extends SourceUnit {
                     verbosity = Integer.parseInt(args[++i]);
                 }
                 else if(args[i].equals("-w")) {
-                    warnings.add(args[++i]);
+                    while(i+1 < argc && !args[++i].startsWith("-")) {
+                        warnings.add(args[i]);
+                    }
                 }
             }
             else {
