@@ -11,7 +11,7 @@ inh source : MOCSourceFile for PROGRAM;
 -- the target machine for code generation
 inh machine : IMachine for
     ENTITIES, FUNCTION, INST, BLOC, INSTS, ELSE,
-    FUNC_PARAMETERS, FUNC_PARAMETER, FUNC_PARAMETERSX, ARGS,ARGSX,
+    FUNC_PARAMETERS, FUNC_PARAMETER, FUNC_PARAMETERSX, ARGS, ARGSX,
     E, EX, A, AX, R, RX, T, TX, F,
     REFS, STYPE, TYPE
 -- TODO:MOC:
@@ -48,6 +48,7 @@ inh types : LTYPES for
     FUNC_PARAMETERS, FUNC_PARAMETERSX, FUNC_PARAMETER,
     ARGS, ARGSX
 ;
+
 syn sym : String for OPREL;
 
 --terminals
