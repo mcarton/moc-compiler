@@ -149,7 +149,7 @@ ENTITIES -> asm #tds ASM ENTITIES #gen;
 
 ENTITIES -> FUNCTION ENTITIES;
 
---fonctions
+-- functions
 FUNCTION -> TYPE ident #ctds opar FUNC_PARAMETERS #utds cpar BLOC #returns;
 global
     TDS bloc_tds;
@@ -177,7 +177,7 @@ global
     }
 }
 
--- parametres de fonctions
+-- function parameters
 FUNC_PARAMETERS -> ;
 FUNC_PARAMETERS -> FUNC_PARAMETER FUNC_PARAMETERSX;
 
@@ -615,7 +615,7 @@ F -> ident #type;
     }
 }
 
--- acces zone pointee
+-- pointed-to memory access
 F -> mult F #type;
 #type {
     match(F1^type) {
