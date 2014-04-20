@@ -27,8 +27,8 @@ public abstract class AbstractMachine implements IMachine {
     }
 
     @Override
-    public boolean verbose(int v) {
-        return verbosity >= v;
+    public int verbosity() {
+        return verbosity;
     }
 
     /**

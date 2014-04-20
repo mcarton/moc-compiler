@@ -15,18 +15,14 @@ public interface IMachine {
      * Return whether the warning name was given.
      */
     boolean hasWarning(String name);
+
     /**
      * Writes the code in a file from tje source file name and the
      * suffix
      */
     void writeCode(String fileName, String code) throws MOCException;
 
-    /**
-     * Return whether the verbosity is more than v.
-     * Needed because comparison operator are not available in egg.
-     * TODO:chicken: to be removed
-     */
-    boolean verbose(int v);
+    int verbosity();
 
     // type size stuffs:
     moc.type.DTYPE getCharType();

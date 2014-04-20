@@ -250,7 +250,7 @@ global
 }
 #message {
     BLOC^returns = INSTS^returns;
-    if(BLOC^machine.verbose(5)) {
+    if(BLOC^machine.verbosity() >= 5) {
         write("Symbols: " + tds.toString()+"\n");
     }
 }
