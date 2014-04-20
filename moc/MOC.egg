@@ -204,6 +204,8 @@ FUNC_PARAMETER -> TYPE ident #tds;
 }
 
 -- base types and pointers
+TYPE -> void #gen; #gen { TYPE^type = new VOID_t(); }
+
 TYPE -> STYPE #get REFS #gen;
 #get { REFS^htype = STYPE^type; }
 #gen { TYPE^type = REFS^type; }
@@ -220,7 +222,6 @@ REFS -> osbra integer csbra REFS #gen;
     REFS^type = REFS^machine.getArrayType(REFS1^type, nbElements);
 }
 
-STYPE -> void #gen; #gen { STYPE^type = new VOID_t(); }
 STYPE -> typeident #gen;
 #gen {
     INFO info = STYPE^tds.globalSearch(typeident^txt);
