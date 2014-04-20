@@ -2,6 +2,7 @@
 
 import os
 import subprocess
+import sys
 
 # output colors
 GREEN = '\033[0;32m'
@@ -89,3 +90,4 @@ if nb_fail == 0:
 else:
     print(success('{} tests passed successfully.'.format(nb_success)))
     print(error('{} tests failed.'.format(nb_fail)))
+    sys.exit(1)
