@@ -14,8 +14,8 @@ JDIR=/usr/bin
 #--------------------------------------------------------
 all : src att class
 
-src : 
-	(cd moc ; $(JDIR)/java -jar ../$(EJAR) $(XMOC).egg)	
+src :
+	(cd moc ; $(JDIR)/java -jar ../$(EJAR) $(XMOC).egg)
 	(cd moc ; $(JDIR)/java -jar ../$(EJAR) $(XASM).egg)
 
 att :
@@ -31,10 +31,8 @@ class :
 pdf :
 	cd report; make pdf
 
-
-
 clean :
-	find . -name "*.class" -delete 
+	find . -name "*.class" -delete
 	find . -name "*.tam" -delete
-	rm -rf moc/egg 
-	cd report; make clean 
+	rm -rf moc/egg
+	cd report; make clean
