@@ -183,15 +183,18 @@ FUNC_PARAMETERSX -> comma FUNC_PARAMETER FUNC_PARAMETERSX;
 
 FUNC_PARAMETER -> TYPE ident #tds;
 #tds {
-    INFO info = FUNC_PARAMETER^tds.localSearch(ident^txt);
-
-    if(info != null) {
+    if(FUNC_PARAMETER^tds.localSearch(ident^txt) != null) {
         error(VAR_exists, ident^txt);
     }
     elseif(instanceof(TYPE^type, VOID_t)) {
         error(TYPE_void);
     }
     else {
+        if(FUNC_PARAMETER^machine.hasWarning("shadow")
+        && FUNC_PARAMETER^tds.globalSearch(ident^txt) != null) {
+            warning(VAR_shadow, ident^txt);
+        }
+
         FUNC_PARAMETER^types.add(TYPE^type);
         FUNC_PARAMETER^tds.insertVar(ident^txt, TYPE^type);
     }
@@ -270,6 +273,11 @@ INST -> using typeident affect TYPE #tds semicolumn;
         error(TYPE_void);
     }
     else {
+        if(INST^machine.hasWarning("shadow")
+        && INST^tds.globalSearch(typeident^txt) != null) {
+            warning(TYPE_shadow, typeident^txt);
+        }
+
         INST^tds.insertType(typeident^txt, TYPE^type);
     }
 }
@@ -290,6 +298,11 @@ INST -> TYPE ident EX semicolumn #tds;
 
         if(instanceof(TYPE^type, VOID_t)) {
             error(TYPE_void);
+        }
+
+        if(INST^machine.hasWarning("shadow")
+        && INST^tds.globalSearch(ident^txt) != null) {
+            warning(VAR_shadow, ident^txt);
         }
 
         -- we add the variable in the symbol table even when there is an

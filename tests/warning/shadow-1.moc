@@ -1,0 +1,5 @@
+Int main() {
+    Int i = 1;
+    Int main = 2;
+    return 1;
+}
