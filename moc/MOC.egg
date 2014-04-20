@@ -60,7 +60,7 @@ sugar cpar         is "\)";
 sugar occbra       is "\{";
 sugar ccbra        is "\}";
 sugar comma        is ",";
-sugar semicolumn   is "\;";
+sugar semicolon   is "\;";
 sugar affect       is "=";
 sugar if           is "if";
 sugar else         is "else";
@@ -265,7 +265,7 @@ INSTS -> INST INSTS #returns;
 }
 
 -- typedef declaration
-INST -> using typeident affect TYPE #tds semicolumn;
+INST -> using typeident affect TYPE #tds semicolon;
 #tds {
     INST^returns = 1;
 
@@ -286,7 +286,7 @@ INST -> using typeident affect TYPE #tds semicolumn;
 }
 
 -- local variable declaration with or without initialisation
-INST -> TYPE ident EX semicolumn #tds;
+INST -> TYPE ident EX semicolon #tds;
 #tds {
     INST^returns = 1;
 
@@ -316,7 +316,7 @@ INST -> TYPE ident EX semicolumn #tds;
 }
 
 -- expression instruction (affectation and procedure call)
-INST -> E semicolumn #returns; #returns { INST^returns = 1; }
+INST -> E semicolon #returns; #returns { INST^returns = 1; }
 
 -- instruction block
 INST -> BLOC #returns; #returns { INST^returns = BLOC^returns; }
@@ -339,7 +339,7 @@ ELSE -> else BLOC #returns; #returns { ELSE^returns = BLOC^returns; }
 ELSE -> #returns; #returns { ELSE^returns = 0 ; }
 
 -- function return
-INST -> return E semicolumn #type;
+INST -> return E semicolon #type;
 #type {
     INST^returns = 2;
     if(!INST^tds.canReturn(E^type)) {
@@ -515,7 +515,7 @@ F -> new opar TYPE cpar #type;
     }
 }
 
-INST -> delete opar E cpar #returns semicolumn;
+INST -> delete opar E cpar #returns semicolon;
 #returns {
     if(!instanceof(E^type, POINTER)) {
         error(TYPE_unexpected, "pointer", E^type);
@@ -619,7 +619,7 @@ ARGSX -> comma E #type ARGSX; #type { ARGSX^types.add(E^type); }
 --SUPER -> colon classident;
 ----attributes
 --ATTRIBUTS -> ;
---ATTRIBUTS -> TYPE ident semicolumn ATTRIBUTS;
+--ATTRIBUTS -> TYPE ident semicolon ATTRIBUTS;
 -- -- methods
 --METHODES -> ;
 --METHODES -> METHODE  METHODES;
