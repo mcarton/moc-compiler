@@ -47,18 +47,44 @@ public class MOCC implements Serializable {
                 prq.acceptProblem(problem);
             }
             prq.endReporting();
-            System.out.println(Messages.getString("MOC.ok"));
-            System.exit(prq.getFatal());
+
+            int nbErrors = prq.getFatal();
+            int nbWarnings = prp.getAllProblems().size() - nbErrors;
+            if (nbErrors > 0)
+            {
+                if (nbWarnings > 0)
+                    System.out.println(
+                        "" + nbErrors + " errors and " +
+                        nbWarnings + " warnings found. " +
+                        "Compilation aborted.");
+                else
+                    System.out.println(
+                        "" + nbErrors + " errors found. " +
+                        "Compilation aborted.");
+                System.exit(2);
+            }
+            else if(nbWarnings > 0)
+            {
+                System.out.println(
+                    "" + nbWarnings +
+                    " warnings found. Compilation successful.");
+                System.exit(1);
+            }
+            else
+            {
+                System.out.println("Compilation successful.");
+                System.exit(0);
+            }
         }
         catch (MOCException e) {
             // Internal errors
             System.err.println(e.getMessage());
-            System.exit(1);
+            System.exit(3);
         }
         catch (Exception e) {
             // Other errors
             e.printStackTrace();
-            System.exit(1);
+            System.exit(4);
         }
     }
 }
