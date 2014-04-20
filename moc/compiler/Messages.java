@@ -19,10 +19,10 @@ public class Messages {
         }
     }
 
-    public static String getString(String key, String... replacement) {
+    public static String getString(String key, Object... replacement) {
         String result = getString(key);
         for(int i = 0; i < replacement.length; ++i) {
-            result.replaceAll("{" + i + "}", replacement[i]);
+            result = result.replaceAll("\\{" + i + "\\}", replacement[i].toString());
         }
         return result;
     }

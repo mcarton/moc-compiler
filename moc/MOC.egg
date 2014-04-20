@@ -188,16 +188,12 @@ FUNC_PARAMETER -> TYPE ident #tds;
     if(info != null) {
         error(VAR_exists, ident^txt);
     }
+    elseif(instanceof(TYPE^type, VOID_t)) {
+        error(TYPE_void);
+    }
     else {
-        match(TYPE^type) {
-            case VOID_t {
-                error(TYPE_void);
-            }
-            default {
-                FUNC_PARAMETER^types.add(TYPE^type);
-                FUNC_PARAMETER^tds.insertVar(ident^txt, TYPE^type);
-            }
-        }
+        FUNC_PARAMETER^types.add(TYPE^type);
+        FUNC_PARAMETER^tds.insertVar(ident^txt, TYPE^type);
     }
 }
 
