@@ -1,9 +1,9 @@
 void main() {
-    int v;
-    int w;
-    int x;
-    int y;
-    int z;
+    Int v;
+    Int w;
+    Int x;
+    Int y;
+    Int z;
 
     // Some random expressions
     1*8*z*2 + 8*v + 1*6*z - 6 + 1*5*w*5 + 3*y*4;
