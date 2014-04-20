@@ -32,7 +32,7 @@ public class MOCC implements Serializable {
 
             // Error management
             ProblemReporter prp = new ProblemReporter(cu);
-            ProblemRequestor prq = new ProblemRequestor();
+            ProblemRequestor prq = new ProblemRequestor(true);
             System.out.println("Compiling " + cu.getFileName());
 
             // Start compilation
@@ -50,6 +50,7 @@ public class MOCC implements Serializable {
 
             int nbErrors = prq.getFatal();
             int nbWarnings = prp.getAllProblems().size() - nbErrors;
+
             if (nbErrors > 0) {
                 if (nbWarnings > 0) {
                     System.out.println(Messages.getString(

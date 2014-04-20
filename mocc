@@ -9,4 +9,5 @@ GJAR=${EJAR}:.
 #JDIR=/usr/local/jdk1.6/bin
 JDIR=/usr/bin
 
+cd ${SCRIPT_PATH:-.}
 ${JDIR}/java -classpath .:${GJAR} moc.compiler.MOCC $*

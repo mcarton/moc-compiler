@@ -27,6 +27,8 @@ att :
 class :
 	$(JDIR)/javac -classpath $(GJAR) moc/egg/*.java
 
+test :
+	@cd tests; ./test.py
 
 pdf :
 	cd report; make pdf
