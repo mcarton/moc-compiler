@@ -11,7 +11,7 @@ Int main() {
     'a' == 'b';
     "net7" == "canapé";
     5 < 8;
-    "enseeiht" != NULL;
+    new(Char) != NULL;
 
     return j;
 }

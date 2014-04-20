@@ -1,0 +1,9 @@
+Int size(Char* string) {
+    return 42;
+}
+
+void main() {
+    Char[5] s = "net7";
+    Int si = size(s);
+}
+

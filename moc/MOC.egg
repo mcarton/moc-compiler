@@ -27,7 +27,7 @@ inh tds_asm : TDS for ASM;
 inh tds : TDS for
     ENTITIES, BLOC, ELSE, INST, INSTS, ARGS, ARGSX,
     FUNCTION, FUNC_PARAMETER, FUNC_PARAMETERS, FUNC_PARAMETERSX,
-    TYPE, STYPE, SIZEOFEXPR,
+    TYPE, STYPE, REFS, SIZEOFEXPR,
     F, TX, T, RX, R, AX, A, EX, E
 ;
 
@@ -60,7 +60,7 @@ sugar cpar         is "\)";
 sugar occbra       is "\{";
 sugar ccbra        is "\}";
 sugar comma        is ",";
-sugar semicolon   is "\;";
+sugar semicolon    is "\;";
 sugar affect       is "=";
 sugar if           is "if";
 sugar else         is "else";
@@ -91,8 +91,8 @@ sugar not          is "\!";
 
 -- TODO:MOC:
 --sugar colon      is "\:";
---sugar osbra      is "\[";
---sugar csbra      is "\]";
+sugar osbra      is "\[";
+sugar csbra      is "\]";
 --sugar id         is "id";
 --sugar class      is "@class";
 --sugar end        is "@end";
@@ -209,8 +209,16 @@ TYPE -> STYPE #get REFS #gen;
 #gen { TYPE^type = REFS^type; }
 
 REFS -> #gen; #gen { REFS^type = REFS^htype; }
+REFS -> mult REFS #gen;
+#gen {
+    REFS^type = REFS^machine.getPtrType(REFS1^type);
+}
 
-REFS -> mult REFS #gen; #gen { REFS^type = REFS^machine.getPtrType(REFS1^type); }
+REFS -> osbra integer csbra REFS #gen;
+#gen {
+    int nbElements = new Integer(integer^txt);
+    REFS^type = REFS^machine.getArrayType(REFS1^type, nbElements);
+}
 
 STYPE -> void #gen; #gen { STYPE^type = new VOID_t(); }
 STYPE -> typeident #gen;
@@ -474,13 +482,29 @@ TX -> OPMUL F TX #type;
     }
 }
 
+TX -> osbra E csbra #type;
+#type {
+    match(TX^htype) {
+        case ARRAY {
+            if(instanceof(E^type, INTEGER_t)) {
+                TX^type = TX^htype.getPointee();
+            }
+            else {
+                error(TYPE_unexpected, "int", E^type);
+            }
+        }
+        default {
+            error(TYPE_unexpected, "array", TX^htype);
+        }
+    }
+}
+
 -- base expressions
 F -> integer #type; #type { F^type = F^machine.getIntType(); }
 
 F -> string #type;
 #type {
-    -- TODO:array
-    F^type = F^machine.getPtrType(F^machine.getCharType());
+    F^type = F^machine.getStringType(string^txt);
 }
 
 F -> character #type; #type { F^type = F^machine.getCharType(); }

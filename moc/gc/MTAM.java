@@ -26,5 +26,8 @@ public class MTAM extends AbstractMachine {
     @Override public DTYPE getPtrType(DTYPE what) {
         return new POINTER(1, what);
     }
+    @Override public DTYPE getArrayType(DTYPE what, int nbElements) {
+        return new ARRAY(what.getSize()*nbElements, what, nbElements);
+    }
 }
 

@@ -24,6 +24,7 @@ public class POINTER implements DTYPE {
     @Override
     public boolean constructsFrom(DTYPE other) {
         return other instanceof POINTER && ((POINTER)other).pointee.constructsFrom(pointee)
+            || other instanceof ARRAY   && ((ARRAY)other).getPointee().constructsFrom(pointee)
             || other instanceof NULL_t;
     }
       

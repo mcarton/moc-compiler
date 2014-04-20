@@ -4,7 +4,7 @@ Int main() {
 
     Char c = 'a';
 
-    Char* s = "enseeiht";
+    Char[9] s = "enseeiht";
     Int* ip = NULL;
 
     return j;

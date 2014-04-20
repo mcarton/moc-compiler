@@ -1,0 +1,4 @@
+void main() {
+    Char[42] a = "enseeiht";
+}
+

@@ -1,0 +1,6 @@
+void main() {
+    Int[2] a;
+    Char[2] b;
+    a = b;
+}
+

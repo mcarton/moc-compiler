@@ -32,4 +32,6 @@ public interface IMachine {
     moc.type.DTYPE getCharType();
     moc.type.DTYPE getIntType();
     moc.type.DTYPE getPtrType(moc.type.DTYPE what);
+    moc.type.DTYPE getArrayType(moc.type.DTYPE what, int nbElements);
+    moc.type.DTYPE getStringType(String string);
 }

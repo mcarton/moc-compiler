@@ -51,5 +51,12 @@ public abstract class AbstractMachine implements IMachine {
             throw new MOCException(e.getMessage());
         }
     }
+
+    public moc.type.DTYPE getStringType(String string) {
+        int nbChar = string.length()
+                +1 /* includes '\0' */
+                -2 /* excludes "" */;
+        return getArrayType(getCharType(), nbChar);
+    }
 }
 
