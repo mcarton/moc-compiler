@@ -1,6 +1,6 @@
-int main() {
-    int i = 0+7;
-    int j = 42/6;
+Int main() {
+    Int i = 0+7;
+    Int j = 42/6;
     i+42;
     42+j;
     i+j;

@@ -12,7 +12,7 @@ public class INTEGER_t implements DTYPE {
     }
 
     public String toString() {
-        return "int";
+        return "Int";
     }
 
     @Override

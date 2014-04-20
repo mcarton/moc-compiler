@@ -1,0 +1,6 @@
+void main() {
+    using Foo = Int;
+    Foo a = 2;
+    Int b = a;
+}
+

@@ -12,7 +12,7 @@ public class CHARACTER_t implements DTYPE {
     }
 
     public String toString() {
-        return "char";
+        return "Char";
     }
 
     @Override

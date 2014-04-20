@@ -11,7 +11,7 @@ inh source : MOCSourceFile for PROGRAM;
 -- the target machine for code generation
 inh machine : IMachine for
     ENTITIES, FUNCTION, INST, BLOC, INSTS, ELSE,
-    FUNC_PARAMETERS, FUNC_PARAMETER, FUNC_PARAMETERSX, ARGS,ARGSX,
+    FUNC_PARAMETERS, FUNC_PARAMETER, FUNC_PARAMETERSX, ARGS, ARGSX,
     E, EX, A, AX, R, RX, T, TX, F,
     REFS, STYPE, TYPE
 -- TODO:MOC:
@@ -27,8 +27,8 @@ inh tds_asm : TDS for ASM;
 inh tds : TDS for
     ENTITIES, BLOC, ELSE, INST, INSTS, ARGS, ARGSX,
     FUNCTION, FUNC_PARAMETER, FUNC_PARAMETERS, FUNC_PARAMETERSX,
+    TYPE, STYPE,
     F, TX, T, RX, R, AX, A, EX, E
-
 ;
 
 -- 0 => empty statement, 1 => non-empty but does not return, 2 => returns
@@ -48,6 +48,7 @@ inh types : LTYPES for
     FUNC_PARAMETERS, FUNC_PARAMETERSX, FUNC_PARAMETER,
     ARGS, ARGSX
 ;
+
 syn sym : String for OPREL;
 
 --terminals
@@ -65,11 +66,11 @@ sugar if           is "if";
 sugar else         is "else";
 sugar void         is "void";
 sugar asm          is "asm";
-sugar int          is "int";
-sugar char         is "char";
 sugar return       is "return";
 sugar null         is "NULL";
 sugar nil          is "nil";
+sugar template     is "template";
+sugar using        is "using";
 sugar inf          is "\<";
 sugar infeq        is "\<=";
 sugar sup          is "\>";
@@ -102,9 +103,9 @@ term integer       is "[0-9]+";
 term character     is "\'[^\']\'";
 term string        is "\"[^\"]*\"";
 term ident         is "[a-z][_0-9A-Za-z]*";
+term typeident     is "[A-Z][_0-9A-Za-z]*";
 
 -- TODO:MOC:
---term classident  is "[A-Z][_0-9A-Za-z]*";  -- nom de class
 --term stringo     is "@\"[^\"]*\"";         -- string MOC
 
 -- for inline assembly
@@ -121,7 +122,11 @@ global
     }
     else {
         ENTITIES^machine = machine;
-        ENTITIES^tds = new TDS();
+        TDS tds = new TDS();
+        tds.insertType("Int", machine.getIntType());
+        tds.insertType("Char", machine.getCharType());
+
+        ENTITIES^tds = tds;
     }
 }
 -- write the code in a file
@@ -190,7 +195,7 @@ FUNC_PARAMETER -> TYPE ident #tds;
             }
             default {
                 FUNC_PARAMETER^types.add(TYPE^type);
-                FUNC_PARAMETER^tds.insert(ident^txt, TYPE^type);
+                FUNC_PARAMETER^tds.insertVar(ident^txt, TYPE^type);
             }
         }
     }
@@ -206,10 +211,23 @@ REFS -> #gen; #gen { REFS^type = REFS^htype; }
 REFS -> mult REFS #gen; #gen { REFS^type = REFS^machine.getPtrType(REFS1^type); }
 
 STYPE -> void #gen; #gen { STYPE^type = new VOID_t(); }
-
-STYPE -> int #gen; #gen { STYPE^type = STYPE^machine.getIntType(); }
-
-STYPE -> char #gen; #gen { STYPE^type = STYPE^machine.getCharType(); }
+STYPE -> typeident #gen;
+#gen {
+    INFO info = STYPE^tds.globalSearch(typeident^txt);
+    if(info == null) {
+        error(TYPE_unknown, typeident^txt);
+    }
+    else {
+        match(info) {
+            case INFOTYPE {
+                STYPE^type = info.getType();
+            }
+            default {
+                error(VAR_notAVariable, typeident^txt);
+            }
+        }
+    }
+}
 
 -- method body and instructions blocks
 BLOC -> #tds occbra INSTS ccbra #message;
@@ -244,13 +262,28 @@ INSTS -> INST INSTS #returns;
     }
 }
 
+-- typedef declaration
+INST -> using typeident affect TYPE #tds semicolumn;
+#tds {
+    INST^returns = 1;
+
+    if(INST^tds.localSearch(typeident^txt) != null) {
+        error(TYPE_exists, typeident^txt);
+    }
+    elseif(instanceof(TYPE^type, VOID_t)) {
+        error(TYPE_void);
+    }
+    else {
+        INST^tds.insertType(typeident^txt, TYPE^type);
+    }
+}
+
 -- local variable declaration with or without initialisation
 INST -> TYPE ident EX semicolumn #tds;
 #tds {
     INST^returns = 1;
 
     INFO info = INST^tds.localSearch(ident^txt);
-
     if(info != null) {
         error(VAR_exists, ident^txt);
     }
@@ -266,7 +299,7 @@ INST -> TYPE ident EX semicolumn #tds;
         -- we add the variable in the symbol table even when there is an
         -- error in order to avoid a lot of "unknown variable"
         -- TODO:emplacement
-        INST^tds.insert(ident^txt, TYPE^type);
+        INST^tds.insertVar(ident^txt, TYPE^type);
     }
 }
 

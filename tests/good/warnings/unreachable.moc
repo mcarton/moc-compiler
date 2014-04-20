@@ -1,6 +1,6 @@
-int main() {
-    int i = 1;
+Int main() {
+    Int i = 1;
     return i;
 
-    int j = 2;
+    Int j = 2;
 }

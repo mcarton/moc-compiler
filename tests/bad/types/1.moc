@@ -1,9 +1,9 @@
-int main() {
-    int i = '7';
-    int j = "net7";
+Int main() {
+    Int i = '7';
+    Int j = "net7";
 
-    char c = 7;
+    Char c = 7;
 
-    char* s = 0;
+    Char* s = 0;
 }
 
