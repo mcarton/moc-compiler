@@ -3,7 +3,7 @@ option k = 2;
 option auto = true;
 
 -- attributs
-syn code_asm :STRING  for TAM, INST, CINST, ADR, INSTS, CSTE;
+syn asm_code :STRING  for TAM, INST, CINST, ADR, INSTS, CSTE;
 inh tds_asm : TDS for TAM, INST, INSTS, ADR, CSTE;
 
 space  separ  is "[\t ]+";
@@ -34,20 +34,34 @@ sugar  nl     is "(\n|\r)";
 term   string is "\"([^\"]|\\.)*\"";
 term   char   is "\'([^\']|\\.)\'";
 term   nb     is "\-?[0-9]+";
-term   var    is "%[A-Za-z][A-Za-z0-9_]*"; -- pour designer une variable de MC
+term   var    is "%[a-z][A-Za-z0-9_]*";
 term   ident  is "[0-9a-zA-Z_\$@#\.\?\<\>]+";
 term   info   is "\;[^\n\r]*";
 
-TAM -> ocbra INSTS ccbra #gen; #gen { TAM^code_asm = "; inline code_asm\n" + INSTS^code_asm; }
+TAM -> ocbra INSTS ccbra #gen;
+#gen {
+    TAM^asm_code = "; inline asm_code" + INSTS^asm_code;
+}
 
-INSTS -> INST INSTS #gen; #gen { INSTS^code_asm =   INST^code_asm + "\n" + INSTS1^code_asm; }
+INSTS -> INST INSTS #gen;
+#gen {
+    INSTS^asm_code =   INST^asm_code + INSTS1^asm_code;
+}
 
-INSTS -> #gen; #gen { INSTS^code_asm = ""; }
+INSTS -> #gen;
+#gen {
+    INSTS^asm_code = "";
+}
 
-ADR -> opar nb cpar nb osbra ident csbra  #gen; #gen { ADR^code_asm = "(" + nb^txt + ") " + nb^txt + '[' + ident^txt+ ']'; }
+ADR -> opar nb cpar nb osbra ident csbra #gen;
+#gen {
+    ADR^asm_code = "(" + nb^txt + ") " + nb1^txt + '[' + ident^txt+ ']';
+}
 
 ADR -> var  #gen;
 #gen {
+    ADR^asm_code = "";
+    -* TODO:code
     INFO i;
     INFOVAR v;
     Location e;
@@ -67,7 +81,7 @@ ADR -> var  #gen;
                     t = v.getType();
                     e = v.getEmpl();
                     r = e.getReg();
-                    ADR^code_asm =
+                    ADR^asm_code =
                         "("+ t.getSize() + ") "
                       + e.getDep()
                       + "["+ r.getName()+ "]";
@@ -81,52 +95,125 @@ ADR -> var  #gen;
             error(UNKNOWN, var^txt);
         }
     }
+    *-
 }
 
-INST -> nl #gen; #gen { INST^code_asm = "\n"; }
+INST -> nl #gen;
+#gen {
+    INST^asm_code = "\n";
+}
 
-INST -> info nl #gen; #gen { INST^code_asm = "\t" + info^txt + "\n"; }
+INST -> info nl #gen;
+#gen {
+    INST^asm_code = "\t" + info^txt + "\n";
+}
 
-INST -> load ADR #gen; #gen { INST^code_asm = "\tLOAD "+ ADR^code_asm; }
+INST -> load ADR #gen;
+#gen {
+    INST^asm_code = "\tLOAD "+ ADR^asm_code;
+}
 
-INST -> loada CINST #gen; #gen { INST^code_asm = "\tLOADA " + CINST^code_asm; }
+INST -> loada CINST #gen;
+#gen {
+    INST^asm_code = "\tLOADA " + CINST^asm_code;
+}
 
-INST -> loadi opar nb cpar #gen; #gen { INST^code_asm = "\tLOADI (" + nb^txt + ")"; }
+INST -> loadi opar nb cpar #gen;
+#gen {
+    INST^asm_code = "\tLOADI (" + nb^txt + ")";
+}
 
-INST -> loadl CSTE #gen; #gen { INST^code_asm = "\tLOADL " + CSTE^code_asm; }
+INST -> loadl CSTE #gen;
+#gen {
+    INST^asm_code = "\tLOADL " + CSTE^asm_code;
+}
 
-CSTE -> nb #gen; #gen { CSTE^code_asm = nb^txt; }
+CSTE -> nb #gen;
+#gen {
+    CSTE^asm_code = nb^txt;
+}
 
-CSTE -> string #gen; #gen { CSTE^code_asm = string^txt; }
+CSTE -> string #gen;
+#gen {
+    CSTE^asm_code = string^txt;
+}
 
-CSTE -> char #gen; #gen { CSTE^code_asm = char^txt; }
+CSTE -> char #gen;
+#gen {
+    CSTE^asm_code = char^txt;
+}
 
-INST -> store ADR #gen; #gen { INST^code_asm = "\tSTORE " + ADR^code_asm; }
+INST -> store ADR #gen;
+#gen {
+    INST^asm_code = "\tSTORE " + ADR^asm_code;
+}
 
-INST -> storei opar nb cpar #gen; #gen { INST^code_asm = "\tSTOREI (" + nb^txt + ")"; }
+INST -> storei opar nb cpar #gen;
+#gen {
+    INST^asm_code = "\tSTOREI (" + nb^txt + ")";
+}
 
-INST -> call opar ident cpar CINST #gen; #gen { INST^code_asm = "\tCALL (" + ident^txt + ") " + CINST^code_asm; }
+INST -> call opar ident cpar CINST #gen;
+#gen {
+    INST^asm_code = "\tCALL (" + ident^txt + ") " + CINST^asm_code;
+}
 
-INST -> calli #gen; #gen { INST^code_asm = "\tCALLI"; }
+INST -> calli #gen;
+#gen {
+    INST^asm_code = "\tCALLI";
+}
 
-INST -> return opar nb cpar nb #gen; #gen { INST^code_asm = "\tRETURN (" + nb^txt + ") " + nb1^txt; }
+INST -> return opar nb cpar nb #gen;
+#gen {
+    INST^asm_code = "\tRETURN (" + nb^txt + ") " + nb1^txt;
+}
 
-INST -> subr ident #gen; #gen { INST^code_asm = "\tSUBR " + ident^txt; }
+INST -> subr ident #gen;
+#gen {
+    INST^asm_code = "\tSUBR " + ident^txt;
+}
 
-INST -> ident #gen; #gen { INST^code_asm = ident^txt; }
+INST -> ident #gen;
+#gen {
+    INST^asm_code = ident^txt;
+}
 
-INST -> push nb #gen; #gen { INST^code_asm = "\tPUSH " + nb^txt; }
+INST -> push nb #gen;
+#gen {
+    INST^asm_code = "\tPUSH " + nb^txt;
+}
 
-INST -> pop opar nb cpar nb #gen; #gen { INST^code_asm = "\tPOP (" + nb^txt + ") " + nb1^txt; }
+INST -> pop opar nb cpar nb #gen;
+#gen {
+    INST^asm_code = "\tPOP (" + nb^txt + ") " + nb1^txt;
+}
 
-INST -> jump CINST #gen; #gen { INST^code_asm = "\tJUMP " + CINST^code_asm; }
+INST -> jump CINST #gen;
+#gen {
+    INST^asm_code = "\tJUMP " + CINST^asm_code;
+}
 
-INST -> jumpi #gen; #gen { INST^code_asm = "\tJUMPI"; }
+INST -> jumpi #gen;
+#gen {
+    INST^asm_code = "\tJUMPI";
+}
 
-INST -> jumpif opar nb cpar CINST #gen; #gen { INST^code_asm = "\tJUMPIF (" + nb^txt +") " + CINST^code_asm; }
+INST -> jumpif opar nb cpar CINST #gen;
+#gen {
+    INST^asm_code = "\tJUMPIF (" + nb^txt +") " + CINST^asm_code;
+}
 
-INST -> halt #gen; #gen { INST^code_asm = "\tHALT"; }
+INST -> halt #gen;
+#gen {
+    INST^asm_code = "\tHALT";
+}
 
-CINST -> nb osbra ident csbra #gen; #gen { CINST^code_asm = nb^txt + '[' + ident^txt+ ']'; }
+CINST -> nb osbra ident csbra #gen;
+#gen {
+    CINST^asm_code = nb^txt + '[' + ident^txt+ ']';
+}
 
-CINST -> ident #gen; #gen { CINST^code_asm = ident^txt; }
+CINST -> ident #gen;
+#gen {
+    CINST^asm_code = ident^txt;
+}

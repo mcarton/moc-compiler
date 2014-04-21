@@ -44,7 +44,10 @@ public abstract class AbstractMachine implements IMachine {
             String asmName = name + "." + getSuffix();
             System.out.println("Writing code in " + asmName);
             PrintWriter pw = new PrintWriter(new FileOutputStream(asmName));
-            pw.print("; Generated code for " + fname + ".\n; Do not modify by hand\n" + code);
+            pw.print("; Generated code for ");
+            pw.print(fname);
+            pw.print(".\n; Do not modify by hand\n\n");
+            pw.print(code);
             pw.close();
         }
         catch (FileNotFoundException e) {

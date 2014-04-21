@@ -20,7 +20,7 @@ inh machine : IMachine for
 ;
 
 -- these attributes allow to get ASM inline
-syn code_asm : STRING for ASM;
+syn asm_code : STRING for ASM;
 
 -- the current symbols table
 inh tds_asm : TDS for ASM;
@@ -50,6 +50,7 @@ inh types : LTYPES for
 ;
 
 syn sym : String for OPREL;
+syn code : String for INST, INSTS, BLOC, ELSE, ENTITIES;
 
 --terminals
 space separator    is "[\r\n\t ]+";
@@ -132,22 +133,28 @@ global
         ENTITIES^tds = tds;
     }
 }
--- write the code in a file
-#gen { machine.writeCode(PROGRAM^source.getFileName(),"; no code\n"); }
+#gen {
+    machine.writeCode(PROGRAM^source.getFileName(), ENTITIES^code);
+}
 
-ENTITIES -> ;
+ENTITIES -> #gen;
+#gen {
+    ENTITIES^code = "";
+}
 
 ENTITIES -> asm #tds ASM ENTITIES #gen;
 #tds {
-    -- Replace null with the current symbols table so that the ASM
-    -- code can access MC or MOC variables
-    ASM^tds_asm = null;
+    ASM^tds_asm = ENTITIES^tds;
 }
 #gen {
-    -- ASM^code_asm contains the inline ASM
+    ENTITIES^code = ASM^asm_code + ENTITIES1^code;
 }
 
-ENTITIES -> FUNCTION ENTITIES;
+ENTITIES -> FUNCTION ENTITIES #gen;
+#gen {
+    ENTITIES^code = ENTITIES1^code; -- TODO:code
+    -- ENTITIES^code = FUNCTION^code + ENTITIES1^code;
+}
 
 -- functions
 FUNCTION -> TYPE ident #ctds opar FUNC_PARAMETERS #utds cpar BLOC #returns;
@@ -241,7 +248,7 @@ STYPE -> typeident #gen;
 }
 
 -- method body and instructions blocks
-BLOC -> #tds occbra INSTS ccbra #message;
+BLOC -> #tds occbra INSTS ccbra #message #gen;
 global
     TDS tds;
 #tds {
@@ -254,10 +261,20 @@ global
         write("Symbols: " + tds.toString()+"\n");
     }
 }
+#gen {
+    BLOC^code = INSTS^code;
+}
 
 -- instructions
-INSTS -> #returns; #returns { INSTS^returns = 0; }
-INSTS -> INST INSTS #returns;
+INSTS -> #returns #gen;
+#returns {
+    INSTS^returns = 0;
+}
+#gen {
+    INSTS^code = "";
+}
+
+INSTS -> INST INSTS #returns #gen;
 #returns {
     if(INST^returns == 2 || INSTS1^returns == 2) {
         INSTS^returns = 2;
@@ -272,9 +289,13 @@ INSTS -> INST INSTS #returns;
         warning(WARN_unreachable);
     }
 }
+#gen {
+    INSTS^code = INST^code + INSTS^code;
+
+}
 
 -- typedef declaration
-INST -> using typeident affect TYPE #tds semicolon;
+INST -> using typeident affect TYPE #tds semicolon #gen;
 #tds {
     INST^returns = 1;
 
@@ -293,9 +314,12 @@ INST -> using typeident affect TYPE #tds semicolon;
         INST^tds.insertType(typeident^txt, TYPE^type);
     }
 }
+#gen {
+    INST^code = ""; -- TODO:code
+}
 
 -- local variable declaration with or without initialisation
-INST -> TYPE ident EX semicolon #tds;
+INST -> TYPE ident EX semicolon #tds #gen;
 #tds {
     INST^returns = 1;
 
@@ -323,15 +347,33 @@ INST -> TYPE ident EX semicolon #tds;
         INST^tds.insertVar(ident^txt, TYPE^type);
     }
 }
+#gen {
+    INST^code = ""; -- TODO:code
+
+}
 
 -- expression instruction (affectation and procedure call)
-INST -> E semicolon #returns; #returns { INST^returns = 1; }
+INST -> E semicolon #returns #gen;
+#returns {
+    INST^returns = 1;
+}
+#gen {
+    INST^code = ""; -- TODO:code
+
+}
 
 -- instruction block
-INST -> BLOC #returns; #returns { INST^returns = BLOC^returns; }
+INST -> BLOC #returns #gen;
+#returns {
+    INST^returns = BLOC^returns;
+}
+#gen {
+    INST^code = ""; -- TODO:code
+
+}
 
 -- conditional
-INST -> if opar E cpar BLOC ELSE #returns;
+INST -> if opar E cpar BLOC ELSE #returns #gen;
 #returns {
     if(!E^type.testable()) {
         error(TYPE_unexpected, "int", E^type);
@@ -343,30 +385,48 @@ INST -> if opar E cpar BLOC ELSE #returns;
         INST^returns = 1;
     }
 }
+#gen {
+    INST^code = ""; -- TODO:code
 
-ELSE -> else BLOC #returns; #returns { ELSE^returns = BLOC^returns; }
-ELSE -> #returns; #returns { ELSE^returns = 0 ; }
+}
+
+ELSE -> else BLOC #returns #gen;
+#returns {
+    ELSE^returns = BLOC^returns;
+}
+#gen {
+    ELSE^code = BLOC^code;
+}
+
+ELSE -> #returns #gen;
+#returns {
+    ELSE^returns = 0;
+}
+#gen {
+    ELSE^code = "";
+}
 
 -- function return
-INST -> return E semicolon #type;
+INST -> return E semicolon #type #gen;
 #type {
     INST^returns = 2;
     if(!INST^tds.canReturn(E^type)) {
         error(FUN_returnType, E^type);
     }
 }
+#gen {
+    INST^code = ""; -- TODO:code
+
+}
 
 -- inline asm
 INST -> asm  #tds ASM #gen;
 #tds {
-    -- to replace by the current symbols table so that inline
-    -- assembly can access variables
-    ASM^tds_asm = null;
+    ASM^tds_asm = new TDS(INST^tds);
 }
 #gen {
     INST^returns = 2; -- TODO: may want to actually check it
-    -- ASM^code_asm contains the inline assembly in which variable
-    -- names have been replaced by their addresses
+    INST^code = ASM^asm_code;
 }
 
 -- expressions
@@ -540,12 +600,15 @@ F -> new opar TYPE cpar #type;
     }
 }
 
-INST -> delete opar E cpar #returns semicolon;
+INST -> delete opar E cpar #returns semicolon #gen;
 #returns {
     if(!instanceof(E^type, POINTER)) {
         error(TYPE_unexpected, "pointer", E^type);
     }
     INST^returns = 1;
+}
+#gen {
+    INST^code = ""; -- TODO:code
 }
 
 F -> sizeof opar SIZEOFEXPR cpar #type;

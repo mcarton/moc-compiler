@@ -2,8 +2,7 @@ package moc.compiler;
 
 import java.util.ArrayList;
 import mg.egg.eggc.runtime.libjava.SourceUnit;
-import moc.gc.AbstractMachine;
-import moc.gc.MTAM;
+import moc.gc.*;
 
 /**
  * Describes a MOC compilation unit
@@ -68,7 +67,8 @@ public class MOCSourceFile extends SourceUnit {
             machine = new MTAM(verbosity, warnings);
         }
         else if(machName.equals("llvm")) {
-            // TODO:llvm
+            machine = null;
+            //machine = new MLLVM(verbosity, warnings);
         }
     }
 

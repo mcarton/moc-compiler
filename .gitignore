@@ -2,8 +2,9 @@
 *.class
 moc/egg
 tests/*.tam
-tests/*.s
+tests/*.ll
 tests/**/*.tam
+tests/**/*.ll
 rapport/*.log
 rapport/*.aux
 rapport/*.log
