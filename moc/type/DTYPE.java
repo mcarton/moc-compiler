@@ -22,5 +22,7 @@ public interface DTYPE {
      * True iff we can test the type (ie. in if(...)).
      */
     public boolean testable();
+
+    public abstract <R> R visit(TypeVisitor<R> visitor);
 }
 

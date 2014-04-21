@@ -67,8 +67,7 @@ public class MOCSourceFile extends SourceUnit {
             machine = new MTAM(verbosity, warnings);
         }
         else if(machName.equals("llvm")) {
-            machine = null;
-            //machine = new MLLVM(verbosity, warnings);
+            machine = new MLLVM(verbosity, warnings);
         }
     }
 

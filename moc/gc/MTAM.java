@@ -16,7 +16,7 @@ public class MTAM extends AbstractMachine {
         return "tam";
     }
 
-    // type size stuffs:
+    // type stuffs:
     @Override public DTYPE getCharType() {
         return new CHARACTER_t(1);
     }
@@ -27,7 +27,18 @@ public class MTAM extends AbstractMachine {
         return new POINTER(1, what);
     }
     @Override public DTYPE getArrayType(DTYPE what, int nbElements) {
-        return new ARRAY(what.getSize()*nbElements, what, nbElements);
+        return new ARRAY(what, nbElements);
+    }
+ 
+    // code generation stuffs:
+    @Override
+    public String genFunction(DFUNCTIONTYPE f, String name, String bloc) {
+        return bloc; // TODO:code
+    }
+
+    @Override
+    public String genVarDecl(DTYPE t, String name, String val) {
+        return val;
     }
 }
 

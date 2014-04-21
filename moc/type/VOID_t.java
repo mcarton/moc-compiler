@@ -1,8 +1,8 @@
 package moc.type;
 
-public class VOID_t implements DTYPE {
-    public int getSize() {
-        return 0;
+public class VOID_t extends AbstractType<VOID_t> {
+    public VOID_t() {
+        this.size = 0;
     }
 
     public String toString() {
@@ -19,8 +19,9 @@ public class VOID_t implements DTYPE {
         return false;
     }
 
-    public boolean testable() {
-        return false;
+    @Override
+    public <R> R visit(TypeVisitor<R> visitor) {
+        return visitor.visit(this);
     }
 }
 

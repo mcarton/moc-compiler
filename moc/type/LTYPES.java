@@ -1,12 +1,17 @@
 package moc.type;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class LTYPES {
     ArrayList<DTYPE> list = new ArrayList<DTYPE>();
 
     public int size() {
         return list.size();
+    }
+
+    public Iterator<DTYPE> iterator() {
+        return list.iterator();
     }
 
     public void add(DTYPE c) {

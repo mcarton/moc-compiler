@@ -1,16 +1,11 @@
 package moc.type;
 
-public class POINTER implements DTYPE {
-    private int size;
+public class POINTER extends AbstractType<POINTER> {
     private DTYPE pointee;
 
     public POINTER(int size, DTYPE pointee) {
         this.size = size;
         this.pointee = pointee;
-    }
-
-    public int getSize() {
-        return size;
     }
 
     public String toString() {
@@ -37,6 +32,11 @@ public class POINTER implements DTYPE {
     @Override
     public boolean testable() {
         return true;
+    }
+
+    @Override
+    public <R> R visit(TypeVisitor<R> visitor) {
+        return visitor.visit(this);
     }
 }
 

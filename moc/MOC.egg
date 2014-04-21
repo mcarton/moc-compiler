@@ -50,7 +50,7 @@ inh types : LTYPES for
 ;
 
 syn sym : String for OPREL;
-syn code : String for INST, INSTS, BLOC, ELSE, ENTITIES;
+syn code : String for INST, INSTS, BLOC, ELSE, ENTITIES, FUNCTION;
 
 --terminals
 space separator    is "[\r\n\t ]+";
@@ -152,15 +152,15 @@ ENTITIES -> asm #tds ASM ENTITIES #gen;
 
 ENTITIES -> FUNCTION ENTITIES #gen;
 #gen {
-    ENTITIES^code = ENTITIES1^code; -- TODO:code
-    -- ENTITIES^code = FUNCTION^code + ENTITIES1^code;
+    ENTITIES^code = FUNCTION^code + ENTITIES1^code;
 }
 
 -- functions
-FUNCTION -> TYPE ident #ctds opar FUNC_PARAMETERS #utds cpar BLOC #returns;
+FUNCTION -> TYPE ident #ctds opar FUNC_PARAMETERS #utds cpar BLOC #returns #gen;
 global
     TDS bloc_tds;
     LTYPES types;
+    DFUNCTIONTYPE fun;
 #ctds {
     bloc_tds = new TDS(FUNCTION^tds);
     types = new LTYPES();
@@ -173,15 +173,17 @@ global
         error(FUN_exists, ident^txt);
     }
     else {
-        bloc_tds.setCurrentFunction(
-            ident^txt, new DFUNCTIONTYPE(TYPE^type, types)
-        );
+        fun = new DFUNCTIONTYPE(TYPE^type, types);
+        bloc_tds.setCurrentFunction(ident^txt, fun);
     }
 }
 #returns {
     if(BLOC^returns != 2 && !instanceof(TYPE^type, VOID_t)) {
         error(FUN_missingReturn);
     }
+}
+#gen {
+    FUNCTION^code = FUNCTION^machine.genFunction(fun, ident^txt, BLOC^code);
 }
 
 -- function parameters
@@ -290,7 +292,7 @@ INSTS -> INST INSTS #returns #gen;
     }
 }
 #gen {
-    INSTS^code = INST^code + INSTS^code;
+    INSTS^code = INST^code + INSTS1^code;
 
 }
 
@@ -348,7 +350,8 @@ INST -> TYPE ident EX semicolon #tds #gen;
     }
 }
 #gen {
-    INST^code = ""; -- TODO:code
+    -- TODO:code
+    INST^code = INST^machine.genVarDecl(TYPE^type, ident^txt, "42");
 
 }
 

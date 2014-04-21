@@ -1,18 +1,13 @@
 package moc.type;
 
-public class ARRAY implements DTYPE {
-    private int size;
+public class ARRAY extends AbstractType<ARRAY> {
     private DTYPE pointee;
     private int nbElements;
 
-    public ARRAY(int size, DTYPE pointee, int nbElements) {
-        this.size = size;
+    public ARRAY(DTYPE pointee, int nbElements) {
+        this.size = pointee.getSize()*nbElements;
         this.pointee = pointee;
         this.nbElements = nbElements;
-    }
-
-    public int getSize() {
-        return size;
     }
 
     public String toString() {
@@ -21,6 +16,10 @@ public class ARRAY implements DTYPE {
 
     public DTYPE getPointee() {
         return pointee;
+    }
+
+    public int getNbElements() {
+        return nbElements;
     }
 
     @Override
@@ -37,8 +36,8 @@ public class ARRAY implements DTYPE {
     }
 
     @Override
-    public boolean testable() {
-        return false;
+    public <R> R visit(TypeVisitor<R> visitor) {
+        return visitor.visit(this);
     }
 }
 

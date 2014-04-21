@@ -1,14 +1,8 @@
 package moc.type;
 
-public class CHARACTER_t implements DTYPE {
-    private int size;
-
+public class CHARACTER_t extends AbstractType<CHARACTER_t> {
     public CHARACTER_t(int size) {
         this.size = size;
-    }
-
-    public int getSize() {
-        return size;
     }
 
     public String toString() {
@@ -26,8 +20,8 @@ public class CHARACTER_t implements DTYPE {
     }
 
     @Override
-    public boolean testable() {
-        return false;
+    public <R> R visit(TypeVisitor<R> visitor) {
+        return visitor.visit(this);
     }
 }
 

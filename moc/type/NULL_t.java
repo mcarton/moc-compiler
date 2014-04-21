@@ -3,9 +3,9 @@ package moc.type;
 /** The type of the NULL constant. May be assigned to any pointer, unless C, it
  * is not juste `(void*)0`.
  */
-public class NULL_t implements DTYPE {
-    public int getSize() {
-        return 0;
+public class NULL_t extends AbstractType<NULL_t> {
+    public NULL_t() {
+        this.size = 0;
     }
 
     public String toString() {
@@ -25,6 +25,11 @@ public class NULL_t implements DTYPE {
     @Override
     public boolean testable() {
         return true;
+    }
+
+    @Override
+    public <R> R visit(TypeVisitor<R> visitor) {
+        return visitor.visit(this);
     }
 }
 

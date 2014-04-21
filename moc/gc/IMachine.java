@@ -1,6 +1,7 @@
 package moc.gc;
 
 import moc.compiler.MOCException;
+import moc.type.*;
 
 /**
  * This interface describes a target machine
@@ -17,17 +18,21 @@ public interface IMachine {
     boolean hasWarning(String name);
 
     /**
-     * Writes the code in a file from tje source file name and the
+     * Writes the code in a file from the source file name and the
      * suffix
      */
     void writeCode(String fileName, String code) throws MOCException;
 
     int verbosity();
 
-    // type size stuffs:
-    moc.type.DTYPE getCharType();
-    moc.type.DTYPE getIntType();
-    moc.type.DTYPE getPtrType(moc.type.DTYPE what);
-    moc.type.DTYPE getArrayType(moc.type.DTYPE what, int nbElements);
-    moc.type.DTYPE getStringType(String string);
+    // type stuffs:
+    DTYPE getCharType();
+    DTYPE getIntType();
+    DTYPE getPtrType(moc.type.DTYPE what);
+    DTYPE getArrayType(moc.type.DTYPE what, int nbElements);
+    DTYPE getStringType(String string);
+
+    // code generation stuffs:
+    String genFunction(DFUNCTIONTYPE f, String name, String bloc);
+    String genVarDecl(DTYPE t, String name, String val); // TODO:code: incomplete
 }

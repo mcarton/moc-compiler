@@ -1,14 +1,8 @@
 package moc.type;
 
-public class INTEGER_t implements DTYPE {
-    private int size;
-
+public class INTEGER_t extends AbstractType<INTEGER_t> {
     public INTEGER_t(int size) {
         this.size = size;
-    }
-
-    public int getSize() {
-        return size;
     }
 
     public String toString() {
@@ -28,6 +22,11 @@ public class INTEGER_t implements DTYPE {
     @Override
     public boolean testable() {
         return true;
+    }
+
+    @Override
+    public <R> R visit(TypeVisitor<R> visitor) {
+        return visitor.visit(this);
     }
 }
 
