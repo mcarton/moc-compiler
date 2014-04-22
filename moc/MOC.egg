@@ -121,17 +121,12 @@ global
    IMachine machine;
 #init {
     machine = PROGRAM^source.getMachine();
-    if(machine == null) {
-        error(NO_MACH, PROGRAM^source.getMachName());
-    }
-    else {
-        ENTITIES^machine = machine;
-        TDS tds = new TDS();
-        tds.insertType("Int", machine.getIntType());
-        tds.insertType("Char", machine.getCharType());
+    ENTITIES^machine = machine;
+    TDS tds = new TDS();
+    tds.insertType("Int", machine.getIntType());
+    tds.insertType("Char", machine.getCharType());
 
-        ENTITIES^tds = tds;
-    }
+    ENTITIES^tds = tds;
 }
 #gen {
     machine.writeCode(PROGRAM^source.getFileName(), ENTITIES^code);

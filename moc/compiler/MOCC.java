@@ -28,7 +28,15 @@ public class MOCC implements Serializable {
             checkFile(args);
 
             // Create the source
-            ISourceUnit cu = new MOCSourceFile(args);
+            MOCSourceFile cu = new MOCSourceFile(args);
+
+            if(cu.getMachine() == null) {
+                System.out.println(Messages.getString(
+                    "MOC.wrongMachine", cu.getMachName()
+                ));
+                System.out.println(Messages.getString("MOC.aborted"));
+                System.exit(5);
+            }
 
             // Error management
             ProblemReporter prp = new ProblemReporter(cu);
@@ -38,7 +46,7 @@ public class MOCC implements Serializable {
             // Start compilation
             MOC compilo = new MOC(prp);
             prq.beginReporting();
-            compilo.set_source((MOCSourceFile) cu);
+            compilo.set_source(cu);
             compilo.set_eval(true);
             compilo.compile(cu);
 
