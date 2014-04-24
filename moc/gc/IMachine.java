@@ -34,5 +34,10 @@ public interface IMachine {
 
     // code generation stuffs:
     String genFunction(DFUNCTIONTYPE f, String name, String bloc);
-    String genVarDecl(DTYPE t, String name, String val); // TODO:code: incomplete
+    String genVarDecl(DTYPE t, String name, String val);
+    String genCst(String txt);
+    String genString(String txt);
+    String genCharacter(String txt);
+    String genNull();
+    String genComment(String comment);// TODO:code: incomplete
 }

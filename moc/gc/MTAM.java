@@ -40,5 +40,26 @@ public class MTAM extends AbstractMachine {
     public String genVarDecl(DTYPE t, String name, String val) {
         return val;
     }
+
+    @Override
+    public String genCst(String txt) {
+        return "\tLOADL " + txt + "\n";
+    }
+    @Override
+    public String genString(String txt) {
+        return "\tLOADL " + txt + "\n";
+    }
+    @Override
+    public String genCharacter(String txt) {
+        return "\tLOADL " + txt + "\n";
+    }
+    @Override
+    public String genNull() {
+        return "\tSUBR MVoid \n";
+    }
+    @Override
+    public String genComment(String comment) {
+        return("; " + comment);
+    }
 }
 

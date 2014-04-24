@@ -87,6 +87,28 @@ public class MLLVM extends AbstractMachine {
 
         return sb.toString();
     }
+
+    @Override
+    public String genNull() {
+        return "TODO";
+    }
+    @Override
+    public String genCst(String txt)  {
+        return "TODO";
+    }
+    @Override
+    public String genString(String txt)   {
+        return "TODO";
+    }
+    @Override
+    public String genCharacter(String txt) {
+        return "TODO";
+    }
+
+    @Override
+    public String genComment(String comment) {
+        return("; " + comment);
+    }
 }
 
 class RepresentationVisitor implements TypeVisitor<String> {
@@ -112,5 +134,5 @@ class RepresentationVisitor implements TypeVisitor<String> {
     public String visit(POINTER what) {
         return what.getPointee().visit(this) + "*";
     }
-}
 
+}
