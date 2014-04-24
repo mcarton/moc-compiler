@@ -3,6 +3,7 @@ package moc.gc.tam;
 import java.util.ArrayList;
 import moc.type.*;
 import moc.gc.*;
+import moc.tds.*;
 
 /**
  * The TAM machine and its generation functions
@@ -30,6 +31,20 @@ public class Machine extends AbstractMachine {
     @Override public DTYPE getArrayType(DTYPE what, int nbElements) {
         return new ARRAY(what, nbElements);
     }
+
+    // location stuffs:
+    @Override
+    public void newFunction() {
+    }
+
+    @Override
+    public void newBloc() {
+    }
+
+    @Override
+    public Location getLocationFor(String name, DTYPE type) {
+        return null;
+    }
  
     // code generation stuffs:
     @Override
@@ -38,26 +53,38 @@ public class Machine extends AbstractMachine {
     }
 
     @Override
-    public String genVarDecl(DTYPE t, String name, String val) {
-        return val;
+    public String genReturn(DFUNCTIONTYPE f, moc.gc.Expr expr) {
+        return ""; // TODO:code
     }
 
     @Override
-    public String genInt(String txt) {
-        return "\tLOADL " + txt + "\n";
+    public String genVarDecl(DTYPE t, moc.gc.Location loc, moc.gc.Expr expr) {
+        return ""; // TODO:code
+    }
+
+    @Override
+    public Expr genInt(String txt) {
+        return new Expr("\tLOADL " + txt + "\n");
     }
     @Override
-    public String genString(String txt) {
-        return "\tLOADL " + txt + "\n";
+    public Expr genString(String txt) {
+        return new Expr("\tLOADL " + txt + "\n");
     }
     @Override
-    public String genCharacter(String txt) {
-        return "\tLOADL " + txt + "\n";
+    public Expr genCharacter(String txt) {
+        return new Expr("\tLOADL " + txt + "\n");
     }
     @Override
-    public String genNull() {
-        return "\tSUBR MVoid \n";
+    public Expr genNull() {
+        return new Expr("\tSUBR MVoid \n");
     }
+
+    @Override
+    public Expr genIdent(String name, INFOVAR info) {
+        // TODO:code
+        return null;
+    }
+
     @Override
     public String genComment(String comment) {
         return("; " + comment);

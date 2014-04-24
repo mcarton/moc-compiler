@@ -14,7 +14,6 @@ public class TDS {
     private HashMap<String, INFO> map = new HashMap<String, INFO>();
     private TDS mother;
     private DFUNCTIONTYPE currentFunction;
-    private int location = 0;
     /**
      * Constructor for a symbols table without mother.
      */
@@ -51,9 +50,8 @@ public class TDS {
     /**
      * Add n and its info i in the TDS.
      */
-    public void insertVar(String n, DTYPE t) {
-        location += t.getSize();
-        map.put(n, new INFOVAR(t, new Location(location, null))); // TODO
+    public void insertVar(String n, DTYPE t, Location location) {
+        map.put(n, new INFOVAR(t, location));
     }
 
     /**
@@ -76,6 +74,10 @@ public class TDS {
     public void setCurrentFunction(String n, DFUNCTIONTYPE fun) {
         currentFunction = fun;
         mother.insertFun(n, fun);
+    }
+
+    public DFUNCTIONTYPE getCurrentFunction() {
+        return currentFunction;
     }
 
     /**

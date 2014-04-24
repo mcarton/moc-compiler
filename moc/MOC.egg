@@ -51,12 +51,15 @@ inh types : LTYPES for
 
 syn sym : String for OPREL;
 
-syn code : String for T, F, TX, INST, INSTS, BLOC, ELSE, ENTITIES, FUNCTION, E;
-inh hcode :  String for TX;
-syn code_is_address : BOOLEAN for F,TX, E;
-inh hcode_is_address : BOOLEAN for TX;
-syn address : Location for F, TX, E;
-inh haddress : Location for TX;
+syn code : String for
+    ENTITIES, BLOC, ELSE, INST, INSTS,
+    FUNCTION
+;
+syn expr : Expr for
+    F, TX, T, RX, R, AX, A, EX, E
+;
+inh hexpr : Expr for TX, RX, AX;
+
 --terminals
 space separator    is "[\r\n\t ]+";
 comment comm       is "\/\/[^\n]*\n";
@@ -109,8 +112,8 @@ sugar csbra      is "\]";
 --sugar no         is "NO";
 
 term integer       is "[0-9]+";
-term character     is "\'[^\']\'";
-term string        is "\"[^\"]*\"";
+term character     is "\'[^\']\'"; -- TODO:strings
+term string        is "\"[^\"]*\""; -- TODO:strings: \n & co.
 term ident         is "[a-z][_0-9A-Za-z]*";
 term typeident     is "[A-Z][_0-9A-Za-z]*";
 
@@ -158,15 +161,16 @@ ENTITIES -> FUNCTION ENTITIES #gen;
 -- functions
 FUNCTION -> TYPE ident #ctds opar FUNC_PARAMETERS #utds cpar BLOC #returns #gen;
 global
-    TDS bloc_tds;
+    TDS blocTds;
     LTYPES types;
     DFUNCTIONTYPE fun;
 #ctds {
-    bloc_tds = new TDS(FUNCTION^tds);
+    FUNCTION^machine.newFunction();
+    blocTds = new TDS(FUNCTION^tds);
     types = new LTYPES();
     FUNC_PARAMETERS^types = types;
-    FUNC_PARAMETERS^tds = bloc_tds;
-    BLOC^tds = bloc_tds;
+    FUNC_PARAMETERS^tds = blocTds;
+    BLOC^tds = blocTds;
 }
 #utds {
     if(FUNCTION^tds.localSearch(ident^txt) != null) {
@@ -174,7 +178,7 @@ global
     }
     else {
         fun = new DFUNCTIONTYPE(TYPE^type, types);
-        bloc_tds.setCurrentFunction(ident^txt, fun);
+        blocTds.setCurrentFunction(ident^txt, fun);
     }
 }
 #returns {
@@ -208,7 +212,9 @@ FUNC_PARAMETER -> TYPE ident #tds;
         }
 
         FUNC_PARAMETER^types.add(TYPE^type);
-        FUNC_PARAMETER^tds.insertVar(ident^txt, TYPE^type);
+        Location loc
+            = FUNC_PARAMETER^machine.getLocationFor(ident^txt, TYPE^type);
+        FUNC_PARAMETER^tds.insertVar(ident^txt, TYPE^type, loc);
     }
 }
 
@@ -254,6 +260,7 @@ BLOC -> #tds occbra INSTS ccbra #message #gen;
 global
     TDS tds;
 #tds {
+    BLOC^machine.newBloc();
     tds = new TDS(BLOC^tds);
     INSTS^tds = tds;
 }
@@ -293,7 +300,6 @@ INSTS -> INST INSTS #returns #gen;
 }
 #gen {
     INSTS^code = INST^code + INSTS1^code;
-
 }
 
 -- typedef declaration
@@ -322,6 +328,8 @@ INST -> using typeident affect TYPE #tds semicolon #gen;
 
 -- local variable declaration with or without initialisation
 INST -> TYPE ident EX semicolon #tds #gen;
+global
+    Location loc;
 #tds {
     INST^returns = 1;
 
@@ -345,13 +353,13 @@ INST -> TYPE ident EX semicolon #tds #gen;
 
         -- we add the variable in the symbol table even when there is an
         -- error in order to avoid a lot of "unknown variable"
-        -- TODO:emplacement
-        INST^tds.insertVar(ident^txt, TYPE^type);
+        loc = INST^machine.getLocationFor(ident^txt, TYPE^type);
+        INST^tds.insertVar(ident^txt, TYPE^type, loc);
     }
 }
 #gen {
     -- TODO:code
-    INST^code = INST^machine.genVarDecl(TYPE^type, ident^txt, "42");
+    INST^code = INST^machine.genVarDecl(TYPE^type, loc, EX^expr);
 
 }
 
@@ -361,8 +369,7 @@ INST -> E semicolon #returns #gen;
     INST^returns = 1;
 }
 #gen {
-    INST^code = ""; -- TODO:code
-
+    INST^code = E^expr.getCode(); -- TODO:code
 }
 
 -- instruction block
@@ -371,7 +378,7 @@ INST -> BLOC #returns #gen;
     INST^returns = BLOC^returns;
 }
 #gen {
-    INST^code = ""; -- TODO:code
+    INST^code = BLOC^code; -- TODO:code
 
 }
 
@@ -418,8 +425,7 @@ INST -> return E semicolon #type #gen;
     }
 }
 #gen {
-    INST^code = ""; -- TODO:code
-
+    INST^code = INST^machine.genReturn(INST^tds.getCurrentFunction(), E^expr);
 }
 
 -- inline asm
@@ -452,18 +458,23 @@ E -> A EX #type;
     else {
         error(TYPE_unexpected, A^type, EX^type);
     }
-    -- TODO
-    E^code_is_address=false;
-    E^code="";
-    E^address=null;
+    -- TODO:code
+    E^expr = A^expr;
 }
 
-EX -> #type;
+EX -> #init;
+#init {
+    EX^type = null;
+    EX^expr = null;
+}
+
+EX -> affect A #type #gen;
 #type {
-    EX^type = null; -- TODO
+    EX^type = A^type;
 }
-
-EX -> affect A #type; #type { EX^type = A^type; }
+#gen {
+    EX^expr = A^expr;
+}
 
 -- relations
 OPREL -> inf   #get; #get { OPREL^sym = "<"; }
@@ -473,16 +484,32 @@ OPREL -> supeq #get; #get { OPREL^sym = ">="; }
 OPREL -> eq    #get; #get { OPREL^sym = "=="; }
 OPREL -> neq   #get; #get { OPREL^sym = "!="; }
 
-A -> R #htype AX #type;
-#htype { AX^htype = R^type; }
-#type { A^type = AX^type; }
+A -> R #init AX #type #gen;
+#init {
+    AX^htype = R^type;
+    AX^hexpr = R^expr;
+}
+#type {
+    A^type = AX^type;
+}
+#gen {
+    A^expr = AX^expr;
+}
 
-AX -> #type; #type { AX^type = AX^htype; }
+AX -> #type #gen;
+#type {
+    AX^type = AX^htype;
+}
+#gen {
+    AX^expr = AX^hexpr;
+}
 
 AX -> OPREL R #type;
 #type {
     if(AX^htype.comparableWith(R^type, OPREL^sym)) {
-            AX^type = AX^machine.getIntType();
+        AX^type = AX^machine.getIntType();
+        -- TODO:code
+        AX^expr = AX^hexpr;
     }
     else {
         error(TYPE_notComparable, AX^htype, R^type);
@@ -494,14 +521,27 @@ OPADD -> plus;
 OPADD -> minus;
 OPADD -> or;
 
-R -> T #htype RX #type;
-#htype { RX^htype = T^type; }
-#type { R^type = RX^type; }
+R -> T #init RX #type #gen;
+#init {
+    RX^htype = T^type;
+    RX^hexpr = T^expr;
+}
+#type {
+    R^type = RX^type;
+}
+#gen {
+    R^expr = RX^expr;
+}
 
-RX -> #type;
-#type { RX^type = RX^htype; }
+RX -> #type #gen;
+#type {
+    RX^type = RX^htype;
+}
+#gen {
+    RX^expr = RX^hexpr;
+}
 
-RX -> OPADD T RX #type;
+RX -> OPADD T RX #type #gen;
 #type {
     -- TODO:MOC: booleans with or
     match(RX^htype) {
@@ -520,6 +560,10 @@ RX -> OPADD T RX #type;
         }
     }
 }
+#gen {
+    -- TODO:code
+    RX^expr = RX^hexpr;
+}
 
 -- multiplication
 OPMUL -> mult;
@@ -527,32 +571,23 @@ OPMUL -> div;
 OPMUL -> mod;
 OPMUL -> and;
 
-T -> F #htype TX #type;
-#htype {
+T -> F #init TX #type;
+#init {
+    -- TODO:code
     TX^htype = F^type;
-    TX^hcode_is_address = F^code_is_address;
-    TX^hcode = F^code;
-    TX^haddress =F^address;
+    TX^hexpr = F^expr;
 }
 #type {
     T^type = TX^type;
-    if(TX^code_is_address && TX^address==null) {}
-    else {
-        if(TX^code_is_address){
-            --TO DO : lecture
-        }
-        else {
-            T^code = TX^code;
-        }
-    }
+
+    -- TODO:code
+    T^expr = TX^expr;
 }
 
 TX -> #type;
 #type {
     TX^type = TX^htype;
-    TX^code_is_address = TX^hcode_is_address;
-    TX^code = TX^hcode;
-    TX^address =TX^haddress;
+    TX^expr = TX^hexpr;
 }
 
 TX -> OPMUL F TX #type;
@@ -563,9 +598,8 @@ TX -> OPMUL F TX #type;
             match(F^type) {
                 case INTEGER_t {
                     TX^type = F^type;
-                    TX^code = "";-- TODO
-                    TX^code_is_address = false; -- TODO
-                    TX^address = null; -- TODO
+                    -- TODO:code
+                    TX^expr = TX^hexpr;
                 }
                 default {
                     error(TYPE_unexpected, "int", F^type);
@@ -584,9 +618,9 @@ TX -> osbra E csbra #type;
         case ARRAY {
             if(instanceof(E^type, INTEGER_t)) {
                 TX^type = TX^htype.getPointee();
-                TX^code = E^code;
-                TX^code_is_address = false; -- TODO
-                TX^address = null; -- TODO
+
+                -- TODO:code
+                TX^expr = E^expr;
             }
             else {
                 error(TYPE_unexpected, "int", E^type);
@@ -602,33 +636,25 @@ TX -> osbra E csbra #type;
 F -> integer #type;
 #type {
     F^type=F^machine.getIntType();
-    F^code_is_address = false;
-    F^address = null;
-    F^code = F^machine.genCst(integer^txt);
+    F^expr = F^machine.genInt(integer^txt);
 }
 
 F -> string #type;
 #type {
     F^type = F^machine.getStringType(string^txt);
-    F^code_is_address = false;
-    F^address = null;
-    F^code = F^machine.genString(string^txt);
+    F^expr = F^machine.genString(string^txt);
 }
 
 F -> character #type;
 #type {
     F^type = F^machine.getCharType();
-    F^code_is_address = false;
-    F^address = null;
-    F^code = F^machine.genCharacter(character^txt);
+    F^expr = F^machine.genCharacter(character^txt);
 }
 
 F -> null #type;
 #type {
     F^type = new NULL_t();
-    F^code_is_address = false;
-    F^address = null;
-    F^code = F^machine.genNull();
+    F^expr = F^machine.genNull();
 }
 
 -- unary expression
@@ -641,9 +667,9 @@ F -> OPUN F #type;
     match(F1^type) {
         case INTEGER_t {
             F^type = F1^type;
-            F^code = "";
-            F^code_is_address = false; -- TODO
-            F^address = null; -- TODO
+
+            -- TODO:code
+            F^expr = F1^expr;
         }
         default {
             error(TYPE_unexpected, "int", F1^type);
@@ -659,9 +685,9 @@ F -> new opar TYPE cpar #type;
     }
     else {
         F^type = F^machine.getPtrType(TYPE^type);
-        F^code = "";
-        F^code_is_address = false; -- TODO
-        F^address = null; -- TODO
+
+        -- TODO:code
+        F^expr = null;
     }
 }
 
@@ -679,9 +705,9 @@ INST -> delete opar E cpar #returns semicolon #gen;
 F -> sizeof opar SIZEOFEXPR cpar #type;
 #type {
     F^type = F^machine.getIntType();
-    F^code = "";
-    F^code_is_address = false; -- TODO
-    F^address = null; -- TODO
+
+    -- TODO:code
+    F^expr = null;
 }
 
 SIZEOFEXPR -> TYPE;
@@ -691,9 +717,7 @@ SIZEOFEXPR -> E;
 F -> opar E cpar #type;
 #type {
     F^type = E^type;
-    F^address = E^address;
-    F^code_is_address = E^code_is_address;
-    F^code = E^code;
+    F^expr = E^expr;
 }
 
 F -> opar TYPE cpar F #type;
@@ -702,15 +726,13 @@ F -> opar TYPE cpar F #type;
         error(TYPE_unexpected, TYPE^type, F1^type);
     }
     else {
-        F^address = F1^address;
-        F^code_is_address = F1^code_is_address;
-        F^code = F1^code;
+        F^expr = F1^expr;
     }
     F^type = TYPE^type;
 }
 
 -- subprogram call
-F -> ident opar #types ARGS cpar #type;
+F -> ident opar #types ARGS cpar #type #gen;
 global
     LTYPES types;
 #types {
@@ -719,18 +741,15 @@ global
 }
 #type {
     INFO info  = F^tds.globalSearch(ident^txt);
-    DFUNCTIONTYPE fun;
     if(info == null) {
         error(FUN_unknown, ident^txt);
     }
     else {
         match(info) {
             case INFOFUN {
-                fun = info.getType();
+                DFUNCTIONTYPE fun = info.getType();
                 F^type = fun.getReturnType();
-                F^address = null;-- TODO
-                F^code_is_address = false ;-- TODO
-                F^code = ""; -- TODO
+
                 if(!fun.callableWith(types)) {
                     error(FUN_unexpected, fun.getParameterTypes(), types);
                 }
@@ -740,6 +759,10 @@ global
             }
         }
     }
+}
+#gen {
+    -- TODO:code
+    F^expr = null;
 }
 
 F -> ident #type;
@@ -752,9 +775,7 @@ F -> ident #type;
         match(info) {
             case INFOVAR {
                 F^type = info.getType();
-                F^code_is_address = true;
-                F^code = F^machine.genComment("ref var "+ ident^txt);
-                F^address = info.getEmpl();
+                F^expr = F^machine.genIdent(ident^txt, info);
             }
             default {
                 error(VAR_notAVariable, ident^txt);
@@ -769,9 +790,9 @@ F -> mult F #type;
     match(F1^type) {
         case POINTER {
             F^type = F1^type.getPointee();
-            F^address = null; -- TODO
-            F^code_is_address =false; -- TODO
-            F^code = ""; -- TODO
+
+            -- TODO:code
+            F^expr = F1^expr;
         }
         default {
             error(TYPE_notAPtr, F1^type);

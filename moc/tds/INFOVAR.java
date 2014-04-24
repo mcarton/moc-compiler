@@ -15,10 +15,10 @@ public class INFOVAR implements INFO {
     /**
      * Represents a memory location: depends on the machine
      */
-    protected Location empl;
+    protected Location loc;
 
-    public Location getEmpl() {
-        return empl;
+    public Location getLoc() {
+        return loc;
     }
 
     public int getSize() {
@@ -32,13 +32,13 @@ public class INFOVAR implements INFO {
     /**
      * A var has a type and a location for its value
      */
-    public INFOVAR(DTYPE t, Location e) {
+    public INFOVAR(DTYPE t, Location l) {
         type = t;
-        empl = e;
+        loc = l;
     }
 
     @Override
     public String toString() {
-        return "INFOVAR [type=" + type + ", empl=" + empl + "]";
+        return "INFOVAR [type=" + type + ", loc=" + loc + "]";
     }
 }

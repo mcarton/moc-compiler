@@ -1,4 +1,4 @@
-package moc.gc;
+package moc.gc.tam;
 
 /**
  * This class describes a registry of a machine

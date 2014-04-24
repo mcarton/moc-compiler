@@ -2,6 +2,7 @@ package moc.gc;
 
 import moc.compiler.MOCException;
 import moc.type.*;
+import moc.tds.*;
 
 /**
  * This interface describes a target machine
@@ -25,6 +26,11 @@ public interface IMachine {
 
     int verbosity();
 
+    // location stuffs:
+    void newFunction();
+    void newBloc();
+    Location getLocationFor(String name, DTYPE type);
+
     // type stuffs:
     DTYPE getCharType();
     DTYPE getIntType();
@@ -34,10 +40,15 @@ public interface IMachine {
 
     // code generation stuffs:
     String genFunction(DFUNCTIONTYPE f, String name, String bloc);
-    String genVarDecl(DTYPE t, String name, String val);
-    String genCst(String txt);
-    String genString(String txt);
-    String genCharacter(String txt);
-    String genNull();
+    String genReturn(DFUNCTIONTYPE f, Expr expr);
+    String genVarDecl(DTYPE t, Location location, Expr expr);
+
+    Expr genInt(String txt);
+    Expr genString(String txt);
+    Expr genCharacter(String txt);
+    Expr genNull();
+
+    Expr genIdent(String name, INFOVAR info);
+
     String genComment(String comment);// TODO:code: incomplete
 }

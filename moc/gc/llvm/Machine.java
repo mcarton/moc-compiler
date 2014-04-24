@@ -7,11 +7,15 @@ import java.util.Iterator;
 import moc.gc.*;
 
 import moc.type.*;
+import moc.tds.*;
 
 /**
  * The TAM machine and its generation functions
  */
 public class Machine extends AbstractMachine {
+    int lastTmp = 0; // name of the last generated temporary
+    int bloc = 0; // the bloc we are in
+
     public Machine(int verbosity, ArrayList<String> warnings) {
         super(verbosity, warnings);
     }
@@ -33,6 +37,23 @@ public class Machine extends AbstractMachine {
     }
     @Override public DTYPE getArrayType(DTYPE what, int nbElements) {
         return new ARRAY(what, nbElements);
+    }
+
+    // location stuffs:
+    @Override
+    public void newFunction() {
+        lastTmp = 0;
+        bloc = 0;
+    }
+
+    @Override
+    public void newBloc() {
+        ++bloc;
+    }
+
+    @Override
+    public Location getLocationFor(String name, DTYPE type) {
+        return new Location('%' + name + bloc);
     }
 
     // code generation stuffs:
@@ -65,14 +86,47 @@ public class Machine extends AbstractMachine {
     }
 
     @Override
-    public String genVarDecl(DTYPE t, String name, String val) {
+    public String genReturn(DFUNCTIONTYPE f, moc.gc.Expr gcexpr) {
+        Expr expr = (Expr)gcexpr;
+
+        StringBuilder sb = new StringBuilder();
         RepresentationVisitor rv = new RepresentationVisitor();
-        StringBuilder sb = new StringBuilder(name.length() + val.length());
+
+        String returnTypeRepr = f.getReturnType().visit(rv);
+        String returnValueName;
+
+        if(expr.getLoc() != null) {
+            returnValueName = getTmpName();
+            sb.append("    ");
+            sb.append(returnValueName);
+            sb.append(" = load ");
+            sb.append(returnTypeRepr);
+            sb.append("* ");
+            sb.append(expr.getLoc().getRepr());
+            sb.append('\n');
+        }
+        else {
+            returnValueName = expr.getCode();
+        }
+
+        sb.append("    ret ");
+        sb.append(returnTypeRepr);
+        sb.append(' ');
+        sb.append(returnValueName);
+        sb.append('\n');
+
+        return sb.toString();
+    }
+
+    @Override
+    public String genVarDecl(DTYPE t, moc.gc.Location loc, moc.gc.Expr expr) {
+        RepresentationVisitor rv = new RepresentationVisitor();
+        StringBuilder sb = new StringBuilder(50);
 
         String type = t.visit(rv);
 
-        sb.append("    %");
-        sb.append(name);
+        sb.append("    ");
+        sb.append(loc.getRepr());
         sb.append(" = alloca ");
         sb.append(type);
         sb.append('\n');
@@ -80,36 +134,52 @@ public class Machine extends AbstractMachine {
         sb.append("    store ");
         sb.append(type);
         sb.append(' ');
-        sb.append(val);
+        if(expr.getLoc() != null) {
+            sb.append(expr.getLoc().getRepr());
+        }
+        else {
+            sb.append(expr.getCode());
+        }
         sb.append(", ");
         sb.append(type);
-        sb.append("* %");
-        sb.append(name);
+        sb.append("* ");
+        sb.append(loc.getRepr());
         sb.append('\n');
 
         return sb.toString();
     }
 
     @Override
-    public String genNull() {
-        return "null";
+    public Expr genNull() {
+        // first `null` means the expression is constant, it is not related to
+        // we are creating a null constant
+        return new Expr(null, "null");
     }
     @Override
-    public String genInt(String txt) {
-        return txt;
+    public Expr genInt(String txt) {
+        return new Expr(null, txt);
     }
     @Override
-    public String genString(String txt) {
-        return "TODO";
+    public Expr genString(String txt) {
+        return new Expr(new Location("%TODO"), "TODO");
     }
     @Override
-    public String genCharacter(String txt) {
-        return txt; // TODO:string
+    public Expr genCharacter(String txt) {
+        return new Expr(null, txt); // TODO:string
+    }
+
+    @Override
+    public Expr genIdent(String name, INFOVAR info) {
+        return new Expr((Location)info.getLoc(), null);
     }
 
     @Override
     public String genComment(String comment) {
         return "    ; " + comment + '\n';
+    }
+
+    private String getTmpName() {
+        return String.valueOf("%" + ++lastTmp);
     }
 }
 

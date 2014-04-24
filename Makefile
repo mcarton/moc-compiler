@@ -22,6 +22,8 @@ att :
 	$(JDIR)/javac -classpath $(GJAR) moc/compiler/*.java
 	$(JDIR)/javac -classpath $(GJAR) moc/tds/*.java
 	$(JDIR)/javac -classpath $(GJAR) moc/type/*.java
+	$(JDIR)/javac -classpath $(GJAR) moc/gc/llvm/*.java
+	$(JDIR)/javac -classpath $(GJAR) moc/gc/tam/*.java
 	$(JDIR)/javac -classpath $(GJAR) moc/gc/*.java
 
 class :
