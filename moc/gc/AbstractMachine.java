@@ -15,7 +15,7 @@ public abstract class AbstractMachine implements IMachine {
     boolean allWarnings;
     int verbosity;
 
-    AbstractMachine(int v, ArrayList<String> w) {
+    public AbstractMachine(int v, ArrayList<String> w) {
         verbosity = v;
         warnings = w;
         allWarnings = warnings.contains("all");

@@ -1,17 +1,18 @@
-package moc.gc;
+package moc.gc.llvm;
 
 import java.util.ArrayList;
 import java.lang.StringBuilder;
 import java.lang.UnsupportedOperationException;
 import java.util.Iterator;
+import moc.gc.*;
 
 import moc.type.*;
 
 /**
  * The TAM machine and its generation functions
  */
-public class MLLVM extends AbstractMachine {
-    public MLLVM(int verbosity, ArrayList<String> warnings) {
+public class Machine extends AbstractMachine {
+    public Machine(int verbosity, ArrayList<String> warnings) {
         super(verbosity, warnings);
     }
 
@@ -38,18 +39,19 @@ public class MLLVM extends AbstractMachine {
     @Override
     public String genFunction(DFUNCTIONTYPE f, String name, String bloc) {
         RepresentationVisitor rv = new RepresentationVisitor();
-        StringBuilder sb = new StringBuilder(bloc.length());
+        StringBuilder sb = new StringBuilder(name.length() + bloc.length());
 
         sb.append("define ");
         sb.append(f.getReturnType().visit(rv));
-        sb.append(' ');
+        sb.append(" @");
         sb.append(name);
         sb.append('(');
 
         Iterator<DTYPE> it = f.getParameterTypes().iterator();
         while(it.hasNext()) {
             sb.append(it.next().visit(rv));
-            sb.append("name");
+            sb.append(' ');
+            sb.append("%name");
             if(it.hasNext()) {
                 sb.append(", ");
             }
@@ -57,7 +59,7 @@ public class MLLVM extends AbstractMachine {
 
         sb.append(") nounwind {\n"); // nounwind = no exceptions
         sb.append(bloc);
-        sb.append("}\n");
+        sb.append("}\n\n");
 
         return sb.toString();
     }
@@ -65,17 +67,17 @@ public class MLLVM extends AbstractMachine {
     @Override
     public String genVarDecl(DTYPE t, String name, String val) {
         RepresentationVisitor rv = new RepresentationVisitor();
-        StringBuilder sb = new StringBuilder(val.length());
+        StringBuilder sb = new StringBuilder(name.length() + val.length());
 
         String type = t.visit(rv);
 
-        sb.append('%');
+        sb.append("    %");
         sb.append(name);
         sb.append(" = alloca ");
         sb.append(type);
         sb.append('\n');
 
-        sb.append("store ");
+        sb.append("    store ");
         sb.append(type);
         sb.append(' ');
         sb.append(val);
@@ -90,24 +92,24 @@ public class MLLVM extends AbstractMachine {
 
     @Override
     public String genNull() {
-        return "TODO";
+        return "null";
     }
     @Override
-    public String genCst(String txt)  {
-        return "TODO";
+    public String genInt(String txt) {
+        return txt;
     }
     @Override
-    public String genString(String txt)   {
+    public String genString(String txt) {
         return "TODO";
     }
     @Override
     public String genCharacter(String txt) {
-        return "TODO";
+        return txt; // TODO:string
     }
 
     @Override
     public String genComment(String comment) {
-        return("; " + comment);
+        return "    ; " + comment + '\n';
     }
 }
 

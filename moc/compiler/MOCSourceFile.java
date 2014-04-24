@@ -64,10 +64,10 @@ public class MOCSourceFile extends SourceUnit {
     private void setMachine(String mach) {
         machName = mach;
         if (machName.equals("tam")) {
-            machine = new MTAM(verbosity, warnings);
+            machine = new moc.gc.tam.Machine(verbosity, warnings);
         }
         else if(machName.equals("llvm")) {
-            machine = new MLLVM(verbosity, warnings);
+            machine = new moc.gc.llvm.Machine(verbosity, warnings);
         }
     }
 

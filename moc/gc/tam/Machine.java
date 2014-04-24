@@ -1,13 +1,14 @@
-package moc.gc;
+package moc.gc.tam;
 
 import java.util.ArrayList;
 import moc.type.*;
+import moc.gc.*;
 
 /**
  * The TAM machine and its generation functions
  */
-public class MTAM extends AbstractMachine {
-    public MTAM(int verbosity, ArrayList<String> warnings) {
+public class Machine extends AbstractMachine {
+    public Machine(int verbosity, ArrayList<String> warnings) {
         super(verbosity, warnings);
     }
 
@@ -42,7 +43,7 @@ public class MTAM extends AbstractMachine {
     }
 
     @Override
-    public String genCst(String txt) {
+    public String genInt(String txt) {
         return "\tLOADL " + txt + "\n";
     }
     @Override
