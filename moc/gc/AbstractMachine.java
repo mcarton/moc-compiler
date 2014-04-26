@@ -6,6 +6,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 
 import moc.compiler.MOCException;
+import moc.type.*;
 
 /**
  * This class describes a target machine.
@@ -55,7 +56,13 @@ public abstract class AbstractMachine implements IMachine {
         }
     }
 
-    public moc.type.Type getStringType(String string) {
+    @Override
+    public Type getNullType() {
+        return new NullType();
+    }
+
+    @Override
+    public Type getStringType(String string) {
         int nbChar = string.length()
                 +1 /* includes '\0' */
                 -2 /* excludes "" */;

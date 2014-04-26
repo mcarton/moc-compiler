@@ -126,6 +126,7 @@ global
     SymbolTable symbolTable = new SymbolTable();
     symbolTable.insertType("Int", machine.getIntType());
     symbolTable.insertType("Char", machine.getCharType());
+    symbolTable.insertType("Null", machine.getNullType());
 
     ENTITIES^symbolTable = symbolTable;
 }
@@ -641,7 +642,7 @@ F -> character #type;
 
 F -> null #type;
 #type {
-    F^type = new NullType();
+    F^type = F^machine.getNullType();
     F^expr = F^machine.genNull();
 }
 

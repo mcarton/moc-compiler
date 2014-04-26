@@ -32,6 +32,7 @@ public interface IMachine {
     Location getLocationFor(String name, Type type);
 
     // type stuffs:
+    Type getNullType();
     Type getCharType();
     Type getIntType();
     Type getPtrType(moc.type.Type what);

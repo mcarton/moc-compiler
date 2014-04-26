@@ -9,7 +9,7 @@ public class NullType extends AbstractType<NullType> {
     }
 
     public String toString() {
-        return "NullType";
+        return "Null";
     }
 
     @Override
