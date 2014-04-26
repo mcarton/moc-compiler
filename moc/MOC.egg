@@ -343,9 +343,12 @@ global
     }
 }
 #gen {
-    -- TODO:code
-    INST^code = INST^machine.genVarDecl(TYPE^type, loc, EX^expr);
-
+    if (EX^expr == null) {
+        INST^code = INST^machine.genVarDecl(TYPE^type, loc);
+    }
+    else {
+        INST^code = INST^machine.genVarDecl(TYPE^type, loc, EX^expr);
+    }
 }
 
 -- expression instruction (affectation and procedure call)
