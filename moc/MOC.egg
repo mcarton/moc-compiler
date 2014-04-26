@@ -19,11 +19,7 @@ inh machine : IMachine for
 --       MFUNC_PARAMETER, MFUNC_PARAMETERS,MARG, MARGS
 ;
 
--- these attributes allow to get ASM inline
-syn asm_code : STRING for ASM;
-
 -- the current symbols table
-inh tds_asm : TDS for ASM;
 inh tds : TDS for
     ENTITIES, BLOC, ELSE, INST, INSTS, ARGS, ARGSX,
     FUNCTION, FUNC_PARAMETER, FUNC_PARAMETERS, FUNC_PARAMETERSX,
@@ -120,9 +116,6 @@ term typeident     is "[A-Z][_0-9A-Za-z]*";
 -- TODO:MOC:
 --term stringo     is "@\"[^\"]*\"";         -- string MOC
 
--- for inline assembly
-compil ASM;
-
 --production rules
 PROGRAM -> #init ENTITIES #gen;
 global
@@ -143,14 +136,6 @@ global
 ENTITIES -> #gen;
 #gen {
     ENTITIES^code = "";
-}
-
-ENTITIES -> asm #tds ASM ENTITIES #gen;
-#tds {
-    ASM^tds_asm = ENTITIES^tds;
-}
-#gen {
-    ENTITIES^code = ASM^asm_code + ENTITIES1^code;
 }
 
 ENTITIES -> FUNCTION ENTITIES #gen;
@@ -426,16 +411,6 @@ INST -> return E semicolon #type #gen;
 }
 #gen {
     INST^code = INST^machine.genReturn(INST^tds.getCurrentFunction(), E^expr);
-}
-
--- inline asm
-INST -> asm  #tds ASM #gen;
-#tds {
-    ASM^tds_asm = new TDS(INST^tds);
-}
-#gen {
-    INST^returns = 2; -- TODO: may want to actually check it
-    INST^code = ASM^asm_code;
 }
 
 -- expressions
