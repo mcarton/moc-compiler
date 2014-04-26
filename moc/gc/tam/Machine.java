@@ -48,7 +48,10 @@ public class Machine extends AbstractMachine {
  
     // code generation stuffs:
     @Override
-    public String genFunction(FunctionType f, String name, String bloc) {
+    public String genFunction(
+        FunctionType f, ArrayList<moc.gc.Location> parameters,
+        String name, String bloc
+    ) {
         return bloc; // TODO:code
     }
 

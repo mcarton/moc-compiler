@@ -40,6 +40,9 @@ inh htype : Type for
     REFS,
     TX, RX, AX
 ;
+inh parameters : ArrayList<Location> for
+    FUNC_PARAMETERS, FUNC_PARAMETERSX, FUNC_PARAMETER
+;
 inh types : TypeList for
     FUNC_PARAMETERS, FUNC_PARAMETERSX, FUNC_PARAMETER,
     ARGS, ARGSX
@@ -145,20 +148,23 @@ ENTITIES -> FUNCTION ENTITIES #gen;
 }
 
 -- functions
-FUNCTION -> TYPE ident #csymbolTable opar FUNC_PARAMETERS #usymbolTable cpar BLOC #returns #gen;
+FUNCTION -> TYPE ident #csymbols opar FUNC_PARAMETERS #usymbols cpar BLOC #returns #gen;
 global
     SymbolTable blocTds;
     TypeList types;
+    ArrayList<Location> parameters;
     FunctionType fun;
-#csymbolTable {
+#csymbols {
     FUNCTION^machine.newFunction();
     blocTds = new SymbolTable(FUNCTION^symbolTable);
     types = new TypeList();
+    parameters = new ArrayList<Location>();
     FUNC_PARAMETERS^types = types;
+    FUNC_PARAMETERS^parameters = parameters;
     FUNC_PARAMETERS^symbolTable = blocTds;
     BLOC^symbolTable = blocTds;
 }
-#usymbolTable {
+#usymbols {
     if(FUNCTION^symbolTable.localSearch(ident^txt) != null) {
         error(FUN_exists, ident^txt);
     }
@@ -173,7 +179,7 @@ global
     }
 }
 #gen {
-    FUNCTION^code = FUNCTION^machine.genFunction(fun, ident^txt, BLOC^code);
+    FUNCTION^code = FUNCTION^machine.genFunction(fun, parameters, ident^txt, BLOC^code);
 }
 
 -- function parameters
@@ -201,6 +207,7 @@ FUNC_PARAMETER -> TYPE ident #symbolTable;
         Location loc
             = FUNC_PARAMETER^machine.getLocationFor(ident^txt, TYPE^type);
         FUNC_PARAMETER^symbolTable.insertVar(ident^txt, TYPE^type, loc);
+        FUNC_PARAMETER^parameters.add(loc);
     }
 }
 

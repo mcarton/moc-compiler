@@ -70,7 +70,10 @@ public class Machine extends AbstractMachine {
 
     // code generation stuffs:
     @Override
-    public String genFunction(FunctionType f, String name, String bloc) {
+    public String genFunction(
+        FunctionType f, ArrayList<moc.gc.Location> params,
+        String name, String bloc
+    ) {
         StringBuilder sb = new StringBuilder(name.length() + bloc.length());
 
         sb.append("define ");
@@ -80,10 +83,11 @@ public class Machine extends AbstractMachine {
         sb.append('(');
 
         Iterator<Type> it = f.getParameterTypes().iterator();
+        Iterator<moc.gc.Location> nameIt = params.iterator();
         while(it.hasNext()) {
             sb.append(it.next().visit(typeVisitor));
             sb.append(' ');
-            sb.append("%name");
+            sb.append(nameIt.next());
             if(it.hasNext()) {
                 sb.append(", ");
             }

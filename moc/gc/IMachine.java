@@ -3,6 +3,7 @@ package moc.gc;
 import moc.compiler.MOCException;
 import moc.type.*;
 import moc.symbols.*;
+import java.util.ArrayList;
 
 /**
  * This interface describes a target machine
@@ -40,7 +41,9 @@ public interface IMachine {
     Type getStringType(String string);
 
     // code generation stuffs:
-    String genFunction(FunctionType f, String name, String bloc);
+    String genFunction(
+        FunctionType f, ArrayList<Location> parameters, String name, String bloc
+    );
     String genReturn(FunctionType f, Expr expr);
     String genVarDecl(Type t, Location location);
     String genVarDecl(Type t, Location location, Expr expr);
