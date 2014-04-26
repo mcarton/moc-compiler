@@ -17,7 +17,11 @@ public class MOCSourceFile extends SourceUnit {
     private ArrayList<String> warnings = new ArrayList<String>();
 
     public MOCSourceFile(String[] args) throws MOCException {
-        super(args[0]);
+        super(args[args.length-1]);
+
+        // file name
+        fileName = args[args.length-1];
+
         analyze(args); // other arguments?
     }
 
@@ -32,11 +36,8 @@ public class MOCSourceFile extends SourceUnit {
      * Analyse supplementary arguments of the compiler.
      */
     public void analyze(String[] args) throws MOCException {
-        // file name
-        fileName = args[0];
-
         int argc = args.length;
-        for(int i = 1; i < argc; ++i) {
+        for(int i = 0; i < argc -1; ++i) {
             if(i+1 < argc) {
                 if(args[i].equals("-m")) {
                     machName = args[++i];

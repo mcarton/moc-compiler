@@ -17,7 +17,7 @@ public class MOCC implements Serializable {
 
     private static void checkFile(String[] args) throws MOCException {
         // check .moc extension
-        if (args.length == 0 || !args[0].endsWith(".moc")) {
+        if (args.length == 0 || !args[args.length-1].endsWith(".moc")) {
             throw new MOCException(Messages.getString("MOC.extError"));
         }
     }
