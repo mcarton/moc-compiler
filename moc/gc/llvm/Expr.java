@@ -5,7 +5,7 @@ public class Expr implements moc.gc.Expr {
     Location loc;
 
     /**
-     * Constructs an llvm.Expr, if name is `null`, the expression is a constant
+     * Constructs an llvm.Expr, if loc is `null`, the expression is a constant
      * (`null`, `42`, `YES`, etc.).
      */
     public Expr(Location loc, String code) {
