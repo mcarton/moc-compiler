@@ -37,6 +37,8 @@ pdf :
 
 clean :
 	find . -name "*.class" -delete
-	find . -name "*.tam" -delete
+	find tests/ -name "*.tam" -delete
+	find tests/ -name "*.ll" -delete
+	find tests/ -name "*.s" -delete
 	rm -rf moc/egg
 	cd report; make clean
