@@ -20,11 +20,6 @@ public class Location implements moc.gc.Location {
         return "[" + dep + "/" + reg + "]";
     }
 
-    @Override
-    public String getRepr() {
-        return null;
-    }
-
     /**
      * Location = address = offset / registre.
      */

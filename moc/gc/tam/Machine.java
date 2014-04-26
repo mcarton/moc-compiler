@@ -78,9 +78,33 @@ public class Machine extends AbstractMachine {
     public Expr genNull() {
         return new Expr("\tSUBR MVoid \n");
     }
+    @Override
+    public Expr genNew(DTYPE t) {
+        return null; // TODO:code
+    }
+    @Override
+    public String genDelete(DTYPE t, moc.gc.Location loc) {
+        return ""; // TODO:code
+    }
 
     @Override
-    public Expr genIdent(String name, INFOVAR info) {
+    public Expr genIdent(INFOVAR info) {
+        // TODO:code
+        return null;
+    }
+    @Override
+    public Expr genAff(DTYPE t, moc.gc.Location loc, moc.gc.Expr gcrhs) {
+        // TODO:code
+        return null;
+    }
+    @Override
+    public Expr genNonAff(DTYPE t, moc.gc.Expr expr) {
+        // TODO:code
+        return null;
+    }
+
+    @Override
+    public Expr genAdd(moc.gc.Expr lhs, moc.gc.Expr rhs) {
         // TODO:code
         return null;
     }

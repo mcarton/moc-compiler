@@ -79,7 +79,7 @@ ADR -> var  #gen;
                 case INFOVAR {
                     v = i;
                     t = v.getType();
-                    e = v.getEmpl();
+                    e = v.getLoc();
                     r = e.getReg();
                     ADR^asm_code =
                         "("+ t.getSize() + ") "

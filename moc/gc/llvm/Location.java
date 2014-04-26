@@ -8,11 +8,6 @@ public class Location implements moc.gc.Location {
     }
 
     @Override
-    public String getRepr() {
-        return name;
-    }
-
-    @Override
     public String toString() {
         return name;
     }

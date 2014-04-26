@@ -47,8 +47,14 @@ public interface IMachine {
     Expr genString(String txt);
     Expr genCharacter(String txt);
     Expr genNull();
+    Expr genNew(DTYPE type);
+    String genDelete(DTYPE type, Location loc);
 
-    Expr genIdent(String name, INFOVAR info);
+    Expr genIdent(INFOVAR info);
+    Expr genAff(DTYPE type, Location lhs, Expr rhs);
+    Expr genNonAff(DTYPE type, Expr expr);
 
-    String genComment(String comment);// TODO:code: incomplete
+    Expr genAdd(Expr lhs, Expr rhs);
+
+    String genComment(String comment);
 }

@@ -458,8 +458,15 @@ E -> A EX #type;
     else {
         error(TYPE_unexpected, A^type, EX^type);
     }
-    -- TODO:code
-    E^expr = A^expr;
+
+    -- `EX -> ;` => EX^expr
+    if(EX^expr != null) {
+        -- TODO: A must be an lvalue
+        E^expr = E^machine.genAff(A^type, A^expr.getLoc(), EX^expr);
+    }
+    else {
+        E^expr = E^machine.genNonAff(A^type, A^expr);
+    }
 }
 
 EX -> #init;
@@ -541,7 +548,7 @@ RX -> #type #gen;
     RX^expr = RX^hexpr;
 }
 
-RX -> OPADD T RX #type #gen;
+RX -> OPADD T #type #gen RX;
 #type {
     -- TODO:MOC: booleans with or
     match(RX^htype) {
@@ -561,8 +568,11 @@ RX -> OPADD T RX #type #gen;
     }
 }
 #gen {
-    -- TODO:code
-    RX^expr = RX^hexpr;
+    -- TODO:code: handle +, - and ||
+    Expr expr = RX^machine.genAdd(RX^hexpr, T^expr);
+    RX^expr = expr;
+    RX1^hexpr = expr;
+
 }
 
 -- multiplication
@@ -685,9 +695,7 @@ F -> new opar TYPE cpar #type;
     }
     else {
         F^type = F^machine.getPtrType(TYPE^type);
-
-        -- TODO:code
-        F^expr = null;
+        F^expr = F^machine.genNew(TYPE^type);
     }
 }
 
@@ -699,7 +707,8 @@ INST -> delete opar E cpar #returns semicolon #gen;
     INST^returns = 1;
 }
 #gen {
-    INST^code = ""; -- TODO:code
+    -- TODO: ensure we are deleting something we can delete
+    INST^code = INST^machine.genDelete(E^type, E^expr.getLoc());
 }
 
 F -> sizeof opar SIZEOFEXPR cpar #type;
@@ -775,7 +784,7 @@ F -> ident #type;
         match(info) {
             case INFOVAR {
                 F^type = info.getType();
-                F^expr = F^machine.genIdent(ident^txt, info);
+                F^expr = F^machine.genIdent(info);
             }
             default {
                 error(VAR_notAVariable, ident^txt);
