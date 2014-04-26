@@ -9,7 +9,8 @@ import mg.egg.eggc.runtime.libjava.problem.ProblemRequestor;
 import moc.egg.MOC;
 
 /**
- * The main class of the generated MOC compiler
+ * The main class of the generated MOC compiler.
+ *
  * Usage: mocc file.moc options
  */
 public class MOCC implements Serializable {
@@ -44,11 +45,11 @@ public class MOCC implements Serializable {
             System.out.println("Compiling " + cu.getFileName());
 
             // Start compilation
-            MOC compilo = new MOC(prp);
+            MOC compilator = new MOC(prp);
             prq.beginReporting();
-            compilo.set_source(cu);
-            compilo.set_eval(true);
-            compilo.compile(cu);
+            compilator.set_source(cu);
+            compilator.set_eval(true);
+            compilator.compile(cu);
 
             // Handle errors
             for (IProblem problem : prp.getAllProblems()) {
@@ -93,3 +94,4 @@ public class MOCC implements Serializable {
         }
     }
 }
+

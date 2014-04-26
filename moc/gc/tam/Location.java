@@ -7,6 +7,14 @@ public class Location implements moc.gc.Location {
     private int dep;
     private Register reg;
 
+    /**
+     * Location = address = offset / registre.
+     */
+    public Location(int dep, Register reg) {
+        this.dep = dep;
+        this.reg = reg;
+    }
+
     public int getDep() {
         return dep;
     }
@@ -18,14 +26,6 @@ public class Location implements moc.gc.Location {
     @Override
     public String toString() {
         return "[" + dep + "/" + reg + "]";
-    }
-
-    /**
-     * Location = address = offset / registre.
-     */
-    public Location(int dep, Register reg) {
-        this.dep = dep;
-        this.reg = reg;
     }
 }
 

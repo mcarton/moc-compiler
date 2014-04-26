@@ -1,6 +1,5 @@
 package moc.symbols;
 
-import moc.gc.Location;
 import moc.type.FunctionType;
 
 /**
@@ -9,12 +8,12 @@ import moc.type.FunctionType;
 public class InfoFun implements Info {
     private FunctionType type;
 
-    public FunctionType getType() {
-        return type;
+    public InfoFun(FunctionType type) {
+        this.type = type;
     }
 
-    public InfoFun(FunctionType t) {
-        type = t;
+    public FunctionType getType() {
+        return type;
     }
 
     @Override
@@ -22,3 +21,4 @@ public class InfoFun implements Info {
         return "InfoFun [type=" + type + "]";
     }
 }
+

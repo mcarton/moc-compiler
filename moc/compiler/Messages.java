@@ -22,8 +22,11 @@ public class Messages {
     public static String getString(String key, Object... replacement) {
         String result = getString(key);
         for(int i = 0; i < replacement.length; ++i) {
-            result = result.replaceAll("\\{" + i + "\\}", replacement[i].toString());
+            result = result.replaceAll(
+                "\\{" + i + "\\}", replacement[i].toString()
+            );
         }
         return result;
     }
 }
+

@@ -3,8 +3,8 @@ package moc.gc.tam;
 import moc.gc.*;
 
 public class Expr implements moc.gc.Expr {
-    String code;
     Location loc;
+    String code;
     boolean isAddress;
 
     public Expr(String code) {

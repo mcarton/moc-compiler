@@ -5,7 +5,7 @@ import mg.egg.eggc.runtime.libjava.SourceUnit;
 import moc.gc.*;
 
 /**
- * Describes a MOC compilation unit
+ * Describes a MOC compilation unit.
  */
 public class MOCSourceFile extends SourceUnit {
     // Mandatory for a SourceUnit: filename
@@ -22,7 +22,8 @@ public class MOCSourceFile extends SourceUnit {
         // file name
         fileName = args[args.length-1];
 
-        analyze(args); // other arguments?
+        // other arguments
+        analyze(args); 
     }
 
     /**
@@ -88,3 +89,4 @@ public class MOCSourceFile extends SourceUnit {
         return verbosity;
     }
 }
+

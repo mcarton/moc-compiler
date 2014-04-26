@@ -1,12 +1,12 @@
 package moc.gc.tam;
 
 import java.util.ArrayList;
-import moc.type.*;
 import moc.gc.*;
 import moc.symbols.*;
+import moc.type.*;
 
 /**
- * The TAM machine and its generation functions
+ * The TAM machine and its generation functions.
  */
 public class Machine extends AbstractMachine {
     public Machine(int verbosity, ArrayList<String> warnings) {

@@ -58,9 +58,7 @@ syn expr : Expr for
     F, TX, T, RX, R, AX, A, EX, E
 ;
 inh hexpr : Expr for TX, RX, AX;
-inh exprs : ArrayList<Expr> for
-    ARGS, ARGSX
-;
+inh exprs : ArrayList<Expr> for ARGS, ARGSX;
 
 --terminals
 space separator    is "[\r\n\t ]+";
@@ -102,8 +100,8 @@ sugar not          is "\!";
 
 -- TODO:MOC:
 --sugar colon      is "\:";
-sugar osbra      is "\[";
-sugar csbra      is "\]";
+sugar osbra        is "\[";
+sugar csbra        is "\]";
 --sugar id         is "id";
 --sugar class      is "@class";
 --sugar end        is "@end";
@@ -129,12 +127,12 @@ global
 #init {
     machine = PROGRAM^source.getMachine();
     ENTITIES^machine = machine;
+
     SymbolTable symbolTable = new SymbolTable();
+    ENTITIES^symbolTable = symbolTable;
     symbolTable.insertType("Int", machine.getIntType());
     symbolTable.insertType("Char", machine.getCharType());
     symbolTable.insertType("Null", machine.getNullType());
-
-    ENTITIES^symbolTable = symbolTable;
 }
 #gen {
     machine.writeCode(PROGRAM^source.getFileName(), ENTITIES^code);
@@ -151,7 +149,7 @@ ENTITIES -> FUNCTION ENTITIES #gen;
 }
 
 -- functions
-FUNCTION -> TYPE ident #csymbols opar FUNC_PARAMETERS #usymbols cpar BLOC #returns #gen;
+FUNCTION -> TYPE ident #csymbols opar FUNC_PARAMETERS #usymbols cpar BLOC #gen;
 global
     SymbolTable blocTds;
     TypeList types;
@@ -159,13 +157,16 @@ global
     FunctionType fun;
 #csymbols {
     FUNCTION^machine.newFunction();
+
     blocTds = new SymbolTable(FUNCTION^symbolTable);
-    types = new TypeList();
-    parameters = new ArrayList<Location>();
-    FUNC_PARAMETERS^types = types;
-    FUNC_PARAMETERS^parameters = parameters;
     FUNC_PARAMETERS^symbolTable = blocTds;
     BLOC^symbolTable = blocTds;
+
+    types = new TypeList();
+    FUNC_PARAMETERS^types = types;
+
+    parameters = new ArrayList<Location>();
+    FUNC_PARAMETERS^parameters = parameters;
 }
 #usymbols {
     if(FUNCTION^symbolTable.localSearch(ident^txt) != null) {
@@ -176,13 +177,15 @@ global
         blocTds.setCurrentFunction(ident^txt, fun);
     }
 }
-#returns {
+#gen {
     if(BLOC^returns != 2 && !instanceof(TYPE^type, VoidType)) {
         error(FUN_missingReturn);
     }
-}
-#gen {
-    FUNCTION^code = FUNCTION^machine.genFunction(fun, parameters, ident^txt, BLOC^code);
+    elseif(fun != null) {
+        FUNCTION^code = FUNCTION^machine.genFunction(
+            fun, parameters, ident^txt, BLOC^code
+        );
+    }
 }
 
 -- function parameters
@@ -251,7 +254,7 @@ STYPE -> typeident #gen;
     }
 }
 
--- method body and instructions blocks
+-- method body and instructions blocs
 BLOC -> #symbolTable occbra INSTS ccbra #message #gen;
 global
     SymbolTable symbolTable;
@@ -299,7 +302,7 @@ INSTS -> INST INSTS #returns #gen;
 }
 
 -- typedef declaration
-INST -> using typeident affect TYPE #symbolTable semicolon #gen;
+INST -> using typeident affect TYPE semicolon #symbolTable #gen;
 #symbolTable {
     INST^returns = 1;
 
@@ -404,7 +407,7 @@ ELSE -> else BLOC #returns #gen;
     ELSE^returns = BLOC^returns;
 }
 #gen {
-    ELSE^code = BLOC^code;
+    ELSE^code = BLOC^code; -- TODO:code
 }
 
 ELSE -> #returns #gen;
@@ -412,19 +415,20 @@ ELSE -> #returns #gen;
     ELSE^returns = 0;
 }
 #gen {
-    ELSE^code = "";
+    ELSE^code = ""; -- TODO:code
 }
 
 -- function return
 INST -> return E semicolon #type #gen;
 #type {
     INST^returns = 2;
-    if(!INST^symbolTable.canReturn(E^type)) {
+    if(!INST^symbolTable.getReturnType.constructsFrom(E^type)) {
         error(FUN_returnType, E^type);
     }
 }
 #gen {
-    INST^code = INST^machine.genReturn(INST^symbolTable.getCurrentFunction(), E^expr);
+    INST^code
+        = INST^machine.genReturn(INST^symbolTable.getCurrentFunction(), E^expr);
 }
 
 -- expressions
@@ -449,12 +453,12 @@ E -> A EX #type;
     }
 
     -- `EX -> ;` => EX^expr
-    if(EX^expr != null) {
-        -- TODO: A must be an lvalue
-        E^expr = E^machine.genAff(A^type, A^expr.getLoc(), EX^expr);
+    if(EX^expr == null) {
+        E^expr = E^machine.genNonAff(A^type, A^expr);
     }
     else {
-        E^expr = E^machine.genNonAff(A^type, A^expr);
+        -- TODO: A must be an lvalue
+        E^expr = E^machine.genAff(A^type, A^expr.getLoc(), EX^expr);
     }
 }
 
@@ -464,11 +468,9 @@ EX -> #init;
     EX^expr = null;
 }
 
-EX -> affect A #type #gen;
-#type {
+EX -> affect A #init;
+#init {
     EX^type = A^type;
-}
-#gen {
     EX^expr = A^expr;
 }
 
@@ -597,6 +599,7 @@ TX -> OPMUL F TX #type;
             match(F^type) {
                 case IntegerType {
                     TX^type = F^type;
+
                     -- TODO:code
                     TX^expr = TX^hexpr;
                 }
@@ -751,11 +754,11 @@ global
                 FunctionType fun = info.getType();
                 F^type = fun.getReturnType();
 
-                if(!fun.callableWith(types)) {
-                    error(FUN_unexpected, fun.getParameterTypes(), types);
+                if(fun.callableWith(types)) {
+                    F^expr = F^machine.genCall(ident^txt, fun, exprs);
                 }
                 else {
-                    F^expr = F^machine.genCall(ident^txt, fun, exprs);
+                    error(FUN_unexpected, fun.getParameterTypes(), types);
                 }
             }
             default {

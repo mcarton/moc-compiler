@@ -1,7 +1,7 @@
 package moc.gc.tam;
 
 /**
- * This class describes a registry of a machine
+ * This class describes a registry of a machine.
  */
 public class Register {
     private String name;
@@ -24,5 +24,5 @@ public class Register {
     public String toString() {
         return "Register [name=" + name + ", num=" + num + "]";
     }
-
 }
+

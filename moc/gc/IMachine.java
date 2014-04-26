@@ -1,16 +1,16 @@
 package moc.gc;
 
-import moc.compiler.MOCException;
-import moc.type.*;
-import moc.symbols.*;
 import java.util.ArrayList;
+import moc.compiler.MOCException;
+import moc.symbols.*;
+import moc.type.*;
 
 /**
  * This interface describes a target machine
  */
 public interface IMachine {
     /**
-     * Target file suffix (.tam for example).
+     * Target file suffix (".tam" for example).
      */
     String getSuffix();
 
@@ -64,3 +64,4 @@ public interface IMachine {
 
     String genComment(String comment);
 }
+

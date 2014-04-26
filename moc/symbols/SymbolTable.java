@@ -1,6 +1,5 @@
 package moc.symbols;
 
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -15,6 +14,7 @@ public class SymbolTable {
     private HashMap<String, Info> map = new HashMap<String, Info>();
     private SymbolTable mother;
     private FunctionType currentFunction;
+
     /**
      * Constructor for a symbols table without mother.
      */
@@ -23,11 +23,11 @@ public class SymbolTable {
     }
 
     /**
-     * Constructor for a SymbolTable daughter of p.
+     * Constructor for a SymbolTable daughter of mother.
      */
-    public SymbolTable(SymbolTable p) {
-        mother = p;
-        currentFunction = p == null ? null : p.currentFunction;
+    public SymbolTable(SymbolTable mother) {
+        this.mother = mother;
+        currentFunction = mother == null ? null : mother.currentFunction;
     }
 
     /**
@@ -49,14 +49,14 @@ public class SymbolTable {
     }
 
     /**
-     * Add n and its info i in the SymbolTable.
+     * Add a variable to the SymbolTable.
      */
     public void insertVar(String n, Type t, Location location) {
         map.put(n, new InfoVar(t, location));
     }
 
     /**
-     * Add t (function) and its info i in the SymbolTable.
+     * Add a function to the SymbolTable.
      */
     public void insertFun(String n, FunctionType i) {
         map.put(n, new InfoFun(i));
@@ -81,13 +81,6 @@ public class SymbolTable {
         return currentFunction;
     }
 
-    /**
-     * Return whether we can return type from the current function.
-     */
-    public boolean canReturn(Type type) {
-        return currentFunction.getReturnType().constructsFrom(type);
-    }
-
     public String toString() {
         return toString(true);
     }
@@ -98,3 +91,4 @@ public class SymbolTable {
             : map.toString()) + " and currentFunction=" + currentFunction;
     }
 }
+

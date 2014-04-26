@@ -1,13 +1,13 @@
 package moc.gc.llvm;
 
-import java.util.ArrayList;
 import java.lang.StringBuilder;
 import java.lang.UnsupportedOperationException;
+import java.util.ArrayList;
 import java.util.Iterator;
-import moc.gc.*;
 import moc.compiler.MOCException;
-import moc.type.*;
+import moc.gc.*;
 import moc.symbols.*;
+import moc.type.*;
 
 /**
  * The TAM machine and its generation functions

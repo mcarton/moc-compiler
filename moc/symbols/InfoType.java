@@ -8,12 +8,12 @@ import moc.type.Type;
 public class InfoType implements Info {
     private Type type;
 
-    public Type getType() {
-        return type;
+    public InfoType(Type type) {
+        this.type = type;
     }
 
-    public InfoType(Type t) {
-        type = t;
+    public Type getType() {
+        return type;
     }
 
     @Override

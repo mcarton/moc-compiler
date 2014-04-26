@@ -4,37 +4,26 @@ import moc.gc.Location;
 import moc.type.Type;
 
 /**
- * This class describes a local var: address and type
+ * This class describes a local var: type and location.
  */
 public class InfoVar implements Info {
-    /**
-     * var type
-     */
-    protected Type type;
+    private Type type;
+    private Location loc;
 
     /**
-     * Represents a memory location: depends on the machine
+     * An InfoVar has a type and a location for its value.
      */
-    protected Location loc;
-
-    public Location getLoc() {
-        return loc;
-    }
-
-    public int getSize() {
-        return getType().getSize();
+    public InfoVar(Type type, Location location) {
+        this.type = type;
+        this.loc = location;
     }
 
     public Type getType() {
         return type;
     }
 
-    /**
-     * A var has a type and a location for its value
-     */
-    public InfoVar(Type t, Location l) {
-        type = t;
-        loc = l;
+    public Location getLoc() {
+        return loc;
     }
 
     @Override

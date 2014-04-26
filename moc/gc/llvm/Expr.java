@@ -1,8 +1,8 @@
 package moc.gc.llvm;
 
 public class Expr implements moc.gc.Expr {
-    String code;
     Location loc;
+    String code;
 
     /**
      * Constructs an llvm.Expr, if loc is `null`, the expression is a constant
