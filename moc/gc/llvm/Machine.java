@@ -236,21 +236,13 @@ public class Machine extends AbstractMachine {
         String rhsCode= getValue(type, rhs, sb);
         String tmpValueName = getTmpName();
 
-        sb.append("    ");
-        sb.append(tmpValueName);
-        sb.append(" = load ");
-        sb.append(type);
-        sb.append("* ");
-        sb.append(rhsCode);
-        sb.append('\n');
-
         sb.append("    store ");
         sb.append(type);
         sb.append(tmpValueName);
         sb.append(", ");
         sb.append(type);
         sb.append("* ");
-        sb.append(loc);
+        sb.append(rhsCode);
         sb.append('\n');
 
         return new Expr(rhs.getLoc(), sb.toString());
