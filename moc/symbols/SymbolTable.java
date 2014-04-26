@@ -1,4 +1,5 @@
-package moc.tds;
+package moc.symbols;
+
 
 import java.util.HashMap;
 import java.util.Map;

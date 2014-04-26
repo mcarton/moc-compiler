@@ -3,7 +3,7 @@ package moc.gc.tam;
 import java.util.ArrayList;
 import moc.type.*;
 import moc.gc.*;
-import moc.tds.*;
+import moc.symbols.*;
 
 /**
  * The TAM machine and its generation functions

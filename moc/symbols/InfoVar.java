@@ -1,4 +1,4 @@
-package moc.tds;
+package moc.symbols;
 
 import moc.gc.Location;
 import moc.type.Type;

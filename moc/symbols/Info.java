@@ -1,4 +1,4 @@
-package moc.tds;
+package moc.symbols;
 
 /*
  * Interface to represent an info in the symbol table.

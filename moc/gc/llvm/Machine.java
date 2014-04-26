@@ -6,9 +6,8 @@ import java.lang.UnsupportedOperationException;
 import java.util.Iterator;
 import moc.gc.*;
 import moc.compiler.MOCException;
-
 import moc.type.*;
-import moc.tds.*;
+import moc.symbols.*;
 
 /**
  * The TAM machine and its generation functions

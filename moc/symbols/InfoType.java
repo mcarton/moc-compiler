@@ -1,4 +1,4 @@
-package moc.tds;
+package moc.symbols;
 
 import moc.type.Type;
 

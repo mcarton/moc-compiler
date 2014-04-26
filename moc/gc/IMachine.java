@@ -2,7 +2,7 @@ package moc.gc;
 
 import moc.compiler.MOCException;
 import moc.type.*;
-import moc.tds.*;
+import moc.symbols.*;
 
 /**
  * This interface describes a target machine
