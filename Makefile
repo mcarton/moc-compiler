@@ -1,7 +1,6 @@
 #--------------------------------------------------------
 # the grammar (see src)
 XMOC=MOC
-XASM=ASM
 #--------------------------------------------------------
 # directories containing egg
 EDIR=.
@@ -16,7 +15,6 @@ all : src att class
 
 src :
 	(cd moc ; $(JDIR)/java -jar ../$(EJAR) $(XMOC).egg)
-	(cd moc ; $(JDIR)/java -jar ../$(EJAR) $(XASM).egg)
 
 att :
 	$(JDIR)/javac -classpath $(GJAR) moc/compiler/*.java
