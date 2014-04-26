@@ -29,31 +29,31 @@ public interface IMachine {
     // location stuffs:
     void newFunction();
     void newBloc();
-    Location getLocationFor(String name, DTYPE type);
+    Location getLocationFor(String name, Type type);
 
     // type stuffs:
-    DTYPE getCharType();
-    DTYPE getIntType();
-    DTYPE getPtrType(moc.type.DTYPE what);
-    DTYPE getArrayType(moc.type.DTYPE what, int nbElements);
-    DTYPE getStringType(String string);
+    Type getCharType();
+    Type getIntType();
+    Type getPtrType(moc.type.Type what);
+    Type getArrayType(moc.type.Type what, int nbElements);
+    Type getStringType(String string);
 
     // code generation stuffs:
-    String genFunction(DFUNCTIONTYPE f, String name, String bloc);
-    String genReturn(DFUNCTIONTYPE f, Expr expr);
-    String genVarDecl(DTYPE t, Location location);
-    String genVarDecl(DTYPE t, Location location, Expr expr);
+    String genFunction(FunctionType f, String name, String bloc);
+    String genReturn(FunctionType f, Expr expr);
+    String genVarDecl(Type t, Location location);
+    String genVarDecl(Type t, Location location, Expr expr);
 
     Expr genInt(String txt);
     Expr genString(String txt);
     Expr genCharacter(String txt);
     Expr genNull();
-    Expr genNew(DTYPE type);
-    String genDelete(DTYPE type, Location loc);
+    Expr genNew(Type type);
+    String genDelete(Type type, Location loc);
 
-    Expr genIdent(INFOVAR info);
-    Expr genAff(DTYPE type, Location lhs, Expr rhs);
-    Expr genNonAff(DTYPE type, Expr expr);
+    Expr genIdent(InfoVar info);
+    Expr genAff(Type type, Location lhs, Expr rhs);
+    Expr genNonAff(Type type, Expr expr);
 
     Expr genAdd(Expr lhs, Expr rhs);
 

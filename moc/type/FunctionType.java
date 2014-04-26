@@ -2,24 +2,24 @@ package moc.type;
 
 import java.util.ArrayList;
 
-public class DFUNCTIONTYPE {
-    DTYPE returnType;
-    LTYPES parameterTypes;
+public class FunctionType {
+    Type returnType;
+    TypeList parameterTypes;
 
-    public DFUNCTIONTYPE(DTYPE returnType, LTYPES parameterTypes) {
+    public FunctionType(Type returnType, TypeList parameterTypes) {
         this.returnType = returnType;
         this.parameterTypes = parameterTypes;
     }
 
-    public DTYPE getReturnType() {
+    public Type getReturnType() {
         return returnType;
     }
 
-    public LTYPES getParameterTypes() {
+    public TypeList getParameterTypes() {
         return parameterTypes;
     }
 
-    public boolean callableWith(LTYPES params) {
+    public boolean callableWith(TypeList params) {
         return parameterTypes.constructsFrom(params);
     }
 

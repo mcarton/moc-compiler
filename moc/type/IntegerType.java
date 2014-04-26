@@ -1,7 +1,7 @@
 package moc.type;
 
-public class INTEGER_t extends AbstractType<INTEGER_t> {
-    public INTEGER_t(int size) {
+public class IntegerType extends AbstractType<IntegerType> {
+    public IntegerType(int size) {
         this.size = size;
     }
 
@@ -10,13 +10,13 @@ public class INTEGER_t extends AbstractType<INTEGER_t> {
     }
 
     @Override
-    public boolean constructsFrom(DTYPE autre) {
-        return autre instanceof INTEGER_t;
+    public boolean constructsFrom(Type autre) {
+        return autre instanceof IntegerType;
     }
      
     @Override
-    public boolean comparableWith(DTYPE other, String operator) {
-        return other instanceof INTEGER_t;
+    public boolean comparableWith(Type other, String operator) {
+        return other instanceof IntegerType;
     }
 
     @Override

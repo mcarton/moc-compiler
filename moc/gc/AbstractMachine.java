@@ -55,7 +55,7 @@ public abstract class AbstractMachine implements IMachine {
         }
     }
 
-    public moc.type.DTYPE getStringType(String string) {
+    public moc.type.Type getStringType(String string) {
         int nbChar = string.length()
                 +1 /* includes '\0' */
                 -2 /* excludes "" */;

@@ -39,17 +39,17 @@ public class Machine extends AbstractMachine {
     }
 
     // type size stuffs:
-    @Override public DTYPE getCharType() {
-        return new CHARACTER_t(1);
+    @Override public Type getCharType() {
+        return new CharacterType(1);
     }
-    @Override public DTYPE getIntType() {
-        return new INTEGER_t(8);
+    @Override public Type getIntType() {
+        return new IntegerType(8);
     }
-    @Override public DTYPE getPtrType(DTYPE what) {
-        return new POINTER(8, what);
+    @Override public Type getPtrType(Type what) {
+        return new Pointer(8, what);
     }
-    @Override public DTYPE getArrayType(DTYPE what, int nbElements) {
-        return new ARRAY(what, nbElements);
+    @Override public Type getArrayType(Type what, int nbElements) {
+        return new Array(what, nbElements);
     }
 
     // location stuffs:
@@ -65,13 +65,13 @@ public class Machine extends AbstractMachine {
     }
 
     @Override
-    public Location getLocationFor(String name, DTYPE type) {
+    public Location getLocationFor(String name, Type type) {
         return new Location('%' + name + bloc);
     }
 
     // code generation stuffs:
     @Override
-    public String genFunction(DFUNCTIONTYPE f, String name, String bloc) {
+    public String genFunction(FunctionType f, String name, String bloc) {
         StringBuilder sb = new StringBuilder(name.length() + bloc.length());
 
         sb.append("define ");
@@ -80,7 +80,7 @@ public class Machine extends AbstractMachine {
         sb.append(name);
         sb.append('(');
 
-        Iterator<DTYPE> it = f.getParameterTypes().iterator();
+        Iterator<Type> it = f.getParameterTypes().iterator();
         while(it.hasNext()) {
             sb.append(it.next().visit(typeVisitor));
             sb.append(' ');
@@ -98,7 +98,7 @@ public class Machine extends AbstractMachine {
     }
 
     @Override
-    public String genReturn(DFUNCTIONTYPE f, moc.gc.Expr gcexpr) {
+    public String genReturn(FunctionType f, moc.gc.Expr gcexpr) {
         Expr expr = (Expr)gcexpr;
 
         StringBuilder sb = new StringBuilder();
@@ -116,7 +116,7 @@ public class Machine extends AbstractMachine {
     }
 
     @Override
-    public String genVarDecl(DTYPE t, moc.gc.Location loc) {
+    public String genVarDecl(Type t, moc.gc.Location loc) {
         StringBuilder sb = new StringBuilder(20);
 
         String type = t.visit(typeVisitor);
@@ -130,7 +130,7 @@ public class Machine extends AbstractMachine {
         return sb.toString();
     }
     @Override
-    public String genVarDecl(DTYPE t, moc.gc.Location loc, moc.gc.Expr expr) {
+    public String genVarDecl(Type t, moc.gc.Location loc, moc.gc.Expr expr) {
         StringBuilder sb = new StringBuilder(50);
 
         String type = t.visit(typeVisitor);
@@ -174,7 +174,7 @@ public class Machine extends AbstractMachine {
         return new Expr(null, txt); // TODO:string
     }
     @Override
-    public Expr genNew(DTYPE t) {
+    public Expr genNew(Type t) {
         StringBuilder sb = new StringBuilder(50);
 
         String type = t.visit(typeVisitor);
@@ -202,7 +202,7 @@ public class Machine extends AbstractMachine {
         return new Expr(new Location(tmpCastedPtr), sb.toString());
     }
     @Override
-    public String genDelete(DTYPE t, moc.gc.Location loc) {
+    public String genDelete(Type t, moc.gc.Location loc) {
         StringBuilder sb = new StringBuilder(50);
 
         String type = t.visit(typeVisitor);
@@ -226,7 +226,7 @@ public class Machine extends AbstractMachine {
     }
 
     @Override
-    public Expr genIdent(INFOVAR info) {
+    public Expr genIdent(InfoVar info) {
         StringBuilder sb = new StringBuilder();
 
         String tmpValueName = getTmpName();
@@ -241,7 +241,7 @@ public class Machine extends AbstractMachine {
         return new Expr(new Location(tmpValueName), sb.toString());
     }
     @Override
-    public Expr genAff(DTYPE t, moc.gc.Location loc, moc.gc.Expr gcrhs) {
+    public Expr genAff(Type t, moc.gc.Location loc, moc.gc.Expr gcrhs) {
         Expr rhs = (Expr)gcrhs;
 
         StringBuilder sb = new StringBuilder(50);
@@ -262,7 +262,7 @@ public class Machine extends AbstractMachine {
         return new Expr(rhs.getLoc(), sb.toString());
     }
     @Override
-    public moc.gc.Expr genNonAff(DTYPE t, moc.gc.Expr expr) {
+    public moc.gc.Expr genNonAff(Type t, moc.gc.Expr expr) {
         return expr;
     }
 
@@ -317,26 +317,26 @@ public class Machine extends AbstractMachine {
 }
 
 class RepresentationVisitor implements TypeVisitor<String> {
-    public String visit(DTYPE what) {
+    public String visit(Type what) {
         throw new UnsupportedOperationException(
             "This visitor does not support the type of " + what
         );
     }
 
-    public String visit(INTEGER_t what)    { return "i64"; }
-    public String visit(CHARACTER_t what)  { return "i8"; }
+    public String visit(IntegerType what)   { return "i64"; }
+    public String visit(CharacterType what) { return "i8"; }
 
-    public String visit(VOID_t what)       { return "void"; }
-    public String visit(NULL_t what)       { return "i8*"; }
+    public String visit(VoidType what)      { return "void"; }
+    public String visit(NullType what)      { return "i8*"; }
 
-    public String visit(ARRAY what) {
+    public String visit(Array what) {
         return "["
             + what.getNbElements()
             + " x "
             + what.getPointee().visit(this)
             + "]";
     }
-    public String visit(POINTER what) {
+    public String visit(Pointer what) {
         return what.getPointee().visit(this) + "*";
     }
 }

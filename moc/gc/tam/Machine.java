@@ -19,17 +19,17 @@ public class Machine extends AbstractMachine {
     }
 
     // type stuffs:
-    @Override public DTYPE getCharType() {
-        return new CHARACTER_t(1);
+    @Override public Type getCharType() {
+        return new CharacterType(1);
     }
-    @Override public DTYPE getIntType() {
-        return new INTEGER_t(1);
+    @Override public Type getIntType() {
+        return new IntegerType(1);
     }
-    @Override public DTYPE getPtrType(DTYPE what) {
-        return new POINTER(1, what);
+    @Override public Type getPtrType(Type what) {
+        return new Pointer(1, what);
     }
-    @Override public DTYPE getArrayType(DTYPE what, int nbElements) {
-        return new ARRAY(what, nbElements);
+    @Override public Type getArrayType(Type what, int nbElements) {
+        return new Array(what, nbElements);
     }
 
     // location stuffs:
@@ -42,27 +42,27 @@ public class Machine extends AbstractMachine {
     }
 
     @Override
-    public Location getLocationFor(String name, DTYPE type) {
+    public Location getLocationFor(String name, Type type) {
         return null;
     }
  
     // code generation stuffs:
     @Override
-    public String genFunction(DFUNCTIONTYPE f, String name, String bloc) {
+    public String genFunction(FunctionType f, String name, String bloc) {
         return bloc; // TODO:code
     }
 
     @Override
-    public String genReturn(DFUNCTIONTYPE f, moc.gc.Expr expr) {
+    public String genReturn(FunctionType f, moc.gc.Expr expr) {
         return ""; // TODO:code
     }
 
     @Override
-    public String genVarDecl(DTYPE t, moc.gc.Location loc) {
+    public String genVarDecl(Type t, moc.gc.Location loc) {
         return ""; // TODO:code
     }
     @Override
-    public String genVarDecl(DTYPE t, moc.gc.Location loc, moc.gc.Expr expr) {
+    public String genVarDecl(Type t, moc.gc.Location loc, moc.gc.Expr expr) {
         return ""; // TODO:code
     }
 
@@ -83,26 +83,26 @@ public class Machine extends AbstractMachine {
         return new Expr("\tSUBR MVoid \n");
     }
     @Override
-    public Expr genNew(DTYPE t) {
+    public Expr genNew(Type t) {
         return null; // TODO:code
     }
     @Override
-    public String genDelete(DTYPE t, moc.gc.Location loc) {
+    public String genDelete(Type t, moc.gc.Location loc) {
         return ""; // TODO:code
     }
 
     @Override
-    public Expr genIdent(INFOVAR info) {
+    public Expr genIdent(InfoVar info) {
         // TODO:code
         return null;
     }
     @Override
-    public Expr genAff(DTYPE t, moc.gc.Location loc, moc.gc.Expr gcrhs) {
+    public Expr genAff(Type t, moc.gc.Location loc, moc.gc.Expr gcrhs) {
         // TODO:code
         return null;
     }
     @Override
-    public Expr genNonAff(DTYPE t, moc.gc.Expr expr) {
+    public Expr genNonAff(Type t, moc.gc.Expr expr) {
         // TODO:code
         return null;
     }

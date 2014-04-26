@@ -1,16 +1,16 @@
 package moc.tds;
 
 import moc.gc.Location;
-import moc.type.DTYPE;
+import moc.type.Type;
 
 /**
  * This class describes a local var: address and type
  */
-public class INFOVAR implements INFO {
+public class InfoVar implements Info {
     /**
      * var type
      */
-    protected DTYPE type;
+    protected Type type;
 
     /**
      * Represents a memory location: depends on the machine
@@ -25,20 +25,20 @@ public class INFOVAR implements INFO {
         return getType().getSize();
     }
 
-    public DTYPE getType() {
+    public Type getType() {
         return type;
     }
 
     /**
      * A var has a type and a location for its value
      */
-    public INFOVAR(DTYPE t, Location l) {
+    public InfoVar(Type t, Location l) {
         type = t;
         loc = l;
     }
 
     @Override
     public String toString() {
-        return "INFOVAR [type=" + type + ", loc=" + loc + "]";
+        return "InfoVar [type=" + type + ", loc=" + loc + "]";
     }
 }

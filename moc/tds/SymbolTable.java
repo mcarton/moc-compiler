@@ -9,38 +9,38 @@ import moc.type.*;
 /**
  * A hierarchical symbols table.
  */
-public class TDS {
+public class SymbolTable {
     private static final long serialVersionUID = 0x5a7a79a;
-    private HashMap<String, INFO> map = new HashMap<String, INFO>();
-    private TDS mother;
-    private DFUNCTIONTYPE currentFunction;
+    private HashMap<String, Info> map = new HashMap<String, Info>();
+    private SymbolTable mother;
+    private FunctionType currentFunction;
     /**
      * Constructor for a symbols table without mother.
      */
-    public TDS() {
+    public SymbolTable() {
         this(null);
     }
 
     /**
-     * Constructor for a TDS daughter of p.
+     * Constructor for a SymbolTable daughter of p.
      */
-    public TDS(TDS p) {
+    public SymbolTable(SymbolTable p) {
         mother = p;
         currentFunction = p == null ? null : p.currentFunction;
     }
 
     /**
-     * Look for n in the current TDS only.
+     * Look for n in the current SymbolTable only.
      */
-    public INFO localSearch(String n) {
+    public Info localSearch(String n) {
         return map.get(n);
     }
 
     /**
-     * Look for n in the current TDS and its ancestors.
+     * Look for n in the current SymbolTable and its ancestors.
      */
-    public INFO globalSearch(String n) {
-        INFO i = localSearch(n);
+    public Info globalSearch(String n) {
+        Info i = localSearch(n);
         if (i == null && mother != null) {
             return mother.globalSearch(n);
         }
@@ -48,42 +48,42 @@ public class TDS {
     }
 
     /**
-     * Add n and its info i in the TDS.
+     * Add n and its info i in the SymbolTable.
      */
-    public void insertVar(String n, DTYPE t, Location location) {
-        map.put(n, new INFOVAR(t, location));
+    public void insertVar(String n, Type t, Location location) {
+        map.put(n, new InfoVar(t, location));
     }
 
     /**
-     * Add t (function) and its info i in the TDS.
+     * Add t (function) and its info i in the SymbolTable.
      */
-    public void insertFun(String n, DFUNCTIONTYPE i) {
-        map.put(n, new INFOFUN(i));
+    public void insertFun(String n, FunctionType i) {
+        map.put(n, new InfoFun(i));
     }
 
     /**
-     * Add a type alias to the TDS.
+     * Add a type alias to the SymbolTable.
      */
-    public void insertType(String n, DTYPE t) {
-        map.put(n, new INFOTYPE(t));
+    public void insertType(String n, Type t) {
+        map.put(n, new InfoType(t));
     }
 
     /**
      * Set the current function.
      */
-    public void setCurrentFunction(String n, DFUNCTIONTYPE fun) {
+    public void setCurrentFunction(String n, FunctionType fun) {
         currentFunction = fun;
         mother.insertFun(n, fun);
     }
 
-    public DFUNCTIONTYPE getCurrentFunction() {
+    public FunctionType getCurrentFunction() {
         return currentFunction;
     }
 
     /**
      * Return whether we can return type from the current function.
      */
-    public boolean canReturn(DTYPE type) {
+    public boolean canReturn(Type type) {
         return currentFunction.getReturnType().constructsFrom(type);
     }
 

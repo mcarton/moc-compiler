@@ -1,7 +1,7 @@
 package moc.type;
 
-public class VOID_t extends AbstractType<VOID_t> {
-    public VOID_t() {
+public class VoidType extends AbstractType<VoidType> {
+    public VoidType() {
         this.size = 0;
     }
 
@@ -10,12 +10,12 @@ public class VOID_t extends AbstractType<VOID_t> {
     }
 
     @Override
-    public boolean constructsFrom(DTYPE autre) {
+    public boolean constructsFrom(Type autre) {
         return false;
     }
 
     @Override
-    public boolean comparableWith(DTYPE other, String operator) {
+    public boolean comparableWith(Type other, String operator) {
         return false;
     }
 

@@ -1,6 +1,6 @@
 package moc.type;
 
-public abstract class AbstractType<T extends DTYPE> implements DTYPE {
+public abstract class AbstractType<T extends Type> implements Type {
     protected int size;
 
     public int getSize() {

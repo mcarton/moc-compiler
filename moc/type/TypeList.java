@@ -3,22 +3,22 @@ package moc.type;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class LTYPES {
-    ArrayList<DTYPE> list = new ArrayList<DTYPE>();
+public class TypeList {
+    ArrayList<Type> list = new ArrayList<Type>();
 
     public int size() {
         return list.size();
     }
 
-    public Iterator<DTYPE> iterator() {
+    public Iterator<Type> iterator() {
         return list.iterator();
     }
 
-    public void add(DTYPE c) {
+    public void add(Type c) {
         list.add(c);
     }
 
-    public DTYPE get(int i) {
+    public Type get(int i) {
         return list.get(i);
     }
 
@@ -26,7 +26,7 @@ public class LTYPES {
         return list.toString();
     }
 
-    public boolean constructsFrom(LTYPES other) {
+    public boolean constructsFrom(TypeList other) {
         if(size() != other.size()) {
             return false;
         }

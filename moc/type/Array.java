@@ -1,10 +1,10 @@
 package moc.type;
 
-public class ARRAY extends AbstractType<ARRAY> {
-    private DTYPE pointee;
+public class Array extends AbstractType<Array> {
+    private Type pointee;
     private int nbElements;
 
-    public ARRAY(DTYPE pointee, int nbElements) {
+    public Array(Type pointee, int nbElements) {
         this.size = pointee.getSize()*nbElements;
         this.pointee = pointee;
         this.nbElements = nbElements;
@@ -14,7 +14,7 @@ public class ARRAY extends AbstractType<ARRAY> {
         return pointee.toString() + "[" + nbElements + "]";
     }
 
-    public DTYPE getPointee() {
+    public Type getPointee() {
         return pointee;
     }
 
@@ -23,16 +23,16 @@ public class ARRAY extends AbstractType<ARRAY> {
     }
 
     @Override
-    public boolean constructsFrom(DTYPE other) {
-        return other instanceof ARRAY
-            && ((ARRAY)other).pointee.constructsFrom(pointee)
-            && ((ARRAY)other).nbElements == nbElements;
+    public boolean constructsFrom(Type other) {
+        return other instanceof Array
+            && ((Array)other).pointee.constructsFrom(pointee)
+            && ((Array)other).nbElements == nbElements;
     }
       
     @Override
-    public boolean comparableWith(DTYPE other, String operator) {
+    public boolean comparableWith(Type other, String operator) {
         return (operator.equals("==") || operator.equals("!="))
-            && other instanceof ARRAY;
+            && other instanceof Array;
     }
 
     @Override

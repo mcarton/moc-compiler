@@ -20,7 +20,7 @@ inh machine : IMachine for
 ;
 
 -- the current symbols table
-inh tds : TDS for
+inh symbolTable : SymbolTable for
     ENTITIES, BLOC, ELSE, INST, INSTS, ARGS, ARGSX,
     FUNCTION, FUNC_PARAMETER, FUNC_PARAMETERS, FUNC_PARAMETERSX,
     TYPE, STYPE, REFS, SIZEOFEXPR,
@@ -32,15 +32,15 @@ syn returns : int for
     INST, INSTS, BLOC, ELSE;
 
 -- types:
-syn type : DTYPE for
+syn type : Type for
     TYPE, STYPE, REFS,
     F, TX, T, RX, R, AX, A, EX, E
 ;
-inh htype : DTYPE for
+inh htype : Type for
     REFS,
     TX, RX, AX
 ;
-inh types : LTYPES for
+inh types : TypeList for
     FUNC_PARAMETERS, FUNC_PARAMETERSX, FUNC_PARAMETER,
     ARGS, ARGSX
 ;
@@ -123,11 +123,11 @@ global
 #init {
     machine = PROGRAM^source.getMachine();
     ENTITIES^machine = machine;
-    TDS tds = new TDS();
-    tds.insertType("Int", machine.getIntType());
-    tds.insertType("Char", machine.getCharType());
+    SymbolTable symbolTable = new SymbolTable();
+    symbolTable.insertType("Int", machine.getIntType());
+    symbolTable.insertType("Char", machine.getCharType());
 
-    ENTITIES^tds = tds;
+    ENTITIES^symbolTable = symbolTable;
 }
 #gen {
     machine.writeCode(PROGRAM^source.getFileName(), ENTITIES^code);
@@ -144,30 +144,30 @@ ENTITIES -> FUNCTION ENTITIES #gen;
 }
 
 -- functions
-FUNCTION -> TYPE ident #ctds opar FUNC_PARAMETERS #utds cpar BLOC #returns #gen;
+FUNCTION -> TYPE ident #csymbolTable opar FUNC_PARAMETERS #usymbolTable cpar BLOC #returns #gen;
 global
-    TDS blocTds;
-    LTYPES types;
-    DFUNCTIONTYPE fun;
-#ctds {
+    SymbolTable blocTds;
+    TypeList types;
+    FunctionType fun;
+#csymbolTable {
     FUNCTION^machine.newFunction();
-    blocTds = new TDS(FUNCTION^tds);
-    types = new LTYPES();
+    blocTds = new SymbolTable(FUNCTION^symbolTable);
+    types = new TypeList();
     FUNC_PARAMETERS^types = types;
-    FUNC_PARAMETERS^tds = blocTds;
-    BLOC^tds = blocTds;
+    FUNC_PARAMETERS^symbolTable = blocTds;
+    BLOC^symbolTable = blocTds;
 }
-#utds {
-    if(FUNCTION^tds.localSearch(ident^txt) != null) {
+#usymbolTable {
+    if(FUNCTION^symbolTable.localSearch(ident^txt) != null) {
         error(FUN_exists, ident^txt);
     }
     else {
-        fun = new DFUNCTIONTYPE(TYPE^type, types);
+        fun = new FunctionType(TYPE^type, types);
         blocTds.setCurrentFunction(ident^txt, fun);
     }
 }
 #returns {
-    if(BLOC^returns != 2 && !instanceof(TYPE^type, VOID_t)) {
+    if(BLOC^returns != 2 && !instanceof(TYPE^type, VoidType)) {
         error(FUN_missingReturn);
     }
 }
@@ -182,29 +182,29 @@ FUNC_PARAMETERS -> FUNC_PARAMETER FUNC_PARAMETERSX;
 FUNC_PARAMETERSX -> ;
 FUNC_PARAMETERSX -> comma FUNC_PARAMETER FUNC_PARAMETERSX;
 
-FUNC_PARAMETER -> TYPE ident #tds;
-#tds {
-    if(FUNC_PARAMETER^tds.localSearch(ident^txt) != null) {
+FUNC_PARAMETER -> TYPE ident #symbolTable;
+#symbolTable {
+    if(FUNC_PARAMETER^symbolTable.localSearch(ident^txt) != null) {
         error(VAR_exists, ident^txt);
     }
-    elseif(instanceof(TYPE^type, VOID_t)) {
+    elseif(instanceof(TYPE^type, VoidType)) {
         error(TYPE_void);
     }
     else {
         if(FUNC_PARAMETER^machine.hasWarning("shadow")
-        && FUNC_PARAMETER^tds.globalSearch(ident^txt) != null) {
+        && FUNC_PARAMETER^symbolTable.globalSearch(ident^txt) != null) {
             warning(VAR_shadow, ident^txt);
         }
 
         FUNC_PARAMETER^types.add(TYPE^type);
         Location loc
             = FUNC_PARAMETER^machine.getLocationFor(ident^txt, TYPE^type);
-        FUNC_PARAMETER^tds.insertVar(ident^txt, TYPE^type, loc);
+        FUNC_PARAMETER^symbolTable.insertVar(ident^txt, TYPE^type, loc);
     }
 }
 
 -- base types and pointers
-TYPE -> void #gen; #gen { TYPE^type = new VOID_t(); }
+TYPE -> void #gen; #gen { TYPE^type = new VoidType(); }
 
 TYPE -> STYPE #get REFS #gen;
 #get { REFS^htype = STYPE^type; }
@@ -224,13 +224,13 @@ REFS -> osbra integer csbra REFS #gen;
 
 STYPE -> typeident #gen;
 #gen {
-    INFO info = STYPE^tds.globalSearch(typeident^txt);
+    Info info = STYPE^symbolTable.globalSearch(typeident^txt);
     if(info == null) {
         error(TYPE_unknown, typeident^txt);
     }
     else {
         match(info) {
-            case INFOTYPE {
+            case InfoType {
                 STYPE^type = info.getType();
             }
             default {
@@ -241,18 +241,18 @@ STYPE -> typeident #gen;
 }
 
 -- method body and instructions blocks
-BLOC -> #tds occbra INSTS ccbra #message #gen;
+BLOC -> #symbolTable occbra INSTS ccbra #message #gen;
 global
-    TDS tds;
-#tds {
+    SymbolTable symbolTable;
+#symbolTable {
     BLOC^machine.newBloc();
-    tds = new TDS(BLOC^tds);
-    INSTS^tds = tds;
+    symbolTable = new SymbolTable(BLOC^symbolTable);
+    INSTS^symbolTable = symbolTable;
 }
 #message {
     BLOC^returns = INSTS^returns;
     if(BLOC^machine.verbosity() >= 5) {
-        write("Symbols: " + tds.toString()+"\n");
+        write("Symbols: " + symbolTable.toString()+"\n");
     }
 }
 #gen {
@@ -288,23 +288,23 @@ INSTS -> INST INSTS #returns #gen;
 }
 
 -- typedef declaration
-INST -> using typeident affect TYPE #tds semicolon #gen;
-#tds {
+INST -> using typeident affect TYPE #symbolTable semicolon #gen;
+#symbolTable {
     INST^returns = 1;
 
-    if(INST^tds.localSearch(typeident^txt) != null) {
+    if(INST^symbolTable.localSearch(typeident^txt) != null) {
         error(TYPE_exists, typeident^txt);
     }
-    elseif(instanceof(TYPE^type, VOID_t)) {
+    elseif(instanceof(TYPE^type, VoidType)) {
         error(TYPE_void);
     }
     else {
         if(INST^machine.hasWarning("shadow")
-        && INST^tds.globalSearch(typeident^txt) != null) {
+        && INST^symbolTable.globalSearch(typeident^txt) != null) {
             warning(TYPE_shadow, typeident^txt);
         }
 
-        INST^tds.insertType(typeident^txt, TYPE^type);
+        INST^symbolTable.insertType(typeident^txt, TYPE^type);
     }
 }
 #gen {
@@ -312,13 +312,13 @@ INST -> using typeident affect TYPE #tds semicolon #gen;
 }
 
 -- local variable declaration with or without initialisation
-INST -> TYPE ident EX semicolon #tds #gen;
+INST -> TYPE ident EX semicolon #symbolTable #gen;
 global
     Location loc;
-#tds {
+#symbolTable {
     INST^returns = 1;
 
-    INFO info = INST^tds.localSearch(ident^txt);
+    Info info = INST^symbolTable.localSearch(ident^txt);
     if(info != null) {
         error(VAR_exists, ident^txt);
     }
@@ -327,19 +327,19 @@ global
             error(TYPE_unexpected, TYPE^type, EX^type);
         }
 
-        if(instanceof(TYPE^type, VOID_t)) {
+        if(instanceof(TYPE^type, VoidType)) {
             error(TYPE_void);
         }
 
         if(INST^machine.hasWarning("shadow")
-        && INST^tds.globalSearch(ident^txt) != null) {
+        && INST^symbolTable.globalSearch(ident^txt) != null) {
             warning(VAR_shadow, ident^txt);
         }
 
         -- we add the variable in the symbol table even when there is an
         -- error in order to avoid a lot of "unknown variable"
         loc = INST^machine.getLocationFor(ident^txt, TYPE^type);
-        INST^tds.insertVar(ident^txt, TYPE^type, loc);
+        INST^symbolTable.insertVar(ident^txt, TYPE^type, loc);
     }
 }
 #gen {
@@ -408,12 +408,12 @@ ELSE -> #returns #gen;
 INST -> return E semicolon #type #gen;
 #type {
     INST^returns = 2;
-    if(!INST^tds.canReturn(E^type)) {
+    if(!INST^symbolTable.canReturn(E^type)) {
         error(FUN_returnType, E^type);
     }
 }
 #gen {
-    INST^code = INST^machine.genReturn(INST^tds.getCurrentFunction(), E^expr);
+    INST^code = INST^machine.genReturn(INST^symbolTable.getCurrentFunction(), E^expr);
 }
 
 -- expressions
@@ -530,9 +530,9 @@ RX -> OPADD T #type #gen RX;
 #type {
     -- TODO:MOC: booleans with or
     match(RX^htype) {
-        case INTEGER_t {
+        case IntegerType {
             match(T^type) {
-                case INTEGER_t {
+                case IntegerType {
                     RX^type = T^type;
                 }
                 default {
@@ -582,9 +582,9 @@ TX -> OPMUL F TX #type;
 #type {
     -- TODO:MOC: booleans with and
     match(TX^htype) {
-        case INTEGER_t {
+        case IntegerType {
             match(F^type) {
-                case INTEGER_t {
+                case IntegerType {
                     TX^type = F^type;
                     -- TODO:code
                     TX^expr = TX^hexpr;
@@ -603,8 +603,8 @@ TX -> OPMUL F TX #type;
 TX -> osbra E csbra #type;
 #type {
     match(TX^htype) {
-        case ARRAY {
-            if(instanceof(E^type, INTEGER_t)) {
+        case Array {
+            if(instanceof(E^type, IntegerType)) {
                 TX^type = TX^htype.getPointee();
 
                 -- TODO:code
@@ -641,7 +641,7 @@ F -> character #type;
 
 F -> null #type;
 #type {
-    F^type = new NULL_t();
+    F^type = new NullType();
     F^expr = F^machine.genNull();
 }
 
@@ -653,7 +653,7 @@ F -> OPUN F #type;
 #type {
     -- TODO:MOC: booleans with not
     match(F1^type) {
-        case INTEGER_t {
+        case IntegerType {
             F^type = F1^type;
 
             -- TODO:code
@@ -668,7 +668,7 @@ F -> OPUN F #type;
 -- new/delete expressions
 F -> new opar TYPE cpar #type;
 #type {
-    if(instanceof(TYPE^type, VOID_t)) {
+    if(instanceof(TYPE^type, VoidType)) {
         error(TYPE_void);
     }
     else {
@@ -679,7 +679,7 @@ F -> new opar TYPE cpar #type;
 
 INST -> delete opar E cpar #returns semicolon #gen;
 #returns {
-    if(!instanceof(E^type, POINTER)) {
+    if(!instanceof(E^type, Pointer)) {
         error(TYPE_unexpected, "pointer", E^type);
     }
     INST^returns = 1;
@@ -721,20 +721,20 @@ F -> opar TYPE cpar F #type;
 -- subprogram call
 F -> ident opar #types ARGS cpar #type #gen;
 global
-    LTYPES types;
+    TypeList types;
 #types {
-    types = new LTYPES();
+    types = new TypeList();
     ARGS^types = types;
 }
 #type {
-    INFO info  = F^tds.globalSearch(ident^txt);
+    Info info  = F^symbolTable.globalSearch(ident^txt);
     if(info == null) {
         error(FUN_unknown, ident^txt);
     }
     else {
         match(info) {
-            case INFOFUN {
-                DFUNCTIONTYPE fun = info.getType();
+            case InfoFun {
+                FunctionType fun = info.getType();
                 F^type = fun.getReturnType();
 
                 if(!fun.callableWith(types)) {
@@ -754,13 +754,13 @@ global
 
 F -> ident #type;
 #type {
-    INFO info = F^tds.globalSearch(ident^txt);
+    Info info = F^symbolTable.globalSearch(ident^txt);
     if(info == null) {
         error(VAR_unknown, ident^txt);
     }
     else {
         match(info) {
-            case INFOVAR {
+            case InfoVar {
                 F^type = info.getType();
                 F^expr = F^machine.genIdent(info);
             }
@@ -775,7 +775,7 @@ F -> ident #type;
 F -> mult F #type;
 #type {
     match(F1^type) {
-        case POINTER {
+        case Pointer {
             F^type = F1^type.getPointee();
 
             -- TODO:code

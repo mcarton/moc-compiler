@@ -1,15 +1,15 @@
 package moc.type;
 
 public interface TypeVisitor<R> {
-    public R visit(DTYPE what);
+    public R visit(Type what);
 
-    public R visit(INTEGER_t what);
-    public R visit(CHARACTER_t what);
+    public R visit(IntegerType what);
+    public R visit(CharacterType what);
 
-    public R visit(VOID_t what);
-    public R visit(NULL_t what);
+    public R visit(VoidType what);
+    public R visit(NullType what);
 
-    public R visit(POINTER what);
-    public R visit(ARRAY what);
+    public R visit(Pointer what);
+    public R visit(Array what);
 }
 
