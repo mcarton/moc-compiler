@@ -58,6 +58,9 @@ syn expr : Expr for
     F, TX, T, RX, R, AX, A, EX, E
 ;
 inh hexpr : Expr for TX, RX, AX;
+inh exprs : ArrayList<Expr> for
+    ARGS, ARGSX
+;
 
 --terminals
 space separator    is "[\r\n\t ]+";
@@ -727,12 +730,15 @@ F -> opar TYPE cpar F #type;
 }
 
 -- subprogram call
-F -> ident opar #types ARGS cpar #type #gen;
+F -> ident opar #types ARGS cpar #type;
 global
     TypeList types;
+    ArrayList<Expr> exprs;
 #types {
     types = new TypeList();
     ARGS^types = types;
+    exprs = new ArrayList<Expr>();
+    ARGS^exprs = exprs;
 }
 #type {
     Info info  = F^symbolTable.globalSearch(ident^txt);
@@ -748,16 +754,15 @@ global
                 if(!fun.callableWith(types)) {
                     error(FUN_unexpected, fun.getParameterTypes(), types);
                 }
+                else {
+                    F^expr = F^machine.genCall(ident^txt, fun, exprs);
+                }
             }
             default {
                 error(FUN_notCallable, ident^txt);
             }
         }
     }
-}
-#gen {
-    -- TODO:code
-    F^expr = null;
 }
 
 F -> ident #type;
@@ -797,10 +802,18 @@ F -> mult F #type;
 
 -- subprogram call arguments
 ARGS -> ;
-ARGS -> E #type ARGSX; #type { ARGS^types.add(E^type); }
+ARGS -> E #type ARGSX;
+#type {
+    ARGS^types.add(E^type);
+    ARGS^exprs.add(E^expr);
+}
 
 ARGSX -> ;
-ARGSX -> comma E #type ARGSX; #type { ARGSX^types.add(E^type); }
+ARGSX -> comma E #type ARGSX;
+#type {
+    ARGSX^types.add(E^type);
+    ARGSX^exprs.add(E^expr);
+}
 
 -- TODO:MOC:
 --ENTITIES -> IMPLEMENTATION ENTITIES;

@@ -95,6 +95,14 @@ public class Machine extends AbstractMachine {
     }
 
     @Override
+    public Expr genCall(
+        String funName, FunctionType fun,
+        ArrayList<moc.gc.Expr> exprs
+    ) {
+        return null; // TODO:code
+    }
+
+    @Override
     public Expr genIdent(InfoVar info) {
         // TODO:code
         return null;

@@ -2,7 +2,7 @@ void main() {
     main();
 }
 
-void foo(Int a) {
-    foo(a);
+void foo(Int a, Char b) {
+    foo(a, b);
 }
 

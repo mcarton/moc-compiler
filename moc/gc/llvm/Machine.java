@@ -82,19 +82,51 @@ public class Machine extends AbstractMachine {
         sb.append(name);
         sb.append('(');
 
+        // parameter names of the form "__p0", "__p1"
         Iterator<Type> it = f.getParameterTypes().iterator();
-        Iterator<moc.gc.Location> nameIt = params.iterator();
+        int paramIt = 0;
         while(it.hasNext()) {
             sb.append(it.next().visit(typeVisitor));
-            sb.append(' ');
-            sb.append(nameIt.next());
+            sb.append(" %__p");
+            sb.append(++paramIt);
             if(it.hasNext()) {
                 sb.append(", ");
             }
         }
 
         sb.append(") nounwind {\n"); // nounwind = no exceptions
+
+        // allocate space for parameters
+        // %1 = alloca i32, align 4
+        // store i32 %__p1, i32* %1, align 4
+        Iterator<moc.gc.Location> locIt = params.iterator();
+        it = f.getParameterTypes().iterator();
+        paramIt = 0;
+        while(it.hasNext()) {
+            String paramType = it.next().visit(typeVisitor);
+            String paramName = locIt.next().toString();
+            sb.append("    ");
+            sb.append(paramName);
+            sb.append(" = alloca ");
+            sb.append(paramType);
+            sb.append('\n');
+            sb.append("    store ");
+            sb.append(paramType);
+            sb.append(" %__p");
+            sb.append(++paramIt);
+            sb.append(", ");
+            sb.append(paramType);
+            sb.append("* ");
+            sb.append(paramName);
+            sb.append('\n');
+        }
+
         sb.append(bloc);
+
+        if(f.getReturnType() instanceof VoidType) {
+            sb.append("    ret void\n");
+        }
+
         sb.append("}\n\n");
 
         return sb.toString();
@@ -207,7 +239,6 @@ public class Machine extends AbstractMachine {
     @Override
     public String genDelete(Type t, moc.gc.Location loc) {
         StringBuilder sb = new StringBuilder(50);
-
         String type = t.visit(typeVisitor);
 
         // cast to i8* (~ void*)
@@ -226,6 +257,53 @@ public class Machine extends AbstractMachine {
         sb.append(")\n");
 
         return sb.toString();
+    }
+
+    @Override
+    public Expr genCall(
+        String funName, FunctionType fun,
+        ArrayList<moc.gc.Expr> exprs
+    ) {
+        StringBuilder sb = new StringBuilder();
+        String returnType = fun.getReturnType().visit(typeVisitor);
+
+        ArrayList<String> names = new ArrayList<String>();
+        Iterator<Type> it = fun.getParameterTypes().iterator();
+        Iterator<moc.gc.Expr> exprIt = exprs.iterator();
+        while(exprIt.hasNext()) {
+            names.add(getValue(it.next().visit(typeVisitor), exprIt.next(), sb));
+        }
+
+        // %retval = call i32 @funName(parameters)
+        String tmpValueName = getTmpName();
+        sb.append("    ");
+
+        if(!(fun.getReturnType() instanceof VoidType)) {
+            sb.append(tmpValueName);
+            sb.append(" = call ");
+        }
+        else {
+            sb.append("call ");
+        }
+        sb.append(returnType);
+        sb.append(" @");
+        sb.append(funName);
+        sb.append('(');
+
+        it = fun.getParameterTypes().iterator();
+        Iterator<String> nameIt = names.iterator();
+        while(it.hasNext()) {
+            sb.append(it.next().visit(typeVisitor));
+            sb.append(' ');
+            sb.append(nameIt.next());
+            if(it.hasNext()) {
+                sb.append(", ");
+            }
+        }
+
+        sb.append(")\n");
+
+        return new Expr(new Location(tmpValueName), sb.toString());
     }
 
     @Override
