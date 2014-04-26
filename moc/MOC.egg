@@ -65,7 +65,7 @@ inh exprs : ArrayList<Expr> for
 --terminals
 space separator    is "[\r\n\t ]+";
 comment comm       is "\/\/[^\n]*\n";
-comment ml_comm    is "\/\*([^\*]|(\*+[^\*\-]))*\*+\/";
+comment ml_comm    is "\/\*([^\*]|(\*+[^\*\/]))*\*+\/";
 sugar opar         is "\(";
 sugar cpar         is "\)";
 sugar occbra       is "\{";
