@@ -41,6 +41,7 @@ public interface IMachine {
     // code generation stuffs:
     String genFunction(DFUNCTIONTYPE f, String name, String bloc);
     String genReturn(DFUNCTIONTYPE f, Expr expr);
+    String genVarDecl(DTYPE t, Location location);
     String genVarDecl(DTYPE t, Location location, Expr expr);
 
     Expr genInt(String txt);

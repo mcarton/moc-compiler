@@ -58,6 +58,10 @@ public class Machine extends AbstractMachine {
     }
 
     @Override
+    public String genVarDecl(DTYPE t, moc.gc.Location loc) {
+        return ""; // TODO:code
+    }
+    @Override
     public String genVarDecl(DTYPE t, moc.gc.Location loc, moc.gc.Expr expr) {
         return ""; // TODO:code
     }
