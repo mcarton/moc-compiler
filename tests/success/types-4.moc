@@ -1,0 +1,6 @@
+Int main() {
+    Int a = sizeof(42);
+    Int b = sizeof(a);
+    return sizeof(Char[42]);
+}
+

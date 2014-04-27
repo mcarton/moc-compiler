@@ -200,6 +200,9 @@ public class Machine extends AbstractMachine {
     public Expr genInt(String txt) {
         return new Expr(null, txt);
     }
+    public Expr genInt(int nb) {
+        return genInt(Integer.toString(nb));
+    }
     @Override
     public Expr genString(String txt) {
         return new Expr(new Location("%TODO"), "TODO");
@@ -304,6 +307,10 @@ public class Machine extends AbstractMachine {
         sb.append(")\n");
 
         return new Expr(new Location(tmpValueName), sb.toString());
+    }
+    @Override
+    public Expr genSizeOf(Type type) {
+        return genInt(type.getSize());
     }
 
     @Override

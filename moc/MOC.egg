@@ -33,7 +33,7 @@ syn returns : int for
 
 -- types:
 syn type : Type for
-    TYPE, STYPE, REFS,
+    TYPE, STYPE, REFS, SIZEOFEXPR,
     F, TX, T, RX, R, AX, A, EX, E
 ;
 inh htype : Type for
@@ -692,13 +692,13 @@ INST -> delete opar E cpar #returns semicolon #gen;
 F -> sizeof opar SIZEOFEXPR cpar #type;
 #type {
     F^type = F^machine.getIntType();
-
-    -- TODO:code
-    F^expr = null;
+    if(SIZEOFEXPR^type != null) {
+        F^expr = F^machine.genSizeOf(SIZEOFEXPR^type);
+    }
 }
 
-SIZEOFEXPR -> TYPE;
-SIZEOFEXPR -> E;
+SIZEOFEXPR -> TYPE #type; #type { SIZEOFEXPR^type = TYPE^type; }
+SIZEOFEXPR -> E #type;    #type { SIZEOFEXPR^type = E^type; }
 
 -- parenthesised expression
 F -> opar E cpar #type;

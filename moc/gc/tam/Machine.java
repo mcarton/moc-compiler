@@ -73,6 +73,9 @@ public class Machine extends AbstractMachine {
     public Expr genInt(String txt) {
         return new Expr("\tLOADL " + txt + "\n");
     }
+    public Expr genInt(int nb) {
+        return genInt(Integer.toString(nb));
+    }
     @Override
     public Expr genString(String txt) {
         return new Expr("\tLOADL " + txt + "\n");
@@ -100,6 +103,10 @@ public class Machine extends AbstractMachine {
         ArrayList<moc.gc.Expr> exprs
     ) {
         return null; // TODO:code
+    }
+    @Override
+    public Expr genSizeOf(Type type) {
+        return genInt(type.getSize());
     }
 
     @Override

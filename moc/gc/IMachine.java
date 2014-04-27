@@ -55,6 +55,7 @@ public interface IMachine {
     Expr genNew(Type type);
     String genDelete(Type type, Location loc);
     Expr genCall(String funName, FunctionType fun, ArrayList<Expr> exprs);
+    Expr genSizeOf(Type type);
 
     Expr genIdent(InfoVar info);
     Expr genAff(Type type, Location lhs, Expr rhs);
