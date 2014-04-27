@@ -11,12 +11,12 @@ GJAR=$(EJAR):.
 # java, javac, jar
 JDIR=/usr/bin
 #--------------------------------------------------------
-all : src att class
+all: src att class
 
-src :
+src:
 	(cd moc ; $(JDIR)/java -jar ../$(EJAR) $(XMOC).egg)
 
-att :
+att:
 	$(JDIR)/javac -classpath $(GJAR) moc/compiler/*.java
 	$(JDIR)/javac -classpath $(GJAR) moc/symbols/*.java
 	$(JDIR)/javac -classpath $(GJAR) moc/type/*.java
@@ -24,16 +24,21 @@ att :
 	$(JDIR)/javac -classpath $(GJAR) moc/gc/tam/*.java
 	$(JDIR)/javac -classpath $(GJAR) moc/gc/*.java
 
-class :
+class:
 	$(JDIR)/javac -classpath $(GJAR) moc/egg/*.java
 
-test :
-	@cd tests; ./test.py
+test: test-llvm test-tam
 
-pdf :
+test-llvm:
+	@cd tests; ./test.py llvm
+
+test-tam:
+	@cd tests; ./test.py tam
+
+pdf:
 	cd report; make pdf
 
-clean :
+clean:
 	find . -name "*.class" -delete
 	find tests/ -name "*.tam" -delete
 	find tests/ -name "*.ll" -delete

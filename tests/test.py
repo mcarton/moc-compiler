@@ -24,7 +24,7 @@ def error(message):
     return RED + message + NORMAL
 
 def get_cmd(f):
-    return 'env SCRIPT_PATH={0}  {0}/{1} -w all tests/{2}'.format(MOCC_PATH, MOCC, f)
+    return 'env SCRIPT_PATH={0}  {0}/{1} -w all -m {3} tests/{2}'.format(MOCC_PATH, MOCC, f, sys.argv[1])
 
 def run_test(f):
     print('Testing {}... '.format(f), end='')
