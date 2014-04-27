@@ -240,22 +240,25 @@ public class Machine extends AbstractMachine {
         return new Expr(new Location(tmpCastedPtr), sb.toString());
     }
     @Override
-    public String genDelete(Type t, moc.gc.Location loc) {
+    public String genDelete(Type t, moc.gc.Expr expr) {
         StringBuilder sb = new StringBuilder(50);
         String type = t.visit(typeVisitor);
+
+        String tmpValue = getValue(type, expr, sb);
 
         // cast to i8* (~ void*)
         // <result> = bitcast i32* <ptr> to i8*
         String tmpPtr = getTmpName();
+        sb.append("    ");
         sb.append(tmpPtr);
         sb.append(" = bitcast ");
         sb.append(type);
-        sb.append("* ");
-        sb.append(loc);
+        sb.append(' ');
+        sb.append(tmpValue);
         sb.append(" to i8*\n");
 
         // call void @free(i8* <result>) #2
-        sb.append("call void @free(i8* ");
+        sb.append("    call void @free(i8* ");
         sb.append(tmpPtr);
         sb.append(")\n");
 

@@ -678,16 +678,15 @@ F -> new opar TYPE cpar #type;
     }
 }
 
-INST -> delete opar E cpar #returns semicolon #gen;
-#returns {
-    if(!instanceof(E^type, Pointer)) {
+INST -> delete opar E cpar semicolon #gen;
+#gen {
+    if(instanceof(E^type, Pointer)) {
+        INST^code = INST^machine.genDelete(E^type, E^expr);
+    }
+    else {
         error(TYPE_unexpected, "pointer", E^type);
     }
     INST^returns = 1;
-}
-#gen {
-    -- TODO: ensure we are deleting something we can delete
-    INST^code = INST^machine.genDelete(E^type, E^expr.getLoc());
 }
 
 F -> sizeof opar SIZEOFEXPR cpar #type;

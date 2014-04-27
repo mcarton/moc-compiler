@@ -93,7 +93,7 @@ public class Machine extends AbstractMachine {
         return null; // TODO:code
     }
     @Override
-    public String genDelete(Type t, moc.gc.Location loc) {
+    public String genDelete(Type t, moc.gc.Expr expr) {
         return ""; // TODO:code
     }
 

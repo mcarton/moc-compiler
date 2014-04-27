@@ -53,7 +53,7 @@ public interface IMachine {
     Expr genCharacter(String txt);
     Expr genNull();
     Expr genNew(Type type);
-    String genDelete(Type type, Location loc);
+    String genDelete(Type type, Expr expr);
     Expr genCall(String funName, FunctionType fun, ArrayList<Expr> exprs);
     Expr genSizeOf(Type type);
 
