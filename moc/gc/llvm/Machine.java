@@ -348,7 +348,34 @@ public class Machine extends AbstractMachine {
     }
 
     @Override
-    public Expr genAdd(moc.gc.Expr lhs, moc.gc.Expr rhs) {
+    public Expr genAddInt(moc.gc.Expr lhs, moc.gc.Expr rhs) {
+        return genIntBinaryOp("add", lhs, rhs);
+    }
+    @Override
+    public Expr genSubInt(moc.gc.Expr lhs, moc.gc.Expr rhs) {
+        return genIntBinaryOp("sub", lhs, rhs);
+    }
+    @Override
+    public Expr genOrInt(moc.gc.Expr lhs, moc.gc.Expr rhs) {
+        return genIntBinaryOp("or", lhs, rhs);
+    }
+    @Override
+    public Expr genMultInt(moc.gc.Expr lhs, moc.gc.Expr rhs) {
+        return genIntBinaryOp("mul", lhs, rhs);
+    }
+    @Override
+    public Expr genDivInt(moc.gc.Expr lhs, moc.gc.Expr rhs) {
+        return genIntBinaryOp("sdiv", lhs, rhs);
+    }
+    @Override
+    public Expr genModInt(moc.gc.Expr lhs, moc.gc.Expr rhs) {
+        return genIntBinaryOp("srem", lhs, rhs);
+    }
+    @Override
+    public Expr genAndInt(moc.gc.Expr lhs, moc.gc.Expr rhs) {
+        return genIntBinaryOp("and", lhs, rhs);
+    }
+    private Expr genIntBinaryOp(String what, moc.gc.Expr lhs, moc.gc.Expr rhs) {
         StringBuilder sb = new StringBuilder();
 
         String type = "i64";
@@ -359,7 +386,9 @@ public class Machine extends AbstractMachine {
         // <result> = add <ty> <op1>, <op2>
         sb.append("    ");
         sb.append(tmpValueName);
-        sb.append(" = add ");
+        sb.append(" = ");
+        sb.append(what);
+        sb.append(' ');
         sb.append(type);
         sb.append(' ');
         sb.append(lhsCode);

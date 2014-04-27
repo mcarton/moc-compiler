@@ -67,5 +67,37 @@ public abstract class AbstractMachine implements IMachine {
                 -2 /* excludes "" */;
         return getArrayType(getCharType(), nbChar);
     }
+
+    @Override
+    public final TypedExpr genBinaryOp(
+        String what, Type lhsType, Expr lhs, Type rhsType, Expr rhs
+    ) {
+        // TODO:MOC: booleans with or
+        // TODO:MOC: booleans with and
+        if(lhsType instanceof IntegerType && rhsType instanceof IntegerType) {
+            if(what.equals("+")) {
+                return new TypedExpr(genAddInt(lhs, rhs), getIntType());
+            }
+            else if(what.equals("-")) {
+                return new TypedExpr(genSubInt(lhs, rhs), getIntType());
+            }
+            else if(what.equals("or")) {
+                return new TypedExpr(genOrInt(lhs, rhs), getIntType());
+            }
+            else if(what.equals("*")) {
+                return new TypedExpr(genMultInt(lhs, rhs), getIntType());
+            }
+            else if(what.equals("/")) {
+                return new TypedExpr(genDivInt(lhs, rhs), getIntType());
+            }
+            else if(what.equals("%")) {
+                return new TypedExpr(genModInt(lhs, rhs), getIntType());
+            }
+            else if(what.equals("&&")) {
+                return new TypedExpr(genAndInt(lhs, rhs), getIntType());
+            }
+        }
+        return null;
+    }
 }
 

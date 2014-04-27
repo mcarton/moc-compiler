@@ -48,7 +48,7 @@ inh types : TypeList for
     ARGS, ARGSX
 ;
 
-syn sym : String for OPREL;
+syn sym : String for OPREL, OPADD, OPMUL;
 
 syn code : String for
     ENTITIES, BLOC, ELSE, INST, INSTS,
@@ -371,7 +371,9 @@ INST -> E semicolon #returns #gen;
     INST^returns = 1;
 }
 #gen {
-    INST^code = E^expr.getCode(); -- TODO:code
+    if(E^expr != null) {
+        INST^code = E^expr.getCode(); -- TODO:code
+    }
 }
 
 -- instruction block
@@ -422,7 +424,7 @@ ELSE -> #returns #gen;
 INST -> return E semicolon #type #gen;
 #type {
     INST^returns = 2;
-    if(!INST^symbolTable.getReturnType.constructsFrom(E^type)) {
+    if(!INST^symbolTable.getCurrentFunction().getReturnType().constructsFrom(E^type)) {
         error(FUN_returnType, E^type);
     }
 }
@@ -515,73 +517,60 @@ AX -> OPREL R #type;
 }
 
 -- additions
-OPADD -> plus;
-OPADD -> minus;
-OPADD -> or;
+OPADD -> plus  #get; #get { OPADD^sym = "+"; }
+OPADD -> minus #get; #get { OPADD^sym = "-"; }
+OPADD -> or    #get; #get { OPADD^sym = "||"; }
 
-R -> T #init RX #type #gen;
+R -> T #init RX #gen;
 #init {
     RX^htype = T^type;
     RX^hexpr = T^expr;
 }
-#type {
-    R^type = RX^type;
-}
 #gen {
+    R^type = RX^type;
     R^expr = RX^expr;
 }
 
-RX -> #type #gen;
+RX -> #type;
 #type {
     RX^type = RX^htype;
-}
-#gen {
     RX^expr = RX^hexpr;
 }
 
-RX -> OPADD T #type #gen RX;
-#type {
-    -- TODO:MOC: booleans with or
-    match(RX^htype) {
-        case IntegerType {
-            match(T^type) {
-                case IntegerType {
-                    RX^type = T^type;
-                }
-                default {
-                    error(TYPE_unexpected, "int", T^type);
-                }
-            }
-        }
-        default {
-            error(TYPE_unexpected, "int", RX^htype);
-        }
-    }
-}
+RX -> OPADD T #gen RX #gen2;
 #gen {
-    -- TODO:code: handle +, - and ||
-    Expr expr = RX^machine.genAdd(RX^hexpr, T^expr);
-    RX^expr = expr;
-    RX1^hexpr = expr;
+    TypedExpr typedExpr = RX^machine.genBinaryOp(
+        OPADD^sym, RX^htype, RX^hexpr, T^type, T^expr
+    );
 
+    if(typedExpr != null) {
+        RX1^hexpr = typedExpr.getExpr();
+        RX1^htype = typedExpr.getType();
+    }
+    else {
+        error(OP_type, RX^htype, T^type, OPADD^sym);
+    }
+
+}
+#gen2 {
+    RX^expr = RX1^expr;
+    RX^type = RX1^type;
 }
 
 -- multiplication
-OPMUL -> mult;
-OPMUL -> div;
-OPMUL -> mod;
-OPMUL -> and;
+OPMUL -> mult #gen; #gen { OPMUL^sym = "*"; }
+OPMUL -> div  #gen; #gen { OPMUL^sym = "/"; }
+OPMUL -> mod  #gen; #gen { OPMUL^sym = "%"; }
+OPMUL -> and  #gen; #gen { OPMUL^sym = "&&"; }
 
-T -> F #init TX #type;
+T -> F #init TX #gen;
 #init {
     -- TODO:code
     TX^htype = F^type;
     TX^hexpr = F^expr;
 }
-#type {
+#gen {
     T^type = TX^type;
-
-    -- TODO:code
     T^expr = TX^expr;
 }
 
@@ -591,27 +580,24 @@ TX -> #type;
     TX^expr = TX^hexpr;
 }
 
-TX -> OPMUL F TX #type;
-#type {
-    -- TODO:MOC: booleans with and
-    match(TX^htype) {
-        case IntegerType {
-            match(F^type) {
-                case IntegerType {
-                    TX^type = F^type;
+TX -> OPMUL F #gen TX #gen2;
+#gen {
+    TypedExpr typedExpr = TX^machine.genBinaryOp(
+        OPMUL^sym, TX^htype, TX^hexpr, F^type, F^expr
+    );
 
-                    -- TODO:code
-                    TX^expr = TX^hexpr;
-                }
-                default {
-                    error(TYPE_unexpected, "int", F^type);
-                }
-            }
-        }
-        default {
-            error(TYPE_unexpected, "int", TX^htype);
-        }
+
+    if(typedExpr != null) {
+        TX1^hexpr = typedExpr.getExpr();
+        TX1^htype = typedExpr.getType();
     }
+    else {
+        error(OP_type, TX^htype, F^type, OPMUL^sym);
+    }
+}
+#gen2 {
+    TX^expr = TX1^expr;
+    TX^type = TX1^type;
 }
 
 TX -> osbra E csbra #type;

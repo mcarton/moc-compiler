@@ -60,7 +60,14 @@ public interface IMachine {
     Expr genAff(Type type, Location lhs, Expr rhs);
     Expr genNonAff(Type type, Expr expr);
 
-    Expr genAdd(Expr lhs, Expr rhs);
+    TypedExpr genBinaryOp(String what, Type lhsType, Expr lhs, Type rhsType, Expr rhs);
+    Expr genAddInt(Expr lhs, Expr rhs);
+    Expr genSubInt(Expr lhs, Expr rhs);
+    Expr genOrInt(Expr lhs, Expr rhs);
+    Expr genMultInt(Expr lhs, Expr rhs);
+    Expr genDivInt(Expr lhs, Expr rhs);
+    Expr genModInt(Expr lhs, Expr rhs);
+    Expr genAndInt(Expr lhs, Expr rhs);
 
     String genComment(String comment);
 }
