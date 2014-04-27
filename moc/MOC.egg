@@ -206,7 +206,7 @@ FUNC_PARAMETER -> TYPE ident #symbolTable;
     else {
         if(FUNC_PARAMETER^machine.hasWarning("shadow")
         && FUNC_PARAMETER^symbolTable.globalSearch(ident^txt) != null) {
-            warning(VAR_shadow, ident^txt);
+            warning(WARN_shadow, ident^txt);
         }
 
         FUNC_PARAMETER^types.add(TYPE^type);
@@ -315,7 +315,7 @@ INST -> using typeident affect TYPE semicolon #symbolTable #gen;
     else {
         if(INST^machine.hasWarning("shadow")
         && INST^symbolTable.globalSearch(typeident^txt) != null) {
-            warning(TYPE_shadow, typeident^txt);
+            warning(WARN_shadow, typeident^txt);
         }
 
         INST^symbolTable.insertType(typeident^txt, TYPE^type);
@@ -347,7 +347,7 @@ global
 
         if(INST^machine.hasWarning("shadow")
         && INST^symbolTable.globalSearch(ident^txt) != null) {
-            warning(VAR_shadow, ident^txt);
+            warning(WARN_shadow, ident^txt);
         }
 
         -- we add the variable in the symbol table even when there is an
@@ -424,8 +424,9 @@ ELSE -> #returns #gen;
 INST -> return E semicolon #type #gen;
 #type {
     INST^returns = 2;
-    if(!INST^symbolTable.getCurrentFunction().getReturnType().constructsFrom(E^type)) {
-        error(FUN_returnType, E^type);
+    Type type = INST^symbolTable.getCurrentFunction().getReturnType();
+    if(!type.constructsFrom(E^type)) {
+        error(TYPE_unexpected, type, E^type);
     }
 }
 #gen {
