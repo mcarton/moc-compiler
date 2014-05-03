@@ -467,13 +467,9 @@ public class Machine extends AbstractMachine {
     }
 }
 
+/** A visitor to get the llvm representation of types.
+ */
 class RepresentationVisitor implements TypeVisitor<String> {
-    public String visit(Type what) {
-        throw new UnsupportedOperationException(
-            "This visitor does not support the type of " + what
-        );
-    }
-
     public String visit(IntegerType what)   { return "i64"; }
     public String visit(CharacterType what) { return "i8"; }
 

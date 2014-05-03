@@ -17,12 +17,13 @@ src:
 	(cd moc ; $(JDIR)/java -jar ../$(EJAR) $(XMOC).egg)
 
 att:
-	$(JDIR)/javac -classpath $(GJAR) moc/compiler/*.java
-	$(JDIR)/javac -classpath $(GJAR) moc/symbols/*.java
-	$(JDIR)/javac -classpath $(GJAR) moc/type/*.java
-	$(JDIR)/javac -classpath $(GJAR) moc/gc/llvm/*.java
-	$(JDIR)/javac -classpath $(GJAR) moc/gc/tam/*.java
-	$(JDIR)/javac -classpath $(GJAR) moc/gc/*.java
+	$(JDIR)/javac -classpath $(GJAR) \
+	    moc/compiler/*.java \
+	    moc/symbols/*.java \
+	    moc/type/*.java \
+	    moc/gc/llvm/*.java \
+	    moc/gc/tam/*.java \
+	    moc/gc/*.java
 
 class:
 	$(JDIR)/javac -classpath $(GJAR) moc/egg/*.java
@@ -30,13 +31,25 @@ class:
 test: test-llvm test-tam
 
 test-llvm:
+	@echo "Testing llvm machine:"
 	@cd tests; ./test.py llvm
 
 test-tam:
+	@echo "Testing tam machine:"
 	@cd tests; ./test.py tam
 
 pdf:
 	cd report; make pdf
+
+.PHONY: javadoc
+javadoc:
+	javadoc -d javadoc -classpath $(GJAR) \
+	    moc.compiler \
+	    moc.gc \
+	    moc.gc.llvm \
+	    moc.gc.tam \
+	    moc.symbols \
+	    moc.type
 
 clean:
 	find . -name "*.class" -delete

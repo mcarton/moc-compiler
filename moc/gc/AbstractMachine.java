@@ -8,7 +8,7 @@ import moc.compiler.MOCException;
 import moc.type.*;
 
 /**
- * This class describes a target machine.
+ * Common stuffs of machines.
  */
 public abstract class AbstractMachine implements IMachine {
     ArrayList<String> warnings;
@@ -22,12 +22,12 @@ public abstract class AbstractMachine implements IMachine {
     }
 
     @Override
-    public boolean hasWarning(String name) {
+    public final boolean hasWarning(String name) {
         return allWarnings || warnings.contains(name);
     }
 
     @Override
-    public int verbosity() {
+    public final int verbosity() {
         return verbosity;
     }
 
@@ -60,6 +60,11 @@ public abstract class AbstractMachine implements IMachine {
         return new NullType();
     }
 
+    /**
+     * @inheritDoc
+     *
+     * @return The type of the string using {@link #getArrayType}.
+     */
     @Override
     public Type getStringType(String string) {
         int nbChar = string.length()
@@ -84,6 +89,8 @@ public abstract class AbstractMachine implements IMachine {
         }
         return null;
     }
+
+    /** Default implementation that returns the given expression. */
     @Override
     public Expr genAddInt(Expr expr) {
         return expr;

@@ -17,3 +17,4 @@ rapport/*.snm
 rapport/*.toc
 rapport/*.vrb
 rapport/*.pdf
+javadoc/

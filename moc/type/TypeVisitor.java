@@ -1,8 +1,6 @@
 package moc.type;
 
 public interface TypeVisitor<R> {
-    public R visit(Type what);
-
     public R visit(IntegerType what);
     public R visit(CharacterType what);
 

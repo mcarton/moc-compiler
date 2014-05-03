@@ -6,6 +6,9 @@ import java.util.Iterator;
 public class TypeList {
     ArrayList<Type> list = new ArrayList<Type>();
 
+    /** Return the number of elements in the list, not the sum of the size of
+     *  the types.
+     */
     public int size() {
         return list.size();
     }
@@ -26,6 +29,9 @@ public class TypeList {
         return list.toString();
     }
 
+    /** A TypeList is constructible from another iff they have the same size and
+     *  are constructible it is constructible from the other element-wise.
+     */
     public boolean constructsFrom(TypeList other) {
         if(size() != other.size()) {
             return false;

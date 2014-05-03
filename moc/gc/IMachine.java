@@ -35,12 +35,12 @@ public interface IMachine {
      */
     void newFunction();
 
-    /* Indicates the machine we enter a new bloc.
+    /** Indicates the machine we enter a new bloc.
      */
     void newBloc();
 
-    /* Get the machine-dependant Location for a variable named `name` with type
-     * `type` declared here.
+    /** Get the machine-dependant Location for a variable named
+     *  <code>name</code> with type <code>type</code> declared here.
      */
     Location getLocationFor(String name, Type type);
 
@@ -50,6 +50,12 @@ public interface IMachine {
     Type getIntType();
     Type getPtrType(Type what);
     Type getArrayType(Type what, int nbElements);
+
+    /** Returns the type of the given string.
+     * 
+     *  The given string should already have been escaped and the quotes
+     *  removed.
+     */
     Type getStringType(String string);
 
     // code generation stuffs:
@@ -57,13 +63,20 @@ public interface IMachine {
         FunctionType f, ArrayList<Location> parameters, String name, String bloc
     );
     String genReturn(FunctionType f, Expr expr);
+
+    /** Generates code for variable declaration without definition.
+     */
     String genVarDecl(Type t, Location location);
+
+    /** Generates code for variable declaration with definition.
+     */
     String genVarDecl(Type t, Location location, Expr expr);
 
     Expr genInt(String txt);
     Expr genString(String txt);
     Expr genCharacter(String txt);
     Expr genNull();
+
     Expr genNew(Type type);
     String genDelete(Type type, Expr expr);
     Expr genCall(String funName, FunctionType fun, ArrayList<Expr> exprs);

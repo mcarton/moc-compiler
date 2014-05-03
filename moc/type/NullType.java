@@ -1,7 +1,7 @@
 package moc.type;
 
 /** The type of the NULL constant. May be assigned to any pointer but unlike C,
- *  it is not just `(void*)0`.
+ *  it is not just <code>(void*)0</code>.
  */
 public class NullType extends AbstractType<NullType> {
     public NullType() {
