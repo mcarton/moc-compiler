@@ -69,11 +69,31 @@ public abstract class AbstractMachine implements IMachine {
     }
 
     @Override
+    public final TypedExpr genUnaryOp(String what, Type type, Expr expr) {
+        // TODO:MOC: booleans with not
+        if(type instanceof IntegerType) {
+            if(what.equals("+")) {
+                return new TypedExpr(genAddInt(expr), getIntType());
+            }
+            else if(what.equals("-")) {
+                return new TypedExpr(genSubInt(expr), getIntType());
+            }
+            else if(what.equals("!")) {
+                return new TypedExpr(genNotInt(expr), getIntType());
+            }
+        }
+        return null;
+    }
+    @Override
+    public Expr genAddInt(Expr expr) {
+        return expr;
+    }
+
+    @Override
     public final TypedExpr genBinaryOp(
         String what, Type lhsType, Expr lhs, Type rhsType, Expr rhs
     ) {
-        // TODO:MOC: booleans with or
-        // TODO:MOC: booleans with and
+        // TODO:MOC: booleans with or and and
         if(lhsType instanceof IntegerType && rhsType instanceof IntegerType) {
             if(what.equals("+")) {
                 return new TypedExpr(genAddInt(lhs, rhs), getIntType());

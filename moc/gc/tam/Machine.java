@@ -126,6 +126,17 @@ public class Machine extends AbstractMachine {
     }
 
     @Override
+    public Expr genSubInt(moc.gc.Expr expr) {
+        // TODO:code
+        return null;
+    }
+    @Override
+    public Expr genNotInt(moc.gc.Expr expr) {
+        // TODO:code
+        return null;
+    }
+
+    @Override
     public Expr genAddInt(moc.gc.Expr lhs, moc.gc.Expr rhs) {
         // TODO:code
         return null;

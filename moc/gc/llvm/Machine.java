@@ -358,6 +358,35 @@ public class Machine extends AbstractMachine {
     }
 
     @Override
+    public Expr genSubInt(moc.gc.Expr expr) {
+        return genSubInt(new Expr(null, "0"), expr);
+    }
+    @Override
+    public Expr genNotInt(moc.gc.Expr expr) {
+        StringBuilder sb = new StringBuilder(50);
+
+        String exprCode = getValue("i64", expr, sb);
+
+        // <tmpValueName> = icmp eq i64 <exprCode>, 0
+        String tmpValueName = getTmpName();
+        sb.append("    ");
+        sb.append(tmpValueName);
+        sb.append(" = icmp eq i64 ");
+        sb.append(exprCode);
+        sb.append(", 0\n");
+
+        // <tmpCastedName> = zext i1 <tmpValueName> to i64
+        String tmpCastedName = getTmpName();
+        sb.append("    ");
+        sb.append(tmpCastedName);
+        sb.append(" = zext i1 ");
+        sb.append(tmpValueName);
+        sb.append(" to i64");
+
+        return new Expr(new Location(tmpCastedName), sb.toString());
+    }
+
+    @Override
     public Expr genAddInt(moc.gc.Expr lhs, moc.gc.Expr rhs) {
         return genIntBinaryOp("add", lhs, rhs);
     }
@@ -367,6 +396,7 @@ public class Machine extends AbstractMachine {
     }
     @Override
     public Expr genOrInt(moc.gc.Expr lhs, moc.gc.Expr rhs) {
+        // TODO: ensure 0 or 1
         return genIntBinaryOp("or", lhs, rhs);
     }
     @Override
@@ -383,6 +413,7 @@ public class Machine extends AbstractMachine {
     }
     @Override
     public Expr genAndInt(moc.gc.Expr lhs, moc.gc.Expr rhs) {
+        // TODO: ensure 0 or 1
         return genIntBinaryOp("and", lhs, rhs);
     }
     private Expr genIntBinaryOp(String what, moc.gc.Expr lhs, moc.gc.Expr rhs) {

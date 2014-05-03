@@ -25,19 +25,31 @@ public interface IMachine {
      */
     void writeCode(String fileName, String code) throws MOCException;
 
+    /**
+     * Returns the verbosity of the machine.
+     */
     int verbosity();
 
     // location stuffs:
+    /** Indicates the machine we enter a new function.
+     */
     void newFunction();
+
+    /* Indicates the machine we enter a new bloc.
+     */
     void newBloc();
+
+    /* Get the machine-dependant Location for a variable named `name` with type
+     * `type` declared here.
+     */
     Location getLocationFor(String name, Type type);
 
     // type stuffs:
     Type getNullType();
     Type getCharType();
     Type getIntType();
-    Type getPtrType(moc.type.Type what);
-    Type getArrayType(moc.type.Type what, int nbElements);
+    Type getPtrType(Type what);
+    Type getArrayType(Type what, int nbElements);
     Type getStringType(String string);
 
     // code generation stuffs:
@@ -61,6 +73,17 @@ public interface IMachine {
     Expr genAff(Type type, Location lhs, Expr rhs);
     Expr genNonAff(Type type, Expr expr);
 
+    /** Dispatch the unary operator call to the proper method for the
+     *  corresponding operator and type.
+     */
+    TypedExpr genUnaryOp(String what, Type type, Expr expr);
+    Expr genAddInt(Expr expr);
+    Expr genSubInt(Expr expr);
+    Expr genNotInt(Expr expr);
+
+    /** Dispatch the binary operator call to the proper method for the
+     *  corresponding operators and types.
+     */
     TypedExpr genBinaryOp(String what, Type lhsType, Expr lhs, Type rhsType, Expr rhs);
     Expr genAddInt(Expr lhs, Expr rhs);
     Expr genSubInt(Expr lhs, Expr rhs);

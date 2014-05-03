@@ -48,7 +48,7 @@ inh types : TypeList for
     ARGS, ARGSX
 ;
 
-syn sym : String for OPREL, OPADD, OPMUL;
+syn sym : String for OPREL, OPADD, OPMUL, OPUN;
 
 syn code : String for
     ENTITIES, BLOC, ELSE, INST, INSTS,
@@ -455,7 +455,7 @@ E -> A EX #type;
         error(TYPE_unexpected, A^type, EX^type);
     }
 
-    -- `EX -> ;` => EX^expr
+    -- `EX -> ;` => EX^expr == null
     if(EX^expr == null) {
         E^expr = E^machine.genNonAff(A^type, A^expr);
     }
@@ -551,7 +551,6 @@ RX -> OPADD T #gen RX #gen2;
     else {
         error(OP_type, RX^htype, T^type, OPADD^sym);
     }
-
 }
 #gen2 {
     RX^expr = RX1^expr;
@@ -566,7 +565,6 @@ OPMUL -> and  #gen; #gen { OPMUL^sym = "&&"; }
 
 T -> F #init TX #gen;
 #init {
-    -- TODO:code
     TX^htype = F^type;
     TX^hexpr = F^expr;
 }
@@ -586,7 +584,6 @@ TX -> OPMUL F #gen TX #gen2;
     TypedExpr typedExpr = TX^machine.genBinaryOp(
         OPMUL^sym, TX^htype, TX^hexpr, F^type, F^expr
     );
-
 
     if(typedExpr != null) {
         TX1^hexpr = typedExpr.getExpr();
@@ -647,22 +644,19 @@ F -> null #type;
 }
 
 -- unary expression
-OPUN -> plus;
-OPUN -> minus;
-OPUN -> not;
+OPUN -> plus  #get; #get { OPUN^sym = "+"; }
+OPUN -> minus #get; #get { OPUN^sym = "-"; }
+OPUN -> not   #get; #get { OPUN^sym = "!"; }
 F -> OPUN F #type;
 #type {
-    -- TODO:MOC: booleans with not
-    match(F1^type) {
-        case IntegerType {
-            F^type = F1^type;
+    TypedExpr typedExpr = F^machine.genUnaryOp(OPUN^sym, F1^type, F1^expr);
 
-            -- TODO:code
-            F^expr = F1^expr;
-        }
-        default {
-            error(TYPE_unexpected, "int", F1^type);
-        }
+    if(typedExpr != null) {
+        F^expr = typedExpr.getExpr();
+        F^type = typedExpr.getType();
+    }
+    else {
+        error(OP_un_type, F1^type, OPUN^sym);
     }
 }
 
