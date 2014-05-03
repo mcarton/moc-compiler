@@ -17,6 +17,7 @@ public class Machine extends AbstractMachine {
     int bloc = 0; // the bloc we are in
 
     RepresentationVisitor typeVisitor = new RepresentationVisitor();
+    SizeVisitor sizeVisitor = new SizeVisitor();
 
     public Machine(int verbosity, ArrayList<String> warnings) {
         super(verbosity, warnings);
@@ -35,20 +36,6 @@ public class Machine extends AbstractMachine {
     @Override
     public String getSuffix() {
         return "ll";
-    }
-
-    // type size stuffs:
-    @Override public Type getCharType() {
-        return new CharacterType(1);
-    }
-    @Override public Type getIntType() {
-        return new IntegerType(8);
-    }
-    @Override public Type getPtrType(Type what) {
-        return new Pointer(8, what);
-    }
-    @Override public Type getArrayType(Type what, int nbElements) {
-        return new Array(what, nbElements);
     }
 
     // location stuffs:
@@ -223,7 +210,7 @@ public class Machine extends AbstractMachine {
         sb.append("    ");
         sb.append(tmpPtr);
         sb.append(" = call i8* @malloc(i64 ");
-        sb.append(t.getSize());
+        sb.append(t.visit(sizeVisitor));
         sb.append(")\n");
 
         // cast to right pointer type
@@ -313,7 +300,7 @@ public class Machine extends AbstractMachine {
     }
     @Override
     public Expr genSizeOf(Type type) {
-        return genInt(type.getSize());
+        return genInt(type.visit(sizeVisitor));
     }
 
     @Override
@@ -486,5 +473,20 @@ class RepresentationVisitor implements TypeVisitor<String> {
     public String visit(Pointer what) {
         return what.getPointee().visit(this) + "*";
     }
+}
+
+/** A visitor to get the size of types.
+ */
+class SizeVisitor implements TypeVisitor<Integer> {
+    public Integer visit(IntegerType what)   { return 8; }
+    public Integer visit(CharacterType what) { return 1; }
+
+    public Integer visit(VoidType what)      { return 0; }
+    public Integer visit(NullType what)      { return 8; }
+
+    public Integer visit(Array what) {
+        return what.getPointee().visit(this) * what.getNbElements();
+    }
+    public Integer visit(Pointer what)       { return 8; }
 }
 

@@ -5,7 +5,6 @@ package moc.type;
  */
 public class NullType extends AbstractType<NullType> {
     public NullType() {
-        this.size = 0;
     }
 
     public String toString() {

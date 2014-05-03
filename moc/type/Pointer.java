@@ -3,8 +3,7 @@ package moc.type;
 public class Pointer extends AbstractType<Pointer> {
     private Type pointee;
 
-    public Pointer(int size, Type pointee) {
-        this.size = size;
+    public Pointer(Type pointee) {
         this.pointee = pointee;
     }
 

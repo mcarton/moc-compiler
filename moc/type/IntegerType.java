@@ -1,8 +1,7 @@
 package moc.type;
 
 public class IntegerType extends AbstractType<IntegerType> {
-    public IntegerType(int size) {
-        this.size = size;
+    public IntegerType() {
     }
 
     public String toString() {

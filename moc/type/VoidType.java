@@ -2,7 +2,6 @@ package moc.type;
 
 public class VoidType extends AbstractType<VoidType> {
     public VoidType() {
-        this.size = 0;
     }
 
     public String toString() {

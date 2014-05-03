@@ -55,11 +55,16 @@ public abstract class AbstractMachine implements IMachine {
         }
     }
 
-    @Override
-    public Type getNullType() {
-        return new NullType();
+    // TODO: to be removed, this is machine-independant
+    @Override public Type getPtrType(Type what) {
+        return new Pointer(what);
+    }
+    // TODO: to be removed, this is machine-independant
+    @Override public Type getArrayType(Type what, int nbElements) {
+        return new Array(what, nbElements);
     }
 
+    // TODO: to be removed, this is machine-independant
     /**
      * @inheritDoc
      *
@@ -70,7 +75,7 @@ public abstract class AbstractMachine implements IMachine {
         int nbChar = string.length()
                 +1 /* includes '\0' */
                 -2 /* excludes "" */;
-        return getArrayType(getCharType(), nbChar);
+        return getArrayType(new CharacterType(), nbChar);
     }
 
     @Override
@@ -78,13 +83,13 @@ public abstract class AbstractMachine implements IMachine {
         // TODO:MOC: booleans with not
         if(type instanceof IntegerType) {
             if(what.equals("+")) {
-                return new TypedExpr(genAddInt(expr), getIntType());
+                return new TypedExpr(genAddInt(expr), new IntegerType());
             }
             else if(what.equals("-")) {
-                return new TypedExpr(genSubInt(expr), getIntType());
+                return new TypedExpr(genSubInt(expr), new IntegerType());
             }
             else if(what.equals("!")) {
-                return new TypedExpr(genNotInt(expr), getIntType());
+                return new TypedExpr(genNotInt(expr), new IntegerType());
             }
         }
         return null;
@@ -103,25 +108,25 @@ public abstract class AbstractMachine implements IMachine {
         // TODO:MOC: booleans with or and and
         if(lhsType instanceof IntegerType && rhsType instanceof IntegerType) {
             if(what.equals("+")) {
-                return new TypedExpr(genAddInt(lhs, rhs), getIntType());
+                return new TypedExpr(genAddInt(lhs, rhs), new IntegerType());
             }
             else if(what.equals("-")) {
-                return new TypedExpr(genSubInt(lhs, rhs), getIntType());
+                return new TypedExpr(genSubInt(lhs, rhs), new IntegerType());
             }
             else if(what.equals("or")) {
-                return new TypedExpr(genOrInt(lhs, rhs), getIntType());
+                return new TypedExpr(genOrInt(lhs, rhs), new IntegerType());
             }
             else if(what.equals("*")) {
-                return new TypedExpr(genMultInt(lhs, rhs), getIntType());
+                return new TypedExpr(genMultInt(lhs, rhs), new IntegerType());
             }
             else if(what.equals("/")) {
-                return new TypedExpr(genDivInt(lhs, rhs), getIntType());
+                return new TypedExpr(genDivInt(lhs, rhs), new IntegerType());
             }
             else if(what.equals("%")) {
-                return new TypedExpr(genModInt(lhs, rhs), getIntType());
+                return new TypedExpr(genModInt(lhs, rhs), new IntegerType());
             }
             else if(what.equals("&&")) {
-                return new TypedExpr(genAndInt(lhs, rhs), getIntType());
+                return new TypedExpr(genAndInt(lhs, rhs), new IntegerType());
             }
         }
         return null;

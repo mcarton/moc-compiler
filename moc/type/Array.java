@@ -5,7 +5,6 @@ public class Array extends AbstractType<Array> {
     private int nbElements;
 
     public Array(Type pointee, int nbElements) {
-        this.size = pointee.getSize()*nbElements;
         this.pointee = pointee;
         this.nbElements = nbElements;
     }

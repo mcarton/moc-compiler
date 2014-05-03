@@ -1,12 +1,6 @@
 package moc.type;
 
 public abstract class AbstractType<T extends Type> implements Type {
-    protected int size;
-
-    public int getSize() {
-        return size;
-    }
-
     public boolean testable() {
         return false;
     }

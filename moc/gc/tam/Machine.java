@@ -9,6 +9,8 @@ import moc.type.*;
  * The TAM machine and its generation functions.
  */
 public class Machine extends AbstractMachine {
+    SizeVisitor sizeVisitor = new SizeVisitor();
+
     public Machine(int verbosity, ArrayList<String> warnings) {
         super(verbosity, warnings);
     }
@@ -16,20 +18,6 @@ public class Machine extends AbstractMachine {
     @Override
     public String getSuffix() {
         return "tam";
-    }
-
-    // type stuffs:
-    @Override public Type getCharType() {
-        return new CharacterType(1);
-    }
-    @Override public Type getIntType() {
-        return new IntegerType(1);
-    }
-    @Override public Type getPtrType(Type what) {
-        return new Pointer(1, what);
-    }
-    @Override public Type getArrayType(Type what, int nbElements) {
-        return new Array(what, nbElements);
     }
 
     // location stuffs:
@@ -106,7 +94,7 @@ public class Machine extends AbstractMachine {
     }
     @Override
     public Expr genSizeOf(Type type) {
-        return genInt(type.getSize());
+        return genInt(type.visit(sizeVisitor));
     }
 
     @Override
@@ -176,5 +164,20 @@ public class Machine extends AbstractMachine {
     public String genComment(String comment) {
         return("; " + comment);
     }
+}
+
+/** A visitor to get the size of types.
+ */
+class SizeVisitor implements TypeVisitor<Integer> {
+    public Integer visit(IntegerType what)   { return 1; }
+    public Integer visit(CharacterType what) { return 1; }
+
+    public Integer visit(VoidType what)      { return 0; }
+    public Integer visit(NullType what)      { return 1; }
+
+    public Integer visit(Array what) {
+        return what.getPointee().visit(this) * what.getNbElements();
+    }
+    public Integer visit(Pointer what)       { return 1; }
 }
 

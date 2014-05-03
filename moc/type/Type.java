@@ -2,11 +2,6 @@ package moc.type;
 
 public interface Type {
     /**
-     * The size of the data type: depends on the machine.
-     */
-    public int getSize();
-
-    /**
      * True iff we can write `aa = bb` with aa of type `this` and bb of type
      * `other`. It is not necessary to have `bb = aa`.  For example a NullType
      * can be affected to a Int*, but the opposite is false.

@@ -130,9 +130,9 @@ global
 
     SymbolTable symbolTable = new SymbolTable();
     ENTITIES^symbolTable = symbolTable;
-    symbolTable.insertType("Int", machine.getIntType());
-    symbolTable.insertType("Char", machine.getCharType());
-    symbolTable.insertType("Null", machine.getNullType());
+    symbolTable.insertType("Int", new IntegerType());
+    symbolTable.insertType("Char", new CharacterType());
+    symbolTable.insertType("Null", new NullType());
 }
 #gen {
     machine.writeCode(PROGRAM^source.getFileName(), ENTITIES^code);
@@ -508,7 +508,7 @@ AX -> #type #gen;
 AX -> OPREL R #type;
 #type {
     if(AX^htype.comparableWith(R^type, OPREL^sym)) {
-        AX^type = AX^machine.getIntType();
+        AX^type = new IntegerType();
         -- TODO:code
         AX^expr = AX^hexpr;
     }
@@ -621,7 +621,7 @@ TX -> osbra E csbra #type;
 -- base expressions
 F -> integer #type;
 #type {
-    F^type=F^machine.getIntType();
+    F^type = new IntegerType();
     F^expr = F^machine.genInt(integer^txt);
 }
 
@@ -633,13 +633,13 @@ F -> string #type;
 
 F -> character #type;
 #type {
-    F^type = F^machine.getCharType();
+    F^type = new CharacterType();
     F^expr = F^machine.genCharacter(character^txt);
 }
 
 F -> null #type;
 #type {
-    F^type = F^machine.getNullType();
+    F^type = new NullType();
     F^expr = F^machine.genNull();
 }
 
@@ -685,7 +685,7 @@ INST -> delete opar E cpar semicolon #gen;
 
 F -> sizeof opar SIZEOFEXPR cpar #type;
 #type {
-    F^type = F^machine.getIntType();
+    F^type = new IntegerType();
     if(SIZEOFEXPR^type != null) {
         F^expr = F^machine.genSizeOf(SIZEOFEXPR^type);
     }

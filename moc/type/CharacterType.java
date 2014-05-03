@@ -1,8 +1,7 @@
 package moc.type;
 
 public class CharacterType extends AbstractType<CharacterType> {
-    public CharacterType(int size) {
-        this.size = size;
+    public CharacterType() {
     }
 
     public String toString() {
