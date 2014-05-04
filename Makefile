@@ -11,7 +11,7 @@ GJAR=$(EJAR):.
 # java, javac, jar
 JDIR=/usr/bin
 #--------------------------------------------------------
-all: src att class
+all: src att
 
 src:
 	(cd moc ; $(JDIR)/java -jar ../$(EJAR) $(XMOC).egg)
@@ -23,10 +23,8 @@ att:
 	    moc/type/*.java \
 	    moc/gc/llvm/*.java \
 	    moc/gc/tam/*.java \
-	    moc/gc/*.java
-
-class:
-	$(JDIR)/javac -classpath $(GJAR) moc/egg/*.java
+	    moc/gc/*.java \
+	    moc/egg/*.java
 
 test: test-llvm test-tam
 
