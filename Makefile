@@ -13,7 +13,9 @@ JDIR=/usr/bin
 #--------------------------------------------------------
 all: src att
 
-src:
+src: moc/egg/$(XMOC).java
+
+moc/egg/$(XMOC).java: moc/$(XMOC).egg
 	(cd moc ; $(JDIR)/java -jar ../$(EJAR) $(XMOC).egg)
 
 att:
