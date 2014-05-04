@@ -112,13 +112,13 @@ sugar csbra        is "\]";
 --sugar no         is "NO";
 
 term integer       is "[0-9]+";
-term character     is "\'[^\']\'"; -- TODO:strings
-term string        is "\"[^\"]*\""; -- TODO:strings: \n & co.
+term character     is "\'([^\'\\]|\\\\|\\n|\\t|\\\"|\\\')\'";
+term string        is "\"([^\"\\]|\\\\|\\n|\\t|\\\"|\\\')*\"";
 term ident         is "[a-z][_0-9A-Za-z]*";
 term typeident     is "[A-Z][_0-9A-Za-z]*";
 
 -- TODO:MOC:
---term stringo     is "@\"[^\"]*\"";         -- string MOC
+--term stringo     is "@\"[^\"]*\"";
 
 --production rules
 PROGRAM -> #init ENTITIES #gen;
@@ -227,13 +227,13 @@ TYPE -> STYPE #get REFS #gen;
 REFS -> #gen; #gen { REFS^type = REFS^htype; }
 REFS -> mult REFS #gen;
 #gen {
-    REFS^type = REFS^machine.getPtrType(REFS1^type);
+    REFS^type = new Pointer(REFS1^type);
 }
 
 REFS -> osbra integer csbra REFS #gen;
 #gen {
     int nbElements = new Integer(integer^txt);
-    REFS^type = REFS^machine.getArrayType(REFS1^type, nbElements);
+    REFS^type = new Array(REFS1^type, nbElements);
 }
 
 STYPE -> typeident #gen;
@@ -485,15 +485,13 @@ OPREL -> supeq #get; #get { OPREL^sym = ">="; }
 OPREL -> eq    #get; #get { OPREL^sym = "=="; }
 OPREL -> neq   #get; #get { OPREL^sym = "!="; }
 
-A -> R #init AX #type #gen;
+A -> R #init AX #gen;
 #init {
     AX^htype = R^type;
     AX^hexpr = R^expr;
 }
-#type {
-    A^type = AX^type;
-}
 #gen {
+    A^type = AX^type;
     A^expr = AX^expr;
 }
 
@@ -627,12 +625,24 @@ F -> integer #type;
 
 F -> string #type;
 #type {
-    F^type = F^machine.getStringType(string^txt);
-    F^expr = F^machine.genString(string^txt);
+    String escaped = F^machine.escape(string^txt);
+
+    if(F^machine.verbosity() >= 5) {
+        write("String " + string^txt + " escaped as \"" + escaped + "\".\n");
+    }
+
+    F^type = new Array(new CharacterType(), escaped.length()+1 -* includes \0 *-);
+    F^expr = F^machine.genString(escaped);
 }
 
 F -> character #type;
 #type {
+    String escaped = F^machine.escape(character^txt);
+
+    if(F^machine.verbosity() >= 5) {
+        write("Character " + character^txt + " escaped as '" + escaped + "'.\n");
+    }
+
     F^type = new CharacterType();
     F^expr = F^machine.genCharacter(character^txt);
 }
@@ -667,7 +677,7 @@ F -> new opar TYPE cpar #type;
         error(TYPE_void);
     }
     else {
-        F^type = F^machine.getPtrType(TYPE^type);
+        F^type = new Pointer(TYPE^type);
         F^expr = F^machine.genNew(TYPE^type);
     }
 }

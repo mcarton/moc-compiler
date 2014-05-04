@@ -44,9 +44,8 @@ public abstract class AbstractMachine implements IMachine {
             String asmName = name + "." + getSuffix();
             System.out.println("Writing code in " + asmName);
             PrintWriter pw = new PrintWriter(new FileOutputStream(asmName));
-            pw.print("; Generated code for ");
-            pw.print(fname);
-            pw.print(".\n; Do not modify by hand\n\n");
+            pw.print(genComment("Generated code for " + fname + "."));
+            pw.print(genComment("Do not modify by hand\n"));
             pw.print(code);
             pw.close();
         }
@@ -55,29 +54,42 @@ public abstract class AbstractMachine implements IMachine {
         }
     }
 
-    // TODO: to be removed, this is machine-independant
-    @Override public Type getPtrType(Type what) {
-        return new Pointer(what);
-    }
-    // TODO: to be removed, this is machine-independant
-    @Override public Type getArrayType(Type what, int nbElements) {
-        return new Array(what, nbElements);
-    }
+     public final String escape(String unescaped) {
+        StringBuffer sb = new StringBuffer(unescaped.length());
+ 
+        boolean backslash = false;
+        for(int i = 1; i < unescaped.length()-1; ++i) { // exludes ""
+            switch(unescaped.charAt(i)) {
+                case '\\':
+                    if(backslash) {
+                        sb.append("\\");
+                    }
+                    backslash = !backslash;
+                    break;
+                case 'n':
+                    sb.append(backslash ? '\n' : 'n');
+                    backslash = false;
+                    break;
+                case 't':
+                    sb.append(backslash ? '\t' : 't');
+                    backslash = false;
+                    break;
+                case '\'':
+                    sb.append(backslash ? '\'' : '\'');
+                    backslash = false;
+                    break;
+                case '"':
+                    sb.append(backslash ? '\"' : '"');
+                    backslash = false;
+                    break;
+                default:
+                    sb.append(unescaped.charAt(i));
+                    backslash = false;
+            }
+        }
 
-    // TODO: to be removed, this is machine-independant
-    /**
-     * @inheritDoc
-     *
-     * @return The type of the string using {@link #getArrayType}.
-     */
-    @Override
-    public Type getStringType(String string) {
-        int nbChar = string.length()
-                +1 /* includes '\0' */
-                -2 /* excludes "" */;
-        return getArrayType(new CharacterType(), nbChar);
-    }
-
+        return sb.toString();
+     }
     @Override
     public final TypedExpr genUnaryOp(String what, Type type, Expr expr) {
         // TODO:MOC: booleans with not

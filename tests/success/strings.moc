@@ -3,7 +3,16 @@ Int size(Char* string) {
 }
 
 void main() {
+    Char c1 = 'a';
+    Char c2 = '\n';
+    Char c3 = '\t';
+    Char c4 = '\\';
     Char[5] s = "net7";
+    Char[1] e = "";
+    Char[2] t = "\t";
+    Char[2] n = "\n";
+    Char[2] b = "\\";
+    Char[20] fb = "foo\nbar\\baz\tqux\"fum";
     Int si = size(s);
 }
 

@@ -44,16 +44,8 @@ public interface IMachine {
      */
     Location getLocationFor(String name, Type type);
 
-    // type stuffs:
-    Type getPtrType(Type what);
-    Type getArrayType(Type what, int nbElements);
-
-    /** Returns the type of the given string.
-     * 
-     *  The given string should already have been escaped and the quotes
-     *  removed.
-     */
-    Type getStringType(String string);
+    // string stuffs:
+    String escape(String unescaped);
 
     // code generation stuffs:
     String genFunction(
