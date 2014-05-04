@@ -2,6 +2,3 @@ Int main() {
     void a;
 }
 
-Int foo(void b) {
-}
-

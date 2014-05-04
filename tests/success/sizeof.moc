@@ -1,5 +1,7 @@
 void main() {
     Int a = sizeof(Int);
     Int b = sizeof(a);
+    Int c = sizeof(a+b);
+    Int d = a+b;
 }
 

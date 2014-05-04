@@ -1,4 +1,4 @@
-Int main() {
+void main() {
     Int i = '7';
     Int j = "net7";
 

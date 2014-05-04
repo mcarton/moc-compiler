@@ -1,12 +1,6 @@
-Int main() {
+void main() {
     Int i = 0+'7';
     Int j = 42/"6";
-    i+42;
-    42+j;
-    i+j;
-    i*42;
-    42*j;
-    i*j;
     42 < "enseeiht";
     42 == '7';
 }

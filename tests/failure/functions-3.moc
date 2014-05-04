@@ -1,4 +1,4 @@
-Int main(Int a) {
+void main(Int a) {
     main("enseeiht");
 }
 
