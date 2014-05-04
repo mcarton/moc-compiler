@@ -113,6 +113,12 @@ public abstract class AbstractMachine implements IMachine {
         return expr;
     }
 
+    /** Default implementation that returns the given expression. */
+    @Override
+    public Expr genParen(Expr expr) {
+        return expr;
+    }
+
     @Override
     public final TypedExpr genBinaryOp(
         String what, Type lhsType, Expr lhs, Type rhsType, Expr rhs

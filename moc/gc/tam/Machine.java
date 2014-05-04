@@ -123,6 +123,18 @@ public class Machine extends AbstractMachine {
         // TODO:code
         return null;
     }
+    @Override
+    public moc.gc.Expr genDeref(moc.gc.Expr expr) {
+        return expr; // TODO:code
+    }
+    @Override
+    public moc.gc.Expr genArrSub(moc.gc.Expr lhs, moc.gc.Expr rhs) {
+        return lhs; // TODO:code
+    }
+    @Override
+    public moc.gc.Expr genCast(Type from, Type to, moc.gc.Expr expr) {
+        return expr; // TODO:code
+    }
 
     @Override
     public Expr genAddInt(moc.gc.Expr lhs, moc.gc.Expr rhs) {

@@ -82,6 +82,12 @@ public interface IMachine {
     Expr genAddInt(Expr expr);
     Expr genSubInt(Expr expr);
     Expr genNotInt(Expr expr);
+    Expr genDeref(Expr expr);
+
+    /** Generates code for <code>lhs[rhs]</code>. */
+    Expr genArrSub(Expr lhs, Expr rhs);
+    Expr genParen(Expr expr);
+    Expr genCast(Type from, Type to, Expr expr);
 
     /** Dispatch the binary operator call to the proper method for the
      *  corresponding operators and types.

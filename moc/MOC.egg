@@ -644,7 +644,7 @@ F -> character #type;
     }
 
     F^type = new CharacterType();
-    F^expr = F^machine.genCharacter(character^txt);
+    F^expr = F^machine.genCharacter(escaped);
 }
 
 F -> null #type;
@@ -708,7 +708,7 @@ SIZEOFEXPR -> E #type;    #type { SIZEOFEXPR^type = E^type; }
 F -> opar E cpar #type;
 #type {
     F^type = E^type;
-    F^expr = E^expr;
+    F^expr = F^machine.genParen(E^expr);
 }
 
 F -> opar TYPE cpar F #type;
@@ -716,8 +716,9 @@ F -> opar TYPE cpar F #type;
     if(F1^type != null && !TYPE^type.constructsFrom(F1^type)) {
         error(TYPE_unexpected, TYPE^type, F1^type);
     }
+    -- TODO: check here if cast is possible
     else {
-        F^expr = F1^expr;
+        F^expr = F^machine.genCast(F1^type, TYPE^type, F1^expr);
     }
     F^type = TYPE^type;
 }
@@ -783,9 +784,7 @@ F -> mult F #type;
     match(F1^type) {
         case Pointer {
             F^type = F1^type.getPointee();
-
-            -- TODO:code
-            F^expr = F1^expr;
+            F^expr = F^machine.genDeref(F1^expr);
         }
         default {
             error(TYPE_notAPtr, F1^type);
