@@ -42,13 +42,14 @@ public class MOCSourceFile extends SourceUnit {
             if(i+1 < argc) {
                 if(args[i].equals("-m")) {
                     machName = args[++i];
+                    System.out.println(machName);
                 }
                 else if(args[i].equals("-v")) {
                     verbosity = Integer.parseInt(args[++i]);
                 }
                 else if(args[i].equals("-w")) {
-                    while(i+1 < argc && !args[++i].startsWith("-")) {
-                        warnings.add(args[i]);
+                    while(i+1 < argc && !args[i+1].startsWith("-")) {
+                        warnings.add(args[++i]);
                     }
                 }
             }
