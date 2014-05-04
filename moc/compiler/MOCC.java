@@ -31,7 +31,7 @@ public class MOCC implements Serializable {
             // Create the source
             MOCSourceFile cu = new MOCSourceFile(args);
 
-            if(cu.getMachine() == null) {
+            if (cu.getMachine() == null) {
                 System.out.println(Messages.getString(
                     "MOC.wrongMachine", cu.getMachName()
                 ));
@@ -72,7 +72,7 @@ public class MOCC implements Serializable {
                 System.out.println(Messages.getString("MOC.aborted"));
                 System.exit(2);
             }
-            else if(nbWarnings > 0) {
+            else if (nbWarnings > 0) {
                 System.out.println(Messages.getString("MOC.warnings", nbWarnings));
                 System.out.println(Messages.getString("MOC.successful"));
                 System.exit(1);

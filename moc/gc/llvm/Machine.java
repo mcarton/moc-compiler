@@ -72,11 +72,11 @@ public class Machine extends AbstractMachine {
         // parameter names of the form "__p0", "__p1"
         Iterator<Type> it = f.getParameterTypes().iterator();
         int paramIt = 0;
-        while(it.hasNext()) {
+        while (it.hasNext()) {
             sb.append(it.next().visit(typeVisitor));
             sb.append(" %__p");
             sb.append(++paramIt);
-            if(it.hasNext()) {
+            if (it.hasNext()) {
                 sb.append(", ");
             }
         }
@@ -89,7 +89,7 @@ public class Machine extends AbstractMachine {
         Iterator<moc.gc.Location> locIt = params.iterator();
         it = f.getParameterTypes().iterator();
         paramIt = 0;
-        while(it.hasNext()) {
+        while (it.hasNext()) {
             String paramType = it.next().visit(typeVisitor);
             String paramName = locIt.next().toString();
             sb.append("    ");
@@ -110,7 +110,7 @@ public class Machine extends AbstractMachine {
 
         sb.append(bloc);
 
-        if(f.getReturnType() instanceof VoidType) {
+        if (f.getReturnType() instanceof VoidType) {
             sb.append("    ret void\n");
         }
 
@@ -263,7 +263,7 @@ public class Machine extends AbstractMachine {
         ArrayList<String> names = new ArrayList<String>();
         Iterator<Type> it = fun.getParameterTypes().iterator();
         Iterator<moc.gc.Expr> exprIt = exprs.iterator();
-        while(exprIt.hasNext()) {
+        while (exprIt.hasNext()) {
             names.add(getValue(it.next().visit(typeVisitor), exprIt.next(), sb));
         }
 
@@ -271,7 +271,7 @@ public class Machine extends AbstractMachine {
         String tmpValueName = getTmpName();
         sb.append("    ");
 
-        if(!(fun.getReturnType() instanceof VoidType)) {
+        if (!(fun.getReturnType() instanceof VoidType)) {
             sb.append(tmpValueName);
             sb.append(" = call ");
         }
@@ -285,11 +285,11 @@ public class Machine extends AbstractMachine {
 
         it = fun.getParameterTypes().iterator();
         Iterator<String> nameIt = names.iterator();
-        while(it.hasNext()) {
+        while (it.hasNext()) {
             sb.append(it.next().visit(typeVisitor));
             sb.append(' ');
             sb.append(nameIt.next());
-            if(it.hasNext()) {
+            if (it.hasNext()) {
                 sb.append(", ");
             }
         }
@@ -456,7 +456,7 @@ public class Machine extends AbstractMachine {
      * @warning: the function has side effect on sb and may increment lastTmp!
      */
     private String getValue(String type, moc.gc.Expr expr, StringBuilder sb) {
-        if(expr.getLoc() != null) {
+        if (expr.getLoc() != null) {
             sb.append(expr.getCode());
             return expr.getLoc().toString();
         }

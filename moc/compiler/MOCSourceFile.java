@@ -23,7 +23,7 @@ public class MOCSourceFile extends SourceUnit {
         fileName = args[args.length-1];
 
         // other arguments
-        analyze(args); 
+        analyze(args);
     }
 
     /**
@@ -38,17 +38,17 @@ public class MOCSourceFile extends SourceUnit {
      */
     public void analyze(String[] args) throws MOCException {
         int argc = args.length;
-        for(int i = 0; i < argc -1; ++i) {
-            if(i+1 < argc) {
-                if(args[i].equals("-m")) {
+        for (int i = 0; i < argc -1; ++i) {
+            if (i+1 < argc) {
+                if (args[i].equals("-m")) {
                     machName = args[++i];
                     System.out.println(machName);
                 }
-                else if(args[i].equals("-v")) {
+                else if (args[i].equals("-v")) {
                     verbosity = Integer.parseInt(args[++i]);
                 }
-                else if(args[i].equals("-w")) {
-                    while(i+1 < argc && !args[i+1].startsWith("-")) {
+                else if (args[i].equals("-w")) {
+                    while (i+1 < argc && !args[i+1].startsWith("-")) {
                         warnings.add(args[++i]);
                     }
                 }
@@ -69,7 +69,7 @@ public class MOCSourceFile extends SourceUnit {
         if (machName.equals("tam")) {
             machine = new moc.gc.tam.Machine(verbosity, warnings);
         }
-        else if(machName.equals("llvm")) {
+        else if (machName.equals("llvm")) {
             machine = new moc.gc.llvm.Machine(verbosity, warnings);
         }
     }

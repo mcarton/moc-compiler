@@ -169,7 +169,7 @@ global
     FUNC_PARAMETERS^parameters = parameters;
 }
 #usymbols {
-    if(FUNCTION^symbolTable.localSearch(ident^txt) != null) {
+    if (FUNCTION^symbolTable.localSearch(ident^txt) != null) {
         error(FUN_exists, ident^txt);
     }
     else {
@@ -178,10 +178,10 @@ global
     }
 }
 #gen {
-    if(BLOC^returns != 2 && !instanceof(TYPE^type, VoidType)) {
+    if (BLOC^returns != 2 && !instanceof(TYPE^type, VoidType)) {
         error(FUN_missingReturn);
     }
-    elseif(fun != null) {
+    elseif (fun != null) {
         FUNCTION^code = FUNCTION^machine.genFunction(
             fun, parameters, ident^txt, BLOC^code
         );
@@ -197,15 +197,15 @@ FUNC_PARAMETERSX -> comma FUNC_PARAMETER FUNC_PARAMETERSX;
 
 FUNC_PARAMETER -> TYPE ident #symbolTable;
 #symbolTable {
-    if(FUNC_PARAMETER^symbolTable.localSearch(ident^txt) != null) {
+    if (FUNC_PARAMETER^symbolTable.localSearch(ident^txt) != null) {
         error(VAR_exists, ident^txt);
     }
-    elseif(instanceof(TYPE^type, VoidType)) {
+    elseif (instanceof(TYPE^type, VoidType)) {
         error(TYPE_void);
     }
     else {
-        if(FUNC_PARAMETER^machine.hasWarning("shadow")
-        && FUNC_PARAMETER^symbolTable.globalSearch(ident^txt) != null) {
+        if (FUNC_PARAMETER^machine.hasWarning("shadow")
+        &&  FUNC_PARAMETER^symbolTable.globalSearch(ident^txt) != null) {
             warning(WARN_shadow, ident^txt);
         }
 
@@ -239,11 +239,11 @@ REFS -> osbra integer csbra REFS #gen;
 STYPE -> typeident #gen;
 #gen {
     Info info = STYPE^symbolTable.globalSearch(typeident^txt);
-    if(info == null) {
+    if (info == null) {
         error(TYPE_unknown, typeident^txt);
     }
     else {
-        match(info) {
+        match (info) {
             case InfoType {
                 STYPE^type = info.getType();
             }
@@ -265,7 +265,7 @@ global
 }
 #message {
     BLOC^returns = INSTS^returns;
-    if(BLOC^machine.verbosity() >= 5) {
+    if (BLOC^machine.verbosity() >= 5) {
         write("Symbols: " + symbolTable.toString()+"\n");
     }
 }
@@ -284,14 +284,14 @@ INSTS -> #returns #gen;
 
 INSTS -> INST INSTS #returns #gen;
 #returns {
-    if(INST^returns == 2 || INSTS1^returns == 2) {
+    if (INST^returns == 2 || INSTS1^returns == 2) {
         INSTS^returns = 2;
     }
     else {
         INSTS^returns = 1;
     }
 
-    if(INST^returns == 2
+    if (INST^returns == 2
     && INSTS1^returns != 0
     && INSTS^machine.hasWarning("unreachable")) {
         warning(WARN_unreachable);
@@ -306,14 +306,14 @@ INST -> using typeident affect TYPE semicolon #symbolTable #gen;
 #symbolTable {
     INST^returns = 1;
 
-    if(INST^symbolTable.localSearch(typeident^txt) != null) {
+    if (INST^symbolTable.localSearch(typeident^txt) != null) {
         error(TYPE_exists, typeident^txt);
     }
-    elseif(instanceof(TYPE^type, VoidType)) {
+    elseif (instanceof(TYPE^type, VoidType)) {
         error(TYPE_void);
     }
     else {
-        if(INST^machine.hasWarning("shadow")
+        if (INST^machine.hasWarning("shadow")
         && INST^symbolTable.globalSearch(typeident^txt) != null) {
             warning(WARN_shadow, typeident^txt);
         }
@@ -333,19 +333,19 @@ global
     INST^returns = 1;
 
     Info info = INST^symbolTable.localSearch(ident^txt);
-    if(info != null) {
+    if (info != null) {
         error(VAR_exists, ident^txt);
     }
     else {
-        if(EX^type != null && !TYPE^type.constructsFrom(EX^type)) {
+        if (EX^type != null && !TYPE^type.constructsFrom(EX^type)) {
             error(TYPE_unexpected, TYPE^type, EX^type);
         }
 
-        if(instanceof(TYPE^type, VoidType)) {
+        if (instanceof(TYPE^type, VoidType)) {
             error(TYPE_void);
         }
 
-        if(INST^machine.hasWarning("shadow")
+        if (INST^machine.hasWarning("shadow")
         && INST^symbolTable.globalSearch(ident^txt) != null) {
             warning(WARN_shadow, ident^txt);
         }
@@ -371,7 +371,7 @@ INST -> E semicolon #returns #gen;
     INST^returns = 1;
 }
 #gen {
-    if(E^expr != null) {
+    if (E^expr != null) {
         INST^code = E^expr.getCode(); -- TODO:code
     }
 }
@@ -389,10 +389,10 @@ INST -> BLOC #returns #gen;
 -- conditional
 INST -> if opar E cpar BLOC ELSE #returns #gen;
 #returns {
-    if(!E^type.testable()) {
+    if (!E^type.testable()) {
         error(TYPE_unexpected, "int", E^type);
     }
-    elseif(BLOC^returns == 2 && ELSE^returns != 1) {
+    elseif (BLOC^returns == 2 && ELSE^returns != 1) {
         INST^returns = 2;
     }
     else {
@@ -425,7 +425,7 @@ INST -> return E semicolon #type #gen;
 #type {
     INST^returns = 2;
     Type type = INST^symbolTable.getCurrentFunction().getReturnType();
-    if(!type.constructsFrom(E^type)) {
+    if (!type.constructsFrom(E^type)) {
         error(TYPE_unexpected, type, E^type);
     }
 }
@@ -445,10 +445,10 @@ INST -> return E semicolon #type #gen;
 -- affectation
 E -> A EX #type;
 #type {
-    if(EX^type == null) {
+    if (EX^type == null) {
         E^type = A^type;
     }
-    elseif(A^type.constructsFrom(EX^type)) {
+    elseif (A^type.constructsFrom(EX^type)) {
         E^type = A^type;
     }
     else {
@@ -456,7 +456,7 @@ E -> A EX #type;
     }
 
     -- `EX -> ;` => EX^expr == null
-    if(EX^expr == null) {
+    if (EX^expr == null) {
         E^expr = E^machine.genNonAff(A^type, A^expr);
     }
     else {
@@ -505,7 +505,7 @@ AX -> #type #gen;
 
 AX -> OPREL R #type;
 #type {
-    if(AX^htype.comparableWith(R^type, OPREL^sym)) {
+    if (AX^htype.comparableWith(R^type, OPREL^sym)) {
         AX^type = new IntegerType();
         -- TODO:code
         AX^expr = AX^hexpr;
@@ -542,7 +542,7 @@ RX -> OPADD T #gen RX #gen2;
         OPADD^sym, RX^htype, RX^hexpr, T^type, T^expr
     );
 
-    if(typedExpr != null) {
+    if (typedExpr != null) {
         RX1^hexpr = typedExpr.getExpr();
         RX1^htype = typedExpr.getType();
     }
@@ -583,7 +583,7 @@ TX -> OPMUL F #gen TX #gen2;
         OPMUL^sym, TX^htype, TX^hexpr, F^type, F^expr
     );
 
-    if(typedExpr != null) {
+    if (typedExpr != null) {
         TX1^hexpr = typedExpr.getExpr();
         TX1^htype = typedExpr.getType();
     }
@@ -598,9 +598,9 @@ TX -> OPMUL F #gen TX #gen2;
 
 TX -> osbra E csbra #type;
 #type {
-    match(TX^htype) {
+    match (TX^htype) {
         case Array {
-            if(instanceof(E^type, IntegerType)) {
+            if (instanceof(E^type, IntegerType)) {
                 TX^type = TX^htype.getPointee();
 
                 -- TODO:code
@@ -627,7 +627,7 @@ F -> string #type;
 #type {
     String escaped = F^machine.escape(string^txt);
 
-    if(F^machine.verbosity() >= 5) {
+    if (F^machine.verbosity() >= 5) {
         write("String " + string^txt + " escaped as \"" + escaped + "\".\n");
     }
 
@@ -639,7 +639,7 @@ F -> character #type;
 #type {
     String escaped = F^machine.escape(character^txt);
 
-    if(F^machine.verbosity() >= 5) {
+    if (F^machine.verbosity() >= 5) {
         write("Character " + character^txt + " escaped as '" + escaped + "'.\n");
     }
 
@@ -661,7 +661,7 @@ F -> OPUN F #type;
 #type {
     TypedExpr typedExpr = F^machine.genUnaryOp(OPUN^sym, F1^type, F1^expr);
 
-    if(typedExpr != null) {
+    if (typedExpr != null) {
         F^expr = typedExpr.getExpr();
         F^type = typedExpr.getType();
     }
@@ -673,7 +673,7 @@ F -> OPUN F #type;
 -- new/delete expressions
 F -> new opar TYPE cpar #type;
 #type {
-    if(instanceof(TYPE^type, VoidType)) {
+    if (instanceof(TYPE^type, VoidType)) {
         error(TYPE_void);
     }
     else {
@@ -684,7 +684,7 @@ F -> new opar TYPE cpar #type;
 
 INST -> delete opar E cpar semicolon #gen;
 #gen {
-    if(instanceof(E^type, Pointer)) {
+    if (instanceof(E^type, Pointer)) {
         INST^code = INST^machine.genDelete(E^type, E^expr);
     }
     else {
@@ -696,7 +696,7 @@ INST -> delete opar E cpar semicolon #gen;
 F -> sizeof opar SIZEOFEXPR cpar #type;
 #type {
     F^type = new IntegerType();
-    if(SIZEOFEXPR^type != null) {
+    if (SIZEOFEXPR^type != null) {
         F^expr = F^machine.genSizeOf(SIZEOFEXPR^type);
     }
 }
@@ -713,7 +713,7 @@ F -> opar E cpar #type;
 
 F -> opar TYPE cpar F #type;
 #type {
-    if(F1^type != null && !TYPE^type.constructsFrom(F1^type)) {
+    if (F1^type != null && !TYPE^type.constructsFrom(F1^type)) {
         error(TYPE_unexpected, TYPE^type, F1^type);
     }
     -- TODO: check here if cast is possible
@@ -736,16 +736,16 @@ global
 }
 #type {
     Info info  = F^symbolTable.globalSearch(ident^txt);
-    if(info == null) {
+    if (info == null) {
         error(FUN_unknown, ident^txt);
     }
     else {
-        match(info) {
+        match (info) {
             case InfoFun {
                 FunctionType fun = info.getType();
                 F^type = fun.getReturnType();
 
-                if(fun.callableWith(types)) {
+                if (fun.callableWith(types)) {
                     F^expr = F^machine.genCall(ident^txt, fun, exprs);
                 }
                 else {
@@ -762,11 +762,11 @@ global
 F -> ident #type;
 #type {
     Info info = F^symbolTable.globalSearch(ident^txt);
-    if(info == null) {
+    if (info == null) {
         error(VAR_unknown, ident^txt);
     }
     else {
-        match(info) {
+        match (info) {
             case InfoVar {
                 F^type = info.getType();
                 F^expr = F^machine.genIdent(info);
@@ -781,7 +781,7 @@ F -> ident #type;
 -- pointed-to memory access
 F -> mult F #type;
 #type {
-    match(F1^type) {
+    match (F1^type) {
         case Pointer {
             F^type = F1^type.getPointee();
             F^expr = F^machine.genDeref(F1^expr);

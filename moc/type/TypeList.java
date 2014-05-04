@@ -33,12 +33,12 @@ public class TypeList {
      *  are constructible it is constructible from the other element-wise.
      */
     public boolean constructsFrom(TypeList other) {
-        if(size() != other.size()) {
+        if (size() != other.size()) {
             return false;
         }
 
-        for(int i = 0; i < size(); ++i) {
-            if(!get(i).constructsFrom(other.get(i))) {
+        for (int i = 0; i < size(); ++i) {
+            if (!get(i).constructsFrom(other.get(i))) {
                 return false;
             }
         }

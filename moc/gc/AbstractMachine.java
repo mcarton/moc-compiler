@@ -58,10 +58,10 @@ public abstract class AbstractMachine implements IMachine {
         StringBuffer sb = new StringBuffer(unescaped.length());
  
         boolean backslash = false;
-        for(int i = 1; i < unescaped.length()-1; ++i) { // exludes ""
-            switch(unescaped.charAt(i)) {
+        for (int i = 1; i < unescaped.length()-1; ++i) { // exludes ""
+            switch (unescaped.charAt(i)) {
                 case '\\':
-                    if(backslash) {
+                    if (backslash) {
                         sb.append("\\");
                     }
                     backslash = !backslash;
@@ -93,14 +93,14 @@ public abstract class AbstractMachine implements IMachine {
     @Override
     public final TypedExpr genUnaryOp(String what, Type type, Expr expr) {
         // TODO:MOC: booleans with not
-        if(type instanceof IntegerType) {
-            if(what.equals("+")) {
+        if (type instanceof IntegerType) {
+            if (what.equals("+")) {
                 return new TypedExpr(genAddInt(expr), new IntegerType());
             }
-            else if(what.equals("-")) {
+            else if (what.equals("-")) {
                 return new TypedExpr(genSubInt(expr), new IntegerType());
             }
-            else if(what.equals("!")) {
+            else if (what.equals("!")) {
                 return new TypedExpr(genNotInt(expr), new IntegerType());
             }
         }
@@ -124,26 +124,26 @@ public abstract class AbstractMachine implements IMachine {
         String what, Type lhsType, Expr lhs, Type rhsType, Expr rhs
     ) {
         // TODO:MOC: booleans with or and and
-        if(lhsType instanceof IntegerType && rhsType instanceof IntegerType) {
-            if(what.equals("+")) {
+        if (lhsType instanceof IntegerType && rhsType instanceof IntegerType) {
+            if (what.equals("+")) {
                 return new TypedExpr(genAddInt(lhs, rhs), new IntegerType());
             }
-            else if(what.equals("-")) {
+            else if (what.equals("-")) {
                 return new TypedExpr(genSubInt(lhs, rhs), new IntegerType());
             }
-            else if(what.equals("or")) {
+            else if (what.equals("or")) {
                 return new TypedExpr(genOrInt(lhs, rhs), new IntegerType());
             }
-            else if(what.equals("*")) {
+            else if (what.equals("*")) {
                 return new TypedExpr(genMultInt(lhs, rhs), new IntegerType());
             }
-            else if(what.equals("/")) {
+            else if (what.equals("/")) {
                 return new TypedExpr(genDivInt(lhs, rhs), new IntegerType());
             }
-            else if(what.equals("%")) {
+            else if (what.equals("%")) {
                 return new TypedExpr(genModInt(lhs, rhs), new IntegerType());
             }
-            else if(what.equals("&&")) {
+            else if (what.equals("&&")) {
                 return new TypedExpr(genAndInt(lhs, rhs), new IntegerType());
             }
         }

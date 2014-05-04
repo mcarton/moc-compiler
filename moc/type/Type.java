@@ -14,7 +14,7 @@ public interface Type {
     public boolean comparableWith(Type other, String operator);
 
     /**
-     * True iff we can test the type (ie. in if(...)).
+     * True iff we can test the type (ie. in if (...)).
      */
     public boolean testable();
 
