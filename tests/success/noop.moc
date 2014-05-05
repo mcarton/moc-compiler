@@ -1,0 +1,7 @@
+void main() {
+    42;
+    '7';
+    NULL;
+    "enseeit";
+}
+
