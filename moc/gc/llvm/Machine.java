@@ -564,39 +564,3 @@ public class Machine extends AbstractMachine {
     }
 }
 
-/** A visitor to get the llvm representation of types.
- */
-class RepresentationVisitor implements TypeVisitor<String> {
-    public String visit(IntegerType what)   { return "i64"; }
-    public String visit(CharacterType what) { return "i8"; }
-
-    public String visit(VoidType what)      { return "void"; }
-    public String visit(NullType what)      { return "i8*"; }
-
-    public String visit(Array what) {
-        return "["
-            + what.getNbElements()
-            + " x "
-            + what.getPointee().visit(this)
-            + "]";
-    }
-    public String visit(Pointer what) {
-        return what.getPointee().visit(this) + "*";
-    }
-}
-
-/** A visitor to get the size of types.
- */
-class SizeVisitor implements TypeVisitor<Integer> {
-    public Integer visit(IntegerType what)   { return 8; }
-    public Integer visit(CharacterType what) { return 1; }
-
-    public Integer visit(VoidType what)      { return 0; }
-    public Integer visit(NullType what)      { return 8; }
-
-    public Integer visit(Array what) {
-        return what.getPointee().visit(this) * what.getNbElements();
-    }
-    public Integer visit(Pointer what)       { return 8; }
-}
-
