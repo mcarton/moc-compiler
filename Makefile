@@ -28,11 +28,7 @@ att:
 	    moc/gc/*.java \
 	    moc/egg/*.java
 
-test:
-	@echo "Testing llvm machine:"
-	-@make test-llvm
-	@echo "Testing tam machine:"
-	-@make test-tam
+test: test-llvm test-tam
 
 test-llvm:
 	@cd tests; ./test.py llvm
