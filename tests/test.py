@@ -88,4 +88,3 @@ if __name__ == '__main__':
     else:
         print(success('{} tests passed successfully.'.format(nb_success)))
         print(error('{} tests failed.'.format(nb_fail)))
-        sys.exit(1)
