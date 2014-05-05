@@ -2,7 +2,8 @@ void main() {
     main();
 }
 
-void foo(Int a, Char b) {
-    foo(a, b);
+Int foo(Int a, Char b) {
+    main();
+    return foo(a, b);
 }
 

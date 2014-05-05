@@ -297,10 +297,11 @@ public class Machine extends AbstractMachine {
         }
 
         // %retval = call i32 @funName(parameters)
-        String tmpValueName = getTmpName();
+        String tmpValueName = null;
         indent(sb);
 
         if (!(fun.getReturnType() instanceof VoidType)) {
+            tmpValueName = getTmpName();
             sb.append(tmpValueName);
             sb.append(" = call ");
         }
