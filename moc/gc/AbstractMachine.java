@@ -54,42 +54,26 @@ public abstract class AbstractMachine implements IMachine {
         }
     }
 
-     public final String escape(String unescaped) {
-        StringBuffer sb = new StringBuffer(unescaped.length());
+    public final int stringSize(String unescaped) {
+        int size = 1; // includes \0
  
         boolean backslash = false;
         for (int i = 1; i < unescaped.length()-1; ++i) { // exludes ""
-            switch (unescaped.charAt(i)) {
-                case '\\':
-                    if (backslash) {
-                        sb.append("\\");
-                    }
-                    backslash = !backslash;
-                    break;
-                case 'n':
-                    sb.append(backslash ? '\n' : 'n');
-                    backslash = false;
-                    break;
-                case 't':
-                    sb.append(backslash ? '\t' : 't');
-                    backslash = false;
-                    break;
-                case '\'':
-                    sb.append(backslash ? '\'' : '\'');
-                    backslash = false;
-                    break;
-                case '"':
-                    sb.append(backslash ? '\"' : '"');
-                    backslash = false;
-                    break;
-                default:
-                    sb.append(unescaped.charAt(i));
-                    backslash = false;
+            if (unescaped.charAt(i) == '\\') {
+                if (backslash) {
+                    ++size;
+                }
+                backslash = !backslash;
+            }
+            else {
+                ++size;
+                backslash = false;
             }
         }
 
-        return sb.toString();
-     }
+        return size;
+    }
+
     @Override
     public final TypedExpr genUnaryOp(String what, Type type, Expr expr) {
         // TODO:MOC: booleans with not

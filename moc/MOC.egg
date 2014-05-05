@@ -625,26 +625,16 @@ F -> integer #type;
 
 F -> string #type;
 #type {
-    String escaped = F^machine.escape(string^txt);
+    int length = F^machine.stringSize(string^txt);
 
-    if (F^machine.verbosity() >= 5) {
-        write("String " + string^txt + " escaped as \"" + escaped + "\".\n");
-    }
-
-    F^type = new Array(new CharacterType(), escaped.length()+1 -* includes \0 *-);
-    F^expr = F^machine.genString(escaped);
+    F^type = new Array(new CharacterType(), length);
+    F^expr = F^machine.genString(length, string^txt);
 }
 
 F -> character #type;
 #type {
-    String escaped = F^machine.escape(character^txt);
-
-    if (F^machine.verbosity() >= 5) {
-        write("Character " + character^txt + " escaped as '" + escaped + "'.\n");
-    }
-
     F^type = new CharacterType();
-    F^expr = F^machine.genCharacter(escaped);
+    F^expr = F^machine.genCharacter(character^txt);
 }
 
 F -> null #type;

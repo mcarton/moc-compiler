@@ -45,7 +45,7 @@ public interface IMachine {
     Location getLocationFor(String name, Type type);
 
     // string stuffs:
-    String escape(String unescaped);
+    int stringSize(String unescaped);
 
     // code generation stuffs:
     String genFunction(
@@ -62,7 +62,7 @@ public interface IMachine {
     String genVarDecl(Type t, Location location, Expr expr);
 
     Expr genInt(String txt);
-    Expr genString(String txt);
+    Expr genString(int length, String txt);
     Expr genCharacter(String txt);
     Expr genNull();
 

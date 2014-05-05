@@ -65,7 +65,7 @@ public class Machine extends AbstractMachine {
         return genInt(Integer.toString(nb));
     }
     @Override
-    public Expr genString(String txt) {
+    public Expr genString(int length, String txt) {
         return new Expr("\tLOADL " + txt + "\n");
     }
     @Override

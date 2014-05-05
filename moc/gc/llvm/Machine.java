@@ -13,8 +13,12 @@ import moc.type.*;
  * The TAM machine and its generation functions
  */
 public class Machine extends AbstractMachine {
+    int lastGlobalTmp = -1;
     int lastTmp = 0; // name of the last generated temporary
     int bloc = 0; // the bloc we are in
+    String declarations =
+              "declare i8* @malloc(i64)\n"
+            + "declare void @free(i8*)\n\n";
 
     RepresentationVisitor typeVisitor = new RepresentationVisitor();
     SizeVisitor sizeVisitor = new SizeVisitor();
@@ -25,12 +29,7 @@ public class Machine extends AbstractMachine {
 
     @Override
     public void writeCode(String fname, String code) throws MOCException {
-        // TODO: to remove if we add forward declaration of function
-        // we need to add some declaration here for now
-        code = code
-            + "declare i8* @malloc(i64)\n"
-            + "declare void @free(i8*)\n";
-        super.writeCode(fname, code);
+        super.writeCode(fname, declarations + code);
     }
 
     @Override
@@ -191,12 +190,27 @@ public class Machine extends AbstractMachine {
         return genInt(Integer.toString(nb));
     }
     @Override
-    public Expr genString(String txt) {
-        return new Expr(new Location("%TODO"), "TODO");
+    public Expr genString(int length, String txt) {
+        String escaped = escape(txt);
+        StringBuffer sb = new StringBuffer(declarations);
+
+        String name = getGlobalTmpName();
+
+        // <name> = internal constant [4 x i8] c"foo\00", align 1
+        sb.append(name);
+        sb.append(" = internal constant [");
+        sb.append(length);
+        sb.append(" x i8] c\"");
+        sb.append(escaped);
+        sb.append("\\00\"\n");
+
+        declarations = sb.toString();
+
+        return new Expr(new Location(name), "");
     }
     @Override
     public Expr genCharacter(String txt) {
-        return new Expr(null, txt); // TODO:string
+        return new Expr(null, Integer.toString(escapeChar(txt)));
     }
     @Override
     public Expr genNew(Type t) {
@@ -445,7 +459,11 @@ public class Machine extends AbstractMachine {
     }
 
     private String getTmpName() {
-        return String.valueOf("%" + ++lastTmp);
+        return "%" + ++lastTmp;
+    }
+
+    private String getGlobalTmpName() {
+        return "@" + ++lastGlobalTmp;
     }
 
     /**
@@ -462,6 +480,59 @@ public class Machine extends AbstractMachine {
         }
         else {
             return expr.getCode();
+        }
+    }
+
+    private String escape(String unescaped) {
+        StringBuffer sb = new StringBuffer(unescaped.length());
+ 
+        boolean backslash = false;
+        for (int i = 1; i < unescaped.length()-1; ++i) { // exludes ""
+            switch (unescaped.charAt(i)) {
+                case '\\':
+                    if (backslash) {
+                        sb.append("\\\\");
+                    }
+                    backslash = !backslash;
+                    break;
+                case 'n':
+                    sb.append(backslash ? "\\0A" : "n");
+                    backslash = false;
+                    break;
+                case 't':
+                    sb.append(backslash ? "\\09" : "t");
+                    backslash = false;
+                    break;
+                case '"':
+                    sb.append(backslash ? "\\22" : "\"");
+                    backslash = false;
+                    break;
+                default:
+                    sb.append(unescaped.charAt(i));
+                    backslash = false;
+            }
+        }
+
+        return sb.toString();
+    }
+
+    private int escapeChar(String unescaped) {
+        if (unescaped.charAt(1) == '\\') {
+            switch (unescaped.charAt(2)) {
+                case '\\':
+                    return '\\';
+                case 'n':
+                    return '\n';
+                case 't':
+                    return '\t';
+                case '"':
+                    return '\"';
+                default:
+                    return unescaped.charAt(2);
+            }
+        }
+        else {
+            return unescaped.charAt(1);
         }
     }
 }
