@@ -15,10 +15,10 @@ import moc.type.*;
 public class Machine extends AbstractMachine {
     int lastGlobalTmp = -1;
     int lastTmp = 0; // name of the last generated temporary
-    int bloc = 0; // the bloc we are in
+    int bloc = -1; // the bloc we are in
     String declarations =
               "declare i8* @malloc(i64)\n"
-            + "declare void @free(i8*)\n\n";
+            + "declare void @free(i8*)\n";
 
     RepresentationVisitor typeVisitor = new RepresentationVisitor();
     SizeVisitor sizeVisitor = new SizeVisitor();
@@ -29,7 +29,7 @@ public class Machine extends AbstractMachine {
 
     @Override
     public void writeCode(String fname, String code) throws MOCException {
-        super.writeCode(fname, declarations + code);
+        super.writeCode(fname, declarations + '\n' + code);
     }
 
     @Override
@@ -39,14 +39,24 @@ public class Machine extends AbstractMachine {
 
     // location stuffs:
     @Override
-    public void newFunction() {
+    public void beginFunction() {
         lastTmp = 0;
-        bloc = 0;
+        ++bloc;
     }
 
     @Override
-    public void newBloc() {
+    public void endFunction() {
+        --bloc;
+    }
+
+    @Override
+    public void beginBloc() {
         ++bloc;
+    }
+
+    @Override
+    public void endBloc() {
+        --bloc;
     }
 
     @Override
@@ -91,12 +101,13 @@ public class Machine extends AbstractMachine {
         while (it.hasNext()) {
             String paramType = it.next().visit(typeVisitor);
             String paramName = locIt.next().toString();
-            sb.append("    ");
+            indent(sb);
             sb.append(paramName);
             sb.append(" = alloca ");
             sb.append(paramType);
             sb.append('\n');
-            sb.append("    store ");
+            indent(sb);
+            sb.append("store ");
             sb.append(paramType);
             sb.append(" %__p");
             sb.append(++paramIt);
@@ -110,7 +121,8 @@ public class Machine extends AbstractMachine {
         sb.append(bloc);
 
         if (f.getReturnType() instanceof VoidType) {
-            sb.append("    ret void\n");
+            indent(sb);
+            sb.append("ret void\n");
         }
 
         sb.append("}\n\n");
@@ -127,7 +139,8 @@ public class Machine extends AbstractMachine {
         String returnTypeRepr = f.getReturnType().visit(typeVisitor);
         String returnValue = getValue(returnTypeRepr, expr, sb);
 
-        sb.append("    ret ");
+        indent(sb);
+        sb.append("ret ");
         sb.append(returnTypeRepr);
         sb.append(' ');
         sb.append(returnValue);
@@ -142,7 +155,7 @@ public class Machine extends AbstractMachine {
 
         String type = t.visit(typeVisitor);
 
-        sb.append("    ");
+        indent(sb);
         sb.append(loc);
         sb.append(" = alloca ");
         sb.append(type);
@@ -157,13 +170,14 @@ public class Machine extends AbstractMachine {
         String type = t.visit(typeVisitor);
         String exprCode = getValue(type, expr, sb);
 
-        sb.append("    ");
+        indent(sb);
         sb.append(loc);
         sb.append(" = alloca ");
         sb.append(type);
         sb.append('\n');
 
-        sb.append("    store ");
+        indent(sb);
+        sb.append("store ");
         sb.append(type);
         sb.append(' ');
         sb.append(exprCode);
@@ -192,7 +206,7 @@ public class Machine extends AbstractMachine {
     @Override
     public Expr genString(int length, String txt) {
         String escaped = escape(txt);
-        StringBuffer sb = new StringBuffer(declarations);
+        StringBuilder sb = new StringBuilder(declarations);
 
         String name = getGlobalTmpName();
 
@@ -221,7 +235,7 @@ public class Machine extends AbstractMachine {
         // call malloc
         // <result1> = call i8* @malloc(i64 4)
         String tmpPtr = getTmpName();
-        sb.append("    ");
+        indent(sb);
         sb.append(tmpPtr);
         sb.append(" = call i8* @malloc(i64 ");
         sb.append(t.visit(sizeVisitor));
@@ -230,7 +244,7 @@ public class Machine extends AbstractMachine {
         // cast to right pointer type
         // <result2> = bitcast i8* <result1> to i32*
         String tmpCastedPtr = getTmpName();
-        sb.append("    ");
+        indent(sb);
         sb.append(tmpCastedPtr);
         sb.append(" = bitcast i8* ");
         sb.append(tmpPtr);
@@ -250,7 +264,7 @@ public class Machine extends AbstractMachine {
         // cast to i8* (~ void*)
         // <result> = bitcast i32* <ptr> to i8*
         String tmpPtr = getTmpName();
-        sb.append("    ");
+        indent(sb);
         sb.append(tmpPtr);
         sb.append(" = bitcast ");
         sb.append(type);
@@ -259,7 +273,8 @@ public class Machine extends AbstractMachine {
         sb.append(" to i8*\n");
 
         // call void @free(i8* <result>) #2
-        sb.append("    call void @free(i8* ");
+        indent(sb);
+        sb.append("call void @free(i8* ");
         sb.append(tmpPtr);
         sb.append(")\n");
 
@@ -283,7 +298,7 @@ public class Machine extends AbstractMachine {
 
         // %retval = call i32 @funName(parameters)
         String tmpValueName = getTmpName();
-        sb.append("    ");
+        indent(sb);
 
         if (!(fun.getReturnType() instanceof VoidType)) {
             sb.append(tmpValueName);
@@ -322,7 +337,7 @@ public class Machine extends AbstractMachine {
         StringBuilder sb = new StringBuilder();
 
         String tmpValueName = getTmpName();
-        sb.append("    ");
+        indent(sb);
         sb.append(tmpValueName);
         sb.append(" = load ");
         sb.append(info.getType().visit(typeVisitor));
@@ -342,7 +357,8 @@ public class Machine extends AbstractMachine {
         String rhsCode= getValue(type, rhs, sb);
         String tmpValueName = getTmpName();
 
-        sb.append("    store ");
+        indent(sb);
+        sb.append("store ");
         sb.append(type);
         sb.append(tmpValueName);
         sb.append(", ");
@@ -370,7 +386,7 @@ public class Machine extends AbstractMachine {
 
         // <tmpValueName> = icmp eq i64 <exprCode>, 0
         String tmpValueName = getTmpName();
-        sb.append("    ");
+        indent(sb);
         sb.append(tmpValueName);
         sb.append(" = icmp eq i64 ");
         sb.append(exprCode);
@@ -378,7 +394,7 @@ public class Machine extends AbstractMachine {
 
         // <tmpCastedName> = zext i1 <tmpValueName> to i64
         String tmpCastedName = getTmpName();
-        sb.append("    ");
+        indent(sb);
         sb.append(tmpCastedName);
         sb.append(" = zext i1 ");
         sb.append(tmpValueName);
@@ -438,7 +454,7 @@ public class Machine extends AbstractMachine {
         String tmpValueName = getTmpName();
 
         // <result> = add <ty> <op1>, <op2>
-        sb.append("    ");
+        indent(sb);
         sb.append(tmpValueName);
         sb.append(" = ");
         sb.append(what);
@@ -455,7 +471,12 @@ public class Machine extends AbstractMachine {
 
     @Override
     public String genComment(String comment) {
-        return "    ; " + comment + '\n';
+        StringBuilder sb = new StringBuilder(comment.length());
+        indent(sb);
+        sb.append("; ");
+        sb.append(comment);
+        sb.append('\n');
+        return sb.toString();
     }
 
     private String getTmpName() {
@@ -533,6 +554,12 @@ public class Machine extends AbstractMachine {
         }
         else {
             return unescaped.charAt(1);
+        }
+    }
+
+    private void indent(StringBuilder sb) {
+        if (bloc >= 0) {
+            sb.append("    ");
         }
     }
 }

@@ -156,7 +156,7 @@ global
     ArrayList<Location> parameters;
     FunctionType fun;
 #csymbols {
-    FUNCTION^machine.newFunction();
+    FUNCTION^machine.beginFunction();
 
     blocTds = new SymbolTable(FUNCTION^symbolTable);
     FUNC_PARAMETERS^symbolTable = blocTds;
@@ -186,6 +186,8 @@ global
             fun, parameters, ident^txt, BLOC^code
         );
     }
+
+    FUNCTION^machine.endFunction();
 }
 
 -- function parameters
@@ -259,7 +261,8 @@ BLOC -> #symbolTable occbra INSTS ccbra #message #gen;
 global
     SymbolTable symbolTable;
 #symbolTable {
-    BLOC^machine.newBloc();
+    BLOC^machine.beginBloc();
+
     symbolTable = new SymbolTable(BLOC^symbolTable);
     INSTS^symbolTable = symbolTable;
 }
@@ -271,6 +274,7 @@ global
 }
 #gen {
     BLOC^code = INSTS^code;
+    BLOC^machine.endBloc();
 }
 
 -- instructions

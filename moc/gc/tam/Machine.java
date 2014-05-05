@@ -22,11 +22,19 @@ public class Machine extends AbstractMachine {
 
     // location stuffs:
     @Override
-    public void newFunction() {
+    public void beginFunction() {
     }
 
     @Override
-    public void newBloc() {
+    public void endFunction() {
+    }
+
+    @Override
+    public void beginBloc() {
+    }
+
+    @Override
+    public void endBloc() {
     }
 
     @Override

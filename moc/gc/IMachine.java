@@ -31,13 +31,21 @@ public interface IMachine {
     int verbosity();
 
     // location stuffs:
-    /** Indicates the machine we enter a new function.
+    /** Indicates the machine we enter a function definition.
      */
-    void newFunction();
+    void beginFunction();
+
+    /** Indicates the machine we exit a function definition.
+     */
+    void endFunction();
 
     /** Indicates the machine we enter a new bloc.
      */
-    void newBloc();
+    void beginBloc();
+
+    /** Indicates the machine we exit a bloc.
+     */
+    void endBloc();
 
     /** Get the machine-dependant Location for a variable named
      *  <code>name</code> with type <code>type</code> declared here.
