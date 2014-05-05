@@ -10,7 +10,7 @@ import moc.symbols.*;
 import moc.type.*;
 
 /**
- * The TAM machine and its generation functions
+ * The llvm machine and its generation functions
  */
 public class Machine extends AbstractMachine {
     int lastGlobalTmp = -1;
