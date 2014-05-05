@@ -30,9 +30,8 @@ public class Pointer extends AbstractType<Pointer> {
     /** A pointer is comparable with other pointers and the {@link NullType}.
      */
     @Override
-    public boolean comparableWith(Type other, String operator) {
-        return (   operator.equals("==") || operator.equals("!="))
-            && (other instanceof Pointer || other instanceof NullType);
+    public boolean comparableWith(Type other) {
+        return other instanceof Pointer || other instanceof NullType;
     }
 
     @Override
@@ -43,6 +42,12 @@ public class Pointer extends AbstractType<Pointer> {
     @Override
     public <R> R visit(TypeVisitor<R> visitor) {
         return visitor.visit(this);
+    }
+
+    @Override
+    public boolean equals(Type other) {
+        return other instanceof Pointer
+            && ((Pointer)other).getPointee().equals(getPointee());
     }
 }
 

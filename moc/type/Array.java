@@ -33,20 +33,23 @@ public class Array extends AbstractType<Array> {
     }
 
     /**
-     * Two arrays are comparable for <code>==</code> and <code>!=</code> iff
-     * theirs pointees are comparable and are not comparable with other
-     * operators.
+     * Arrays are not comparable.
      */
     @Override
-    public boolean comparableWith(Type other, String operator) {
-        return (operator.equals("==") || operator.equals("!="))
-            && other instanceof Array
-            && pointee.comparableWith(((Array)other).pointee, operator);
+    public boolean comparableWith(Type other) {
+        return false;
     }
 
     @Override
     public <R> R visit(TypeVisitor<R> visitor) {
         return visitor.visit(this);
+    }
+
+    @Override
+    public boolean equals(Type other) {
+        return other instanceof Array
+            && ((Array)other).getNbElements() == getNbElements()
+            && ((Array)other).getPointee().equals(getPointee());
     }
 }
 

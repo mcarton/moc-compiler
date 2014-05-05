@@ -509,7 +509,7 @@ AX -> #type #gen;
 
 AX -> OPREL R #type;
 #type {
-    if (AX^htype.comparableWith(R^type, OPREL^sym)) {
+    if (AX^htype.comparableWith(R^type)) {
         AX^type = new IntegerType();
         -- TODO:code
         AX^expr = AX^hexpr;
@@ -707,10 +707,9 @@ F -> opar E cpar #type;
 
 F -> opar TYPE cpar F #type;
 #type {
-    if (F1^type != null && !TYPE^type.constructsFrom(F1^type)) {
+    if (F1^type != null && !TYPE^type.castsFrom(F1^type)) {
         error(TYPE_unexpected, TYPE^type, F1^type);
     }
-    -- TODO: check here if cast is possible
     else {
         F^expr = F^machine.genCast(F1^type, TYPE^type, F1^expr);
     }
