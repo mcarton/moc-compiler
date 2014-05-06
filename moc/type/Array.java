@@ -1,6 +1,6 @@
 package moc.type;
 
-public class Array extends AbstractType<Array> {
+public final class Array extends AbstractType<Array> {
     private Type pointee;
     private int nbElements;
 

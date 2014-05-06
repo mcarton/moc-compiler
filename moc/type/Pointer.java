@@ -1,6 +1,6 @@
 package moc.type;
 
-public class Pointer extends AbstractType<Pointer> {
+public final class Pointer extends AbstractType<Pointer> {
     private Type pointee;
 
     public Pointer(Type pointee) {

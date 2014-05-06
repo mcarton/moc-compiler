@@ -1,6 +1,6 @@
 package moc.type;
 
-public abstract class AbstractType<T extends Type> implements Type {
+abstract class AbstractType<T extends Type> implements Type {
     /**
      * Default implementation where type constructs from the other if they are
      * equal.

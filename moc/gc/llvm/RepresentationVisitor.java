@@ -4,7 +4,7 @@ import moc.type.*;
 
 /** A visitor to get the llvm representation of types.
  */
-class RepresentationVisitor implements TypeVisitor<String> {
+final class RepresentationVisitor implements TypeVisitor<String> {
     public String visit(IntegerType what)   { return "i64"; }
     public String visit(CharacterType what) { return "i8"; }
 

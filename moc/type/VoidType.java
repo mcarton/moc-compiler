@@ -1,6 +1,6 @@
 package moc.type;
 
-public class VoidType extends AbstractType<VoidType> {
+public final class VoidType extends AbstractType<VoidType> {
     public VoidType() {
     }
 

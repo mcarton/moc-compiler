@@ -1,9 +1,9 @@
 package moc.gc.llvm;
 
-public class Location implements moc.gc.Location {
+final class Location implements moc.gc.Location {
     String name;
 
-    public Location(String name) {
+    Location(String name) {
         this.name = name;
     }
 

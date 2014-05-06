@@ -4,7 +4,7 @@ import moc.type.*;
 
 /** A visitor to get the size of types.
  */
-public class SizeVisitor implements TypeVisitor<Integer> {
+final public class SizeVisitor implements TypeVisitor<Integer> {
     public Integer visit(IntegerType what)   { return 8; }
     public Integer visit(CharacterType what) { return 1; }
 

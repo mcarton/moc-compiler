@@ -1,6 +1,6 @@
 package moc.type;
 
-public class IntegerType extends AbstractType<IntegerType> {
+public final class IntegerType extends AbstractType<IntegerType> {
     public IntegerType() {
     }
 

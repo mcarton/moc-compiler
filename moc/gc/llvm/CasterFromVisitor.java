@@ -3,7 +3,7 @@ package moc.gc.llvm;
 import java.lang.StringBuilder;
 import moc.type.*;
 
-public class CasterFromVisitor implements TypeVisitor<TypeVisitor<Caster>> {
+class CasterFromVisitor implements TypeVisitor<TypeVisitor<Caster>> {
     public TypeVisitor<Caster> visit(IntegerType from)   { return new FromIntCaster(); }
     public TypeVisitor<Caster> visit(CharacterType from) { return new FromCharCaster(); }
 

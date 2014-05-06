@@ -1,6 +1,6 @@
 package moc.type;
 
-public class CharacterType extends AbstractType<CharacterType> {
+public final class CharacterType extends AbstractType<CharacterType> {
     public CharacterType() {
     }
 

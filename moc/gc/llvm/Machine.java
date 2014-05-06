@@ -12,7 +12,7 @@ import moc.type.*;
 /**
  * The llvm machine and its generation functions
  */
-public class Machine extends AbstractMachine {
+public final class Machine extends AbstractMachine {
     int lastGlobalTmp = -1;
     int lastTmp = 0; // name of the last generated temporary
     int bloc = -1; // the bloc we are in
