@@ -34,7 +34,8 @@ class FromCharCaster extends DefaultCaster {
     public Caster visit(IntegerType to) {
         return new Caster() {
             public Expr cast(CodeGenerator cg, Expr expr) {
-                String name = cg.sext("i8", expr, "i64");
+                String exprCode = cg.getValue("i8", expr);
+                String name = cg.cast("sext", "i8", exprCode, "i64");
                 return new Expr(new Location(name), cg.get());
             }
         };
@@ -48,7 +49,8 @@ class FromIntCaster extends DefaultCaster {
     public Caster visit(CharacterType to) {
         return new Caster() {
             public Expr cast(CodeGenerator cg, Expr expr) {
-                String name = cg.trunc("i64", expr, "i8");
+                String exprCode = cg.getValue("i64", expr);
+                String name = cg.cast("trunc", "i64", exprCode, "i8");
                 return new Expr(new Location(name), cg.get());
             }
         };
@@ -84,7 +86,9 @@ class FromPointerCaster extends DefaultCaster {
     public Caster visit(final Pointer to) {
         return new Caster() {
             public Expr cast(CodeGenerator cg, Expr expr) {
-                String name = cg.bitcast(from, expr, to);
+                String fromName = cg.typeName(from);
+                String exprCode = cg.getValue(fromName, expr);
+                String name = cg.cast("bitcast", fromName, exprCode, cg.typeName(to));
                 return new Expr(new Location(name), cg.get());
             }
         };
