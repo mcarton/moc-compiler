@@ -40,6 +40,8 @@ final class CodeGenerator {
     }
 
     // instructions generation in alphabetical order:
+
+    /** {@code <where> = alloca <what>} */
     void alloca(String where, String what) {
         indent(sb);
         sb.append(where);
@@ -48,8 +50,8 @@ final class CodeGenerator {
         sb.append('\n');
     }
 
+    /** {@code <tmp> = <op> <type> <lhs>, <rh>} */
     String binaryOperator(String op, String type, String lhs, String rhs) {
-        // <tmp> = <op> <type> <lhs>, <rh>
         String tmp = machine.getTmpName();
         indent(sb);
         sb.append(tmp);
@@ -65,8 +67,8 @@ final class CodeGenerator {
         return tmp;
     }
 
+    /** {@code <tmp> = <op> <from> <what> to <to>} */
     String cast(String op, String from, String what, String to) {
-        // <tmp> = <op> <from> <what> to <to>
         String tmpCastedName = machine.getTmpName();
         indent(sb);
         sb.append(tmpCastedName);
@@ -82,21 +84,23 @@ final class CodeGenerator {
         return tmpCastedName;
     }
 
+    /** {@code ; <comment>} */
     void comment(String comment) {
         sb.append("; ");
         sb.append(comment);
         sb.append('\n');
     }
 
+    /** {@code call void @free(i8* <what>)} */
     void free(String what) {
         indent(sb);
         sb.append("call void @free(i8* ");
         sb.append(what);
         sb.append(")\n");
     }
-    
+
+    /** {@code <tmp> = getelementptr <type>* <lhs>, i64 <rhs>} */
     String getelementptr(String type, String lhs, String[] rhs) {
-        // <tmp> = getelementptr <type>* <lhs>, i64 <rhs>
         String tmp = machine.getTmpName();
         indent(sb);
         sb.append(tmp);
@@ -118,8 +122,8 @@ final class CodeGenerator {
         return machine.getValue(type, expr, sb);
     }
 
+    /** {@code <tmp> = load <type>* <where> } */
     String load(String type, String what) {
-        // <tmp> = load <type>* <where>
         String tmpValueName = machine.getTmpName();
         indent(sb);
         sb.append(tmpValueName);
@@ -131,8 +135,8 @@ final class CodeGenerator {
         return tmpValueName;
     }
 
+    /** {@code <result> = call i8* @malloc(i64 <size>)} */
     String malloc(int size) {
-        // <result> = call i8* @malloc(i64 <size>)
         String tmpPtr = machine.getTmpName();
         indent(sb);
         sb.append(tmpPtr);
@@ -148,8 +152,8 @@ final class CodeGenerator {
         sb.append("ret void");
     }
 
+    /** {@code ret <type> <what> } */
     void ret(String type, String what) {
-        // ret <type> <what>
 
         indent(sb);
         sb.append("ret ");
@@ -159,10 +163,10 @@ final class CodeGenerator {
         sb.append('\n');
     }
 
+    /** {@code <name> = internal constant [<lenght> x i8] c"<value>\00" } */
     String stringCstDeclaration(int length, String value) {
         String name = machine.getGlobalTmpName();
 
-        // <name> = internal constant [<lenght> x i8] c"<value>\00"
         indent(declarationSb);
         declarationSb.append(name);
         declarationSb.append(" = internal constant [");
@@ -174,8 +178,8 @@ final class CodeGenerator {
         return name;
     }
 
+    /** {@code store <type> <what>, <type>* <where> } */
     void store(String type, String what, String where) {
-        // store <type> <what>, <type>* <where>
         indent(sb);
         sb.append("store ");
         sb.append(type);
