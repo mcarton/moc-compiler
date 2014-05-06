@@ -94,6 +94,25 @@ final class CodeGenerator {
         sb.append(what);
         sb.append(")\n");
     }
+    
+    String getelementptr(String type, String lhs, String[] rhs) {
+        // <tmp> = getelementptr <type>* <lhs>, i64 <rhs>
+        String tmp = machine.getTmpName();
+        indent(sb);
+        sb.append(tmp);
+        sb.append(" = getelementptr ");
+        sb.append(type);
+        sb.append("* ");
+        sb.append(lhs);
+        for(int i = 0; i < rhs.length; i += 2) {
+            sb.append(", ");
+            sb.append(rhs[i]);
+            sb.append(' ');
+            sb.append(rhs[i+1]);
+        }
+        sb.append('\n');
+        return tmp;
+    }
 
     String getValue(String type, moc.gc.Expr expr) {
         return machine.getValue(type, expr, sb);

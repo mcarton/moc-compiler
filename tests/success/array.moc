@@ -1,7 +1,15 @@
+Int[3] foo(Int[3] a) {
+    return a;
+}
+
+void bar(Int* a) {
+}
+
 void main() {
     Int[2][3] a;
     Int[3] b = a[1];
     Int c = b[1];
     Int* d = b;
+    foo(b);
 }
 

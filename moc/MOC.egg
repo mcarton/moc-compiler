@@ -606,9 +606,7 @@ TX -> osbra E csbra #type;
         case Array {
             if (instanceof(E^type, IntegerType)) {
                 TX^type = TX^htype.getPointee();
-
-                -- TODO:code
-                TX^expr = E^expr;
+                TX^expr = TX^machine.genArrSub(TX^htype, TX^hexpr, E^expr);
             }
             else {
                 error(TYPE_unexpected, "int", E^type);
@@ -776,9 +774,8 @@ F -> mult F #type;
 #type {
     match (F1^type) {
         case Pointer {
-            Type pointee = F1^type.getPointee();
-            F^type = pointee;
-            F^expr = F^machine.genDeref(pointee, F1^expr);
+            F^type = F1^type.getPointee();
+            F^expr = F^machine.genDeref(F1^type, F1^expr);
         }
         default {
             error(TYPE_notAPtr, F1^type);

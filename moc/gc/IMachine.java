@@ -94,12 +94,16 @@ public interface IMachine {
     /**
      * Dereference a pointer.
      *
-     * @param type The type of the pointee.
+     * @param type The type of the pointer.
      */
     Expr genDeref(Type type, Expr expr);
 
-    /** Generates code for <code>lhs[rhs]</code>. */
-    Expr genArrSub(Expr lhs, Expr rhs);
+    /**
+     * Generates code for <code>lhs[rhs]</code>.
+     *
+     * @param type The type of the array.
+     */
+    Expr genArrSub(Type type, Expr lhs, Expr rhs);
     Expr genParen(Expr expr);
     Expr genCast(Type from, Type to, Expr expr);
 
