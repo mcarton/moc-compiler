@@ -41,12 +41,12 @@ final class CodeGenerator {
 
     // instructions generation in alphabetical order:
 
-    /** {@code <where> = alloca <what>} */
-    void alloca(String where, String what) {
+    /** {@code <where> = alloca <type>} */
+    void alloca(String where, String type) {
         indent(sb);
         sb.append(where);
         sb.append(" = alloca ");
-        sb.append(what);
+        sb.append(type);
         sb.append('\n');
     }
 
@@ -65,6 +65,36 @@ final class CodeGenerator {
         sb.append(rhs);
         sb.append('\n');
         return tmp;
+    }
+
+    /** {@code ) } */
+    void callEnd() {
+        sb.append(")\n");
+    }
+
+    /** {@code <tmp> = call <returnType> @<name>( } */
+    String callNonVoid(String returnType, String name) {
+        String tmp = machine.getTmpName();
+        indent(sb);
+        sb.append(tmp);
+        sb.append(" = ");
+        callImpl(returnType, name);
+        return tmp;
+    }
+
+    /** {@code call <returnType> @<name>( } */
+    void callVoid(String returnType, String name) {
+        indent(sb);
+        callImpl(returnType, name);
+    }
+
+    /** {@code call <returnType> @<name>( } */
+    private void callImpl(String returnType, String name) {
+        sb.append("call ");
+        sb.append(returnType);
+        sb.append(" @");
+        sb.append(name);
+        sb.append('(');
     }
 
     /** {@code <tmp> = <op> <from> <what> to <to>} */
@@ -149,7 +179,7 @@ final class CodeGenerator {
     /** Special case for "ret void". @see #ret(String, String) */
     void ret() {
         indent(sb);
-        sb.append("ret void");
+        sb.append("ret void\n");
     }
 
     /** {@code ret <type> <what> } */
@@ -190,6 +220,36 @@ final class CodeGenerator {
         sb.append("* ");
         sb.append(where);
         sb.append('\n');
+    }
+
+    // function declaration
+    void beginDefine(String returnType, String name) {
+        sb.append("define ");
+        sb.append(returnType);
+        sb.append(" @");
+        sb.append(name);
+        sb.append('(');
+    }
+
+    void parameter(String type, String name, boolean hasNext) {
+        sb.append(type);
+        sb.append(' ');
+        sb.append(name);
+        if (hasNext) {
+            sb.append(", ");
+        }
+    }
+
+    void body(String bloc) {
+        sb.append(bloc);
+    }
+
+    void endDefine() {
+        sb.append(") nounwind {\n"); // nounwind = no exceptions
+    }
+
+    void endFunction() {
+        sb.append("}\n\n");
     }
 
     // implementation stuff:

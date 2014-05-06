@@ -1,6 +1,5 @@
 package moc.gc.llvm;
 
-import java.lang.StringBuilder;
 import java.lang.UnsupportedOperationException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -68,64 +67,37 @@ public final class Machine extends AbstractMachine {
         FunctionType f, ArrayList<moc.gc.Location> params,
         String name, String bloc
     ) {
-        StringBuilder sb = new StringBuilder(name.length() + bloc.length());
-
-        sb.append("define ");
-        sb.append(cg.typeName(f.getReturnType()));
-        sb.append(" @");
-        sb.append(name);
-        sb.append('(');
+        cg.beginDefine(cg.typeName(f.getReturnType()), name);
 
         // parameter names of the form "__p0", "__p1"
         Iterator<Type> it = f.getParameterTypes().iterator();
         int paramIt = 0;
         while (it.hasNext()) {
-            sb.append(cg.typeName(it.next()));
-            sb.append(" %__p");
-            sb.append(++paramIt);
-            if (it.hasNext()) {
-                sb.append(", ");
-            }
+            cg.parameter(cg.typeName(it.next()), "%__p" + ++paramIt, it.hasNext());
         }
 
-        sb.append(") nounwind {\n"); // nounwind = no exceptions
+        cg.endDefine();
 
         // allocate space for parameters
-        // %1 = alloca i32, align 4
-        // store i32 %__p1, i32* %1, align 4
         Iterator<moc.gc.Location> locIt = params.iterator();
         it = f.getParameterTypes().iterator();
         paramIt = 0;
         while (it.hasNext()) {
             String paramType = cg.typeName(it.next());
             String paramName = locIt.next().toString();
-            indent(sb);
-            sb.append(paramName);
-            sb.append(" = alloca ");
-            sb.append(paramType);
-            sb.append('\n');
-            indent(sb);
-            sb.append("store ");
-            sb.append(paramType);
-            sb.append(" %__p");
-            sb.append(++paramIt);
-            sb.append(", ");
-            sb.append(paramType);
-            sb.append("* ");
-            sb.append(paramName);
-            sb.append('\n');
+            cg.alloca(paramName, paramType);
+            cg.store(paramType, "%__p"+ ++paramIt, paramName);
         }
 
-        sb.append(bloc);
+        cg.body(bloc);
 
         if (f.getReturnType() instanceof VoidType) {
-            indent(sb);
-            sb.append("ret void\n");
+            cg.ret();
         }
 
-        sb.append("}\n\n");
+        cg.endFunction();
 
-        return sb.toString();
+        return cg.get();
     }
 
     @Override
@@ -197,47 +169,34 @@ public final class Machine extends AbstractMachine {
         String funName, FunctionType fun,
         ArrayList<moc.gc.Expr> exprs
     ) {
-        StringBuilder sb = new StringBuilder();
         String returnType = cg.typeName(fun.getReturnType());
 
         ArrayList<String> names = new ArrayList<String>();
         Iterator<Type> it = fun.getParameterTypes().iterator();
         Iterator<moc.gc.Expr> exprIt = exprs.iterator();
         while (exprIt.hasNext()) {
-            names.add(getValue(cg.typeName(it.next()), exprIt.next(), sb));
+            names.add(cg.getValue(cg.typeName(it.next()), exprIt.next()));
         }
 
         // %retval = call i32 @funName(parameters)
         String tmpValueName = null;
-        indent(sb);
 
         if (!(fun.getReturnType() instanceof VoidType)) {
-            tmpValueName = getTmpName();
-            sb.append(tmpValueName);
-            sb.append(" = call ");
+            tmpValueName = cg.callNonVoid(returnType, funName);
         }
         else {
-            sb.append("call ");
+            cg.callVoid(returnType, funName);
         }
-        sb.append(returnType);
-        sb.append(" @");
-        sb.append(funName);
-        sb.append('(');
 
         it = fun.getParameterTypes().iterator();
         Iterator<String> nameIt = names.iterator();
         while (it.hasNext()) {
-            sb.append(cg.typeName(it.next()));
-            sb.append(' ');
-            sb.append(nameIt.next());
-            if (it.hasNext()) {
-                sb.append(", ");
-            }
+            cg.parameter(cg.typeName(it.next()), nameIt.next(), it.hasNext());
         }
 
-        sb.append(")\n");
+        cg.callEnd();
 
-        return new Expr(new Location(tmpValueName), sb.toString());
+        return new Expr(new Location(tmpValueName), cg.get());
     }
     @Override
     public Expr genSizeOf(Type type) {
