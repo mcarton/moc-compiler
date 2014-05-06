@@ -429,7 +429,7 @@ INST -> return E semicolon #type #gen;
 #type {
     INST^returns = 2;
     Type type = INST^symbolTable.getCurrentFunction().getReturnType();
-    if (!type.constructsFrom(E^type)) {
+    if (E^type != null && !type.constructsFrom(E^type)) {
         error(TYPE_unexpected, type, E^type);
     }
 }
