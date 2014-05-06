@@ -90,7 +90,13 @@ public interface IMachine {
     Expr genAddInt(Expr expr);
     Expr genSubInt(Expr expr);
     Expr genNotInt(Expr expr);
-    Expr genDeref(Expr expr);
+
+    /**
+     * Dereference a pointer.
+     *
+     * @param type The type of the pointee.
+     */
+    Expr genDeref(Type type, Expr expr);
 
     /** Generates code for <code>lhs[rhs]</code>. */
     Expr genArrSub(Expr lhs, Expr rhs);

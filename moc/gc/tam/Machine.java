@@ -132,7 +132,7 @@ public class Machine extends AbstractMachine {
         return null;
     }
     @Override
-    public moc.gc.Expr genDeref(moc.gc.Expr expr) {
+    public moc.gc.Expr genDeref(Type type, moc.gc.Expr expr) {
         return expr; // TODO:code
     }
     @Override

@@ -278,8 +278,11 @@ public final class Machine extends AbstractMachine {
         return new Expr(new Location(tmp2), cg.get());
     }
     @Override
-    public moc.gc.Expr genDeref(moc.gc.Expr expr) {
-        return expr; // TODO:code
+    public moc.gc.Expr genDeref(Type t, moc.gc.Expr expr) {
+        String type = cg.typeName(t);
+        String exprCode = cg.getValue(type, expr);
+        String tmp = cg.load(type, exprCode);
+        return new Expr(new Location(tmp), cg.get());
     }
     @Override
     public moc.gc.Expr genArrSub(moc.gc.Expr lhs, moc.gc.Expr rhs) {

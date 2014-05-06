@@ -776,8 +776,9 @@ F -> mult F #type;
 #type {
     match (F1^type) {
         case Pointer {
-            F^type = F1^type.getPointee();
-            F^expr = F^machine.genDeref(F1^expr);
+            Type pointee = F1^type.getPointee();
+            F^type = pointee;
+            F^expr = F^machine.genDeref(pointee, F1^expr);
         }
         default {
             error(TYPE_notAPtr, F1^type);
