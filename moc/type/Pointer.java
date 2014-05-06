@@ -27,6 +27,12 @@ public class Pointer extends AbstractType<Pointer> {
             || other instanceof NullType;
     }
 
+    @Override
+    public boolean castsFrom(Type other) {
+        // TODO:moc: inheritance
+        return constructsFrom(other) || other instanceof Pointer;
+    }
+
     /** A pointer is comparable with other pointers and the {@link NullType}.
      */
     @Override

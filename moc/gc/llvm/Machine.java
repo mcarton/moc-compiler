@@ -23,6 +23,8 @@ public class Machine extends AbstractMachine {
     RepresentationVisitor typeVisitor = new RepresentationVisitor();
     SizeVisitor sizeVisitor = new SizeVisitor();
 
+    CodeGenerator cg = new CodeGenerator(this, new StringBuilder());
+
     public Machine(int verbosity, ArrayList<String> warnings) {
         super(verbosity, warnings);
     }
@@ -413,7 +415,7 @@ public class Machine extends AbstractMachine {
     }
     @Override
     public moc.gc.Expr genCast(Type from, Type to, moc.gc.Expr expr) {
-        return expr; // TODO:code
+        return to.visit(from.visit(new CasterFromVisitor())).cast(cg, (Expr)expr);
     }
 
     @Override
@@ -480,11 +482,11 @@ public class Machine extends AbstractMachine {
         return sb.toString();
     }
 
-    private String getTmpName() {
+    protected String getTmpName() {
         return "%" + ++lastTmp;
     }
 
-    private String getGlobalTmpName() {
+    protected String getGlobalTmpName() {
         return "@" + ++lastGlobalTmp;
     }
 
@@ -495,7 +497,7 @@ public class Machine extends AbstractMachine {
      *
      * @warning: the function has side effect on sb and may increment lastTmp!
      */
-    private String getValue(String type, moc.gc.Expr expr, StringBuilder sb) {
+    protected String getValue(String type, moc.gc.Expr expr, StringBuilder sb) {
         if (expr.getLoc() != null) {
             sb.append(expr.getCode());
             return expr.getLoc().toString();
@@ -558,7 +560,7 @@ public class Machine extends AbstractMachine {
         }
     }
 
-    private void indent(StringBuilder sb) {
+    protected void indent(StringBuilder sb) {
         if (bloc >= 0) {
             sb.append("    ");
         }

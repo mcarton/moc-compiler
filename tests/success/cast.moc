@@ -1,0 +1,9 @@
+Int main() {
+    Int a = (Int)'a';
+    Char* b = (Char*)NULL;
+    Char* c = (Char*)"enseeiht";
+    Int* d;
+    Char* e = (Char*)d;
+    return (Int)'7';
+}
+
