@@ -108,6 +108,19 @@ public final class Machine extends AbstractMachine {
     }
 
     @Override
+    public String genAsm(String code) {
+        cg.comment("inline asm:");
+        cg.asm(code.substring(1, code.length()-1));
+        return cg.get();
+    }
+
+    @Override
+    public String genGlobalAsm(String code) {
+        cg.globalAsm(code.substring(1, code.length()-1));
+        return "";
+    }
+
+    @Override
     public String genVarDecl(Type type, moc.gc.Location loc) {
         cg.alloca(loc.toString(), cg.typeName(type));
         return cg.get();

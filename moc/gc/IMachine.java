@@ -61,6 +61,10 @@ public interface IMachine {
     );
     String genReturn(FunctionType f, Expr expr);
 
+    String genBloc(String code);
+    String genAsm(String code);
+    String genGlobalAsm(String code);
+
     /** Generates code for variable declaration without definition.
      */
     String genVarDecl(Type t, Location location);

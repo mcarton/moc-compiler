@@ -41,7 +41,7 @@ public class Machine extends AbstractMachine {
     public Location getLocationFor(String name, Type type) {
         return null;
     }
- 
+
     // code generation stuffs:
     @Override
     public String genFunction(
@@ -53,6 +53,16 @@ public class Machine extends AbstractMachine {
 
     @Override
     public String genReturn(FunctionType f, moc.gc.Expr expr) {
+        return ""; // TODO:code
+    }
+
+    @Override
+    public String genAsm(String code) {
+        return code.substring(1, code.length()-1);
+    }
+
+    @Override
+    public String genGlobalAsm(String code) {
         return ""; // TODO:code
     }
 

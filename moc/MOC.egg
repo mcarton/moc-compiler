@@ -10,7 +10,7 @@ option k = 2;
 inh source : MOCSourceFile for PROGRAM;
 -- the target machine for code generation
 inh machine : IMachine for
-    ENTITIES, FUNCTION, INST, BLOC, INSTS, ELSE,
+    ENTITIES, FUNCTION, ASM, INST, BLOC, INSTS, ELSE,
     FUNC_PARAMETERS, FUNC_PARAMETER, FUNC_PARAMETERSX, ARGS, ARGSX,
     E, EX, A, AX, R, RX, T, TX, F,
     REFS, STYPE, TYPE, SIZEOFEXPR
@@ -52,7 +52,7 @@ syn sym : String for OPREL, OPADD, OPMUL, OPUN;
 
 syn code : String for
     ENTITIES, BLOC, ELSE, INST, INSTS,
-    FUNCTION
+    FUNCTION, ASM
 ;
 syn expr : Expr for
     F, TX, T, RX, R, AX, A, EX, E
@@ -146,6 +146,16 @@ ENTITIES -> #gen;
 ENTITIES -> FUNCTION ENTITIES #gen;
 #gen {
     ENTITIES^code = FUNCTION^code + ENTITIES1^code;
+}
+
+ENTITIES -> ASM ENTITIES #gen;
+#gen {
+    ENTITIES^code = ASM^code + ENTITIES1^code;
+}
+
+ASM -> asm opar string cpar semicolon #gen;
+#gen {
+    ASM^code = ASM^machine.genGlobalAsm(string^txt);
 }
 
 -- functions
@@ -273,7 +283,7 @@ global
     }
 }
 #gen {
-    BLOC^code = INSTS^code;
+    BLOC^code = BLOC^machine.genBloc(INSTS^code);
     BLOC^machine.endBloc();
 }
 
@@ -303,6 +313,13 @@ INSTS -> INST INSTS #returns #gen;
 }
 #gen {
     INSTS^code = INST^code + INSTS1^code;
+}
+
+-- asm instruction
+INST -> asm opar string cpar semicolon #gen;
+#gen {
+    INST^code = INST^machine.genAsm(string^txt);
+    INST^returns = 2; -- todo: actually check it
 }
 
 -- typedef declaration

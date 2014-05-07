@@ -50,6 +50,12 @@ final class CodeGenerator {
         sb.append('\n');
     }
 
+    void asm(String code) {
+        indent(sb);
+        sb.append(code);
+        sb.append('\n');
+    }
+
     /** {@code <tmp> = <op> <type> <lhs>, <rh>} */
     String binaryOperator(String op, String type, String lhs, String rhs) {
         String tmp = machine.getTmpName();
@@ -150,6 +156,11 @@ final class CodeGenerator {
 
     String getValue(String type, moc.gc.Expr expr) {
         return machine.getValue(type, expr, sb);
+    }
+
+    void globalAsm(String code) {
+        declarationSb.append(code);
+        declarationSb.append('\n');
     }
 
     /** {@code <tmp> = load <type>* <where> } */
