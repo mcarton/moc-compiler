@@ -197,7 +197,6 @@ final class CodeGenerator {
     String stringCstDeclaration(int length, String value) {
         String name = machine.getGlobalTmpName();
 
-        indent(declarationSb);
         declarationSb.append(name);
         declarationSb.append(" = internal constant [");
         declarationSb.append(length);
