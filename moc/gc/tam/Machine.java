@@ -65,7 +65,20 @@ public class Machine extends AbstractMachine {
     
     @Override
     public String genVarDecl(Type t, moc.gc.Location loc, moc.gc.Expr expr) {
-        return ""; // TODO:code
+        StringBuilder sb = new StringBuilder(50);
+
+//      String type = t.visit(typeVisitor);
+
+        sb.append("    ");
+        sb.append("LOADL ");
+        sb.append(t.visit(sizeVisitor));
+        sb.append('\n');
+        sb.append("    ");
+        sb.append("SUBR Malloc");
+        sb.append('\n'); 
+        sb.append("expr.getCode()"); 
+        sb.append('\n'); 
+        return sb.toString();
     }
 
     @Override
