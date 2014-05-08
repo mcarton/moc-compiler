@@ -393,7 +393,7 @@ INST -> E semicolon #returns #gen;
 }
 #gen {
     if (E^expr != null) {
-        INST^code = E^expr.getCode(); -- TODO:code
+        INST^code = INST^machine.genInst(E^expr);
     }
 }
 

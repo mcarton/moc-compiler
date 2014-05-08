@@ -108,6 +108,11 @@ public final class Machine extends AbstractMachine {
     }
 
     @Override
+    public String genInst(moc.gc.Expr expr) {
+        return expr.getLoc() == null ? "" : expr.getCode();
+    }
+
+    @Override
     public String genAsm(String code) {
         cg.comment("inline asm:");
         cg.asm(code.substring(1, code.length()-1));
@@ -345,7 +350,7 @@ public final class Machine extends AbstractMachine {
 
     private String escape(String unescaped) {
         StringBuffer sb = new StringBuffer(unescaped.length());
- 
+
         boolean backslash = false;
         for (int i = 1; i < unescaped.length()-1; ++i) { // exludes ""
             switch (unescaped.charAt(i)) {

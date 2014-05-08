@@ -56,6 +56,11 @@ public class Machine extends AbstractMachine {
     }
 
     @Override
+    public String genInst(moc.gc.Expr expr) {
+        return expr.getCode();
+    }
+
+    @Override
     public String genAsm(String code) {
         return code.substring(1, code.length()-1);
     }
