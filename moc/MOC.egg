@@ -10,7 +10,7 @@ option k = 2;
 inh source : MOCSourceFile for PROGRAM;
 -- the target machine for code generation
 inh machine : IMachine for
-    ENTITIES, FUNCTION, INST, BLOC, INSTS, ELSE,
+    ENTITIES, FUNCTION, ASM, INST, BLOC, INSTS, ELSE,
     FUNC_PARAMETERS, FUNC_PARAMETER, FUNC_PARAMETERSX, ARGS, ARGSX,
     E, EX, A, AX, R, RX, T, TX, F,
     REFS, STYPE, TYPE, SIZEOFEXPR
@@ -52,7 +52,7 @@ syn sym : String for OPREL, OPADD, OPMUL, OPUN;
 
 syn code : String for
     ENTITIES, BLOC, ELSE, INST, INSTS,
-    FUNCTION
+    FUNCTION, ASM
 ;
 syn expr : Expr for
     F, TX, T, RX, R, AX, A, EX, E
@@ -148,6 +148,16 @@ ENTITIES -> FUNCTION ENTITIES #gen;
     ENTITIES^code = FUNCTION^code + ENTITIES1^code;
 }
 
+ENTITIES -> ASM ENTITIES #gen;
+#gen {
+    ENTITIES^code = ASM^code + ENTITIES1^code;
+}
+
+ASM -> asm opar string cpar semicolon #gen;
+#gen {
+    ASM^code = ASM^machine.genGlobalAsm(string^txt);
+}
+
 -- functions
 FUNCTION -> TYPE ident #csymbols opar FUNC_PARAMETERS #usymbols cpar BLOC #gen;
 global
@@ -156,7 +166,7 @@ global
     ArrayList<Location> parameters;
     FunctionType fun;
 #csymbols {
-    FUNCTION^machine.newFunction();
+    FUNCTION^machine.beginFunction();
 
     blocTds = new SymbolTable(FUNCTION^symbolTable);
     FUNC_PARAMETERS^symbolTable = blocTds;
@@ -186,6 +196,8 @@ global
             fun, parameters, ident^txt, BLOC^code
         );
     }
+
+    FUNCTION^machine.endFunction();
 }
 
 -- function parameters
@@ -259,7 +271,8 @@ BLOC -> #symbolTable occbra INSTS ccbra #message #gen;
 global
     SymbolTable symbolTable;
 #symbolTable {
-    BLOC^machine.newBloc();
+    BLOC^machine.beginBloc();
+
     symbolTable = new SymbolTable(BLOC^symbolTable);
     INSTS^symbolTable = symbolTable;
 }
@@ -270,7 +283,8 @@ global
     }
 }
 #gen {
-    BLOC^code = INSTS^code;
+    BLOC^code = BLOC^machine.genBloc(INSTS^code);
+    BLOC^machine.endBloc();
 }
 
 -- instructions
@@ -299,6 +313,13 @@ INSTS -> INST INSTS #returns #gen;
 }
 #gen {
     INSTS^code = INST^code + INSTS1^code;
+}
+
+-- asm instruction
+INST -> asm opar string cpar semicolon #gen;
+#gen {
+    INST^code = INST^machine.genAsm(string^txt);
+    INST^returns = 2; -- todo: actually check it
 }
 
 -- typedef declaration
@@ -425,7 +446,7 @@ INST -> return E semicolon #type #gen;
 #type {
     INST^returns = 2;
     Type type = INST^symbolTable.getCurrentFunction().getReturnType();
-    if (!type.constructsFrom(E^type)) {
+    if (E^type != null && !type.constructsFrom(E^type)) {
         error(TYPE_unexpected, type, E^type);
     }
 }
@@ -505,7 +526,7 @@ AX -> #type #gen;
 
 AX -> OPREL R #type;
 #type {
-    if (AX^htype.comparableWith(R^type, OPREL^sym)) {
+    if (AX^htype.comparableWith(R^type)) {
         AX^type = new IntegerType();
         -- TODO:code
         AX^expr = AX^hexpr;
@@ -602,9 +623,7 @@ TX -> osbra E csbra #type;
         case Array {
             if (instanceof(E^type, IntegerType)) {
                 TX^type = TX^htype.getPointee();
-
-                -- TODO:code
-                TX^expr = E^expr;
+                TX^expr = TX^machine.genArrSub(TX^htype, TX^hexpr, E^expr);
             }
             else {
                 error(TYPE_unexpected, "int", E^type);
@@ -703,10 +722,9 @@ F -> opar E cpar #type;
 
 F -> opar TYPE cpar F #type;
 #type {
-    if (F1^type != null && !TYPE^type.constructsFrom(F1^type)) {
+    if (F1^type != null && !TYPE^type.castsFrom(F1^type)) {
         error(TYPE_unexpected, TYPE^type, F1^type);
     }
-    -- TODO: check here if cast is possible
     else {
         F^expr = F^machine.genCast(F1^type, TYPE^type, F1^expr);
     }
@@ -774,7 +792,7 @@ F -> mult F #type;
     match (F1^type) {
         case Pointer {
             F^type = F1^type.getPointee();
-            F^expr = F^machine.genDeref(F1^expr);
+            F^expr = F^machine.genDeref(F1^type, F1^expr);
         }
         default {
             error(TYPE_notAPtr, F1^type);

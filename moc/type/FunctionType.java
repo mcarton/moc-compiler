@@ -2,7 +2,7 @@ package moc.type;
 
 import java.util.ArrayList;
 
-public class FunctionType {
+public final class FunctionType {
     Type returnType;
     TypeList parameterTypes;
 

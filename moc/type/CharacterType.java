@@ -1,6 +1,6 @@
 package moc.type;
 
-public class CharacterType extends AbstractType<CharacterType> {
+public final class CharacterType extends AbstractType<CharacterType> {
     public CharacterType() {
     }
 
@@ -8,19 +8,19 @@ public class CharacterType extends AbstractType<CharacterType> {
         return "Char";
     }
 
-    @Override
-    public boolean constructsFrom(Type other) {
-        return other instanceof CharacterType;
-    }
-    
-    @Override
-    public boolean comparableWith(Type other, String operator) {
-        return other instanceof CharacterType;
+    public boolean castsFrom(Type other) {
+        return constructsFrom(other)
+            || other instanceof IntegerType;
     }
 
     @Override
     public <R> R visit(TypeVisitor<R> visitor) {
         return visitor.visit(this);
+    }
+
+    @Override
+    public boolean equals(Type other) {
+        return other instanceof CharacterType;
     }
 }
 

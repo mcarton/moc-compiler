@@ -1,6 +1,6 @@
 package moc.type;
 
-public class Pointer extends AbstractType<Pointer> {
+public final class Pointer extends AbstractType<Pointer> {
     private Type pointee;
 
     public Pointer(Type pointee) {
@@ -27,12 +27,17 @@ public class Pointer extends AbstractType<Pointer> {
             || other instanceof NullType;
     }
 
+    @Override
+    public boolean castsFrom(Type other) {
+        // TODO:moc: inheritance
+        return constructsFrom(other) || other instanceof Pointer;
+    }
+
     /** A pointer is comparable with other pointers and the {@link NullType}.
      */
     @Override
-    public boolean comparableWith(Type other, String operator) {
-        return (   operator.equals("==") || operator.equals("!="))
-            && (other instanceof Pointer || other instanceof NullType);
+    public boolean comparableWith(Type other) {
+        return other instanceof Pointer || other instanceof NullType;
     }
 
     @Override
@@ -43,6 +48,12 @@ public class Pointer extends AbstractType<Pointer> {
     @Override
     public <R> R visit(TypeVisitor<R> visitor) {
         return visitor.visit(this);
+    }
+
+    @Override
+    public boolean equals(Type other) {
+        return other instanceof Pointer
+            && ((Pointer)other).getPointee().equals(getPointee());
     }
 }
 

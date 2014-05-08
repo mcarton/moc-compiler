@@ -31,13 +31,21 @@ public interface IMachine {
     int verbosity();
 
     // location stuffs:
-    /** Indicates the machine we enter a new function.
+    /** Indicates the machine we enter a function definition.
      */
-    void newFunction();
+    void beginFunction();
+
+    /** Indicates the machine we exit a function definition.
+     */
+    void endFunction();
 
     /** Indicates the machine we enter a new bloc.
      */
-    void newBloc();
+    void beginBloc();
+
+    /** Indicates the machine we exit a bloc.
+     */
+    void endBloc();
 
     /** Get the machine-dependant Location for a variable named
      *  <code>name</code> with type <code>type</code> declared here.
@@ -52,6 +60,10 @@ public interface IMachine {
         FunctionType f, ArrayList<Location> parameters, String name, String bloc
     );
     String genReturn(FunctionType f, Expr expr);
+
+    String genBloc(String code);
+    String genAsm(String code);
+    String genGlobalAsm(String code);
 
     /** Generates code for variable declaration without definition.
      */
@@ -82,10 +94,20 @@ public interface IMachine {
     Expr genAddInt(Expr expr);
     Expr genSubInt(Expr expr);
     Expr genNotInt(Expr expr);
-    Expr genDeref(Expr expr);
 
-    /** Generates code for <code>lhs[rhs]</code>. */
-    Expr genArrSub(Expr lhs, Expr rhs);
+    /**
+     * Dereference a pointer.
+     *
+     * @param type The type of the pointer.
+     */
+    Expr genDeref(Type type, Expr expr);
+
+    /**
+     * Generates code for <code>lhs[rhs]</code>.
+     *
+     * @param type The type of the array.
+     */
+    Expr genArrSub(Type type, Expr lhs, Expr rhs);
     Expr genParen(Expr expr);
     Expr genCast(Type from, Type to, Expr expr);
 

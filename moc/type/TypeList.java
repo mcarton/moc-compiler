@@ -3,7 +3,7 @@ package moc.type;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class TypeList {
+public final class TypeList {
     ArrayList<Type> list = new ArrayList<Type>();
 
     /** Return the number of elements in the list, not the sum of the size of

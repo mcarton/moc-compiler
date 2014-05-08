@@ -1,6 +1,6 @@
 package moc.type;
 
-public class VoidType extends AbstractType<VoidType> {
+public final class VoidType extends AbstractType<VoidType> {
     public VoidType() {
     }
 
@@ -14,13 +14,18 @@ public class VoidType extends AbstractType<VoidType> {
     }
 
     @Override
-    public boolean comparableWith(Type other, String operator) {
+    public boolean comparableWith(Type other) {
         return false;
     }
 
     @Override
     public <R> R visit(TypeVisitor<R> visitor) {
         return visitor.visit(this);
+    }
+
+    @Override
+    public boolean equals(Type other) {
+        return other instanceof VoidType;
     }
 }
 

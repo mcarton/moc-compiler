@@ -3,7 +3,7 @@ package moc.type;
 /** The type of the NULL constant. May be assigned to any pointer but unlike C,
  *  it is not just <code>(void*)0</code>.
  */
-public class NullType extends AbstractType<NullType> {
+public final class NullType extends AbstractType<NullType> {
     public NullType() {
     }
 
@@ -12,13 +12,8 @@ public class NullType extends AbstractType<NullType> {
     }
 
     @Override
-    public boolean constructsFrom(Type other) {
-        return other instanceof NullType;
-    }
-
-    @Override
-    public boolean comparableWith(Type other, String operator) {
-        return other instanceof NullType || other instanceof Pointer;
+    public boolean comparableWith(Type other) {
+        return other instanceof Pointer || other instanceof NullType;
     }
 
     @Override
@@ -29,6 +24,11 @@ public class NullType extends AbstractType<NullType> {
     @Override
     public <R> R visit(TypeVisitor<R> visitor) {
         return visitor.visit(this);
+    }
+
+    @Override
+    public boolean equals(Type other) {
+        return other instanceof NullType;
     }
 }
 

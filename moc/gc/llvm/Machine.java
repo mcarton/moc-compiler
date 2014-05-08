@@ -1,6 +1,5 @@
 package moc.gc.llvm;
 
-import java.lang.StringBuilder;
 import java.lang.UnsupportedOperationException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -10,18 +9,16 @@ import moc.symbols.*;
 import moc.type.*;
 
 /**
- * The TAM machine and its generation functions
+ * The llvm machine and its generation functions
  */
-public class Machine extends AbstractMachine {
+public final class Machine extends AbstractMachine {
     int lastGlobalTmp = -1;
     int lastTmp = 0; // name of the last generated temporary
-    int bloc = 0; // the bloc we are in
-    String declarations =
-              "declare i8* @malloc(i64)\n"
-            + "declare void @free(i8*)\n\n";
+    int bloc = -1; // the bloc we are in
 
-    RepresentationVisitor typeVisitor = new RepresentationVisitor();
     SizeVisitor sizeVisitor = new SizeVisitor();
+
+    CodeGenerator cg = new CodeGenerator(this);
 
     public Machine(int verbosity, ArrayList<String> warnings) {
         super(verbosity, warnings);
@@ -29,7 +26,7 @@ public class Machine extends AbstractMachine {
 
     @Override
     public void writeCode(String fname, String code) throws MOCException {
-        super.writeCode(fname, declarations + code);
+        super.writeCode(fname, cg.getDeclaration() + '\n' + code);
     }
 
     @Override
@@ -39,14 +36,24 @@ public class Machine extends AbstractMachine {
 
     // location stuffs:
     @Override
-    public void newFunction() {
+    public void beginFunction() {
         lastTmp = 0;
-        bloc = 0;
+        ++bloc;
     }
 
     @Override
-    public void newBloc() {
+    public void endFunction() {
+        --bloc;
+    }
+
+    @Override
+    public void beginBloc() {
         ++bloc;
+    }
+
+    @Override
+    public void endBloc() {
+        --bloc;
     }
 
     @Override
@@ -60,120 +67,70 @@ public class Machine extends AbstractMachine {
         FunctionType f, ArrayList<moc.gc.Location> params,
         String name, String bloc
     ) {
-        StringBuilder sb = new StringBuilder(name.length() + bloc.length());
-
-        sb.append("define ");
-        sb.append(f.getReturnType().visit(typeVisitor));
-        sb.append(" @");
-        sb.append(name);
-        sb.append('(');
+        cg.beginDefine(cg.typeName(f.getReturnType()), name);
 
         // parameter names of the form "__p0", "__p1"
         Iterator<Type> it = f.getParameterTypes().iterator();
         int paramIt = 0;
         while (it.hasNext()) {
-            sb.append(it.next().visit(typeVisitor));
-            sb.append(" %__p");
-            sb.append(++paramIt);
-            if (it.hasNext()) {
-                sb.append(", ");
-            }
+            cg.parameter(cg.typeName(it.next()), "%__p" + ++paramIt, it.hasNext());
         }
 
-        sb.append(") nounwind {\n"); // nounwind = no exceptions
+        cg.endDefine();
 
         // allocate space for parameters
-        // %1 = alloca i32, align 4
-        // store i32 %__p1, i32* %1, align 4
         Iterator<moc.gc.Location> locIt = params.iterator();
         it = f.getParameterTypes().iterator();
         paramIt = 0;
         while (it.hasNext()) {
-            String paramType = it.next().visit(typeVisitor);
+            String paramType = cg.typeName(it.next());
             String paramName = locIt.next().toString();
-            sb.append("    ");
-            sb.append(paramName);
-            sb.append(" = alloca ");
-            sb.append(paramType);
-            sb.append('\n');
-            sb.append("    store ");
-            sb.append(paramType);
-            sb.append(" %__p");
-            sb.append(++paramIt);
-            sb.append(", ");
-            sb.append(paramType);
-            sb.append("* ");
-            sb.append(paramName);
-            sb.append('\n');
+            cg.alloca(paramName, paramType);
+            cg.store(paramType, "%__p"+ ++paramIt, paramName);
         }
 
-        sb.append(bloc);
+        cg.body(bloc);
 
         if (f.getReturnType() instanceof VoidType) {
-            sb.append("    ret void\n");
+            cg.ret();
         }
 
-        sb.append("}\n\n");
+        cg.endFunction();
 
-        return sb.toString();
+        return cg.get();
     }
 
     @Override
-    public String genReturn(FunctionType f, moc.gc.Expr gcexpr) {
-        Expr expr = (Expr)gcexpr;
-
-        StringBuilder sb = new StringBuilder();
-
-        String returnTypeRepr = f.getReturnType().visit(typeVisitor);
-        String returnValue = getValue(returnTypeRepr, expr, sb);
-
-        sb.append("    ret ");
-        sb.append(returnTypeRepr);
-        sb.append(' ');
-        sb.append(returnValue);
-        sb.append('\n');
-
-        return sb.toString();
+    public String genReturn(FunctionType f, moc.gc.Expr expr) {
+        String returnType = cg.typeName(f.getReturnType());
+        cg.ret(returnType, cg.getValue(returnType, expr));
+        return cg.get();
     }
 
     @Override
-    public String genVarDecl(Type t, moc.gc.Location loc) {
-        StringBuilder sb = new StringBuilder(20);
+    public String genAsm(String code) {
+        cg.comment("inline asm:");
+        cg.asm(code.substring(1, code.length()-1));
+        return cg.get();
+    }
 
-        String type = t.visit(typeVisitor);
+    @Override
+    public String genGlobalAsm(String code) {
+        cg.globalAsm(code.substring(1, code.length()-1));
+        return "";
+    }
 
-        sb.append("    ");
-        sb.append(loc);
-        sb.append(" = alloca ");
-        sb.append(type);
-        sb.append('\n');
-
-        return sb.toString();
+    @Override
+    public String genVarDecl(Type type, moc.gc.Location loc) {
+        cg.alloca(loc.toString(), cg.typeName(type));
+        return cg.get();
     }
     @Override
     public String genVarDecl(Type t, moc.gc.Location loc, moc.gc.Expr expr) {
-        StringBuilder sb = new StringBuilder(50);
-
-        String type = t.visit(typeVisitor);
-        String exprCode = getValue(type, expr, sb);
-
-        sb.append("    ");
-        sb.append(loc);
-        sb.append(" = alloca ");
-        sb.append(type);
-        sb.append('\n');
-
-        sb.append("    store ");
-        sb.append(type);
-        sb.append(' ');
-        sb.append(exprCode);
-        sb.append(", ");
-        sb.append(type);
-        sb.append("* ");
-        sb.append(loc);
-        sb.append('\n');
-
-        return sb.toString();
+        String type = cg.typeName(t);
+        cg.alloca(loc.toString(), type);
+        cg.store(type, cg.getValue(type, expr), loc.toString());
+        return cg.get();
     }
 
     @Override
@@ -191,21 +148,7 @@ public class Machine extends AbstractMachine {
     }
     @Override
     public Expr genString(int length, String txt) {
-        String escaped = escape(txt);
-        StringBuffer sb = new StringBuffer(declarations);
-
-        String name = getGlobalTmpName();
-
-        // <name> = internal constant [4 x i8] c"foo\00", align 1
-        sb.append(name);
-        sb.append(" = internal constant [");
-        sb.append(length);
-        sb.append(" x i8] c\"");
-        sb.append(escaped);
-        sb.append("\\00\"\n");
-
-        declarations = sb.toString();
-
+        String name = cg.stringCstDeclaration(length, escape(txt));
         return new Expr(new Location(name), "");
     }
     @Override
@@ -213,57 +156,25 @@ public class Machine extends AbstractMachine {
         return new Expr(null, Integer.toString(escapeChar(txt)));
     }
     @Override
-    public Expr genNew(Type t) {
-        StringBuilder sb = new StringBuilder(50);
-
-        String type = t.visit(typeVisitor);
-
-        // call malloc
-        // <result1> = call i8* @malloc(i64 4)
-        String tmpPtr = getTmpName();
-        sb.append("    ");
-        sb.append(tmpPtr);
-        sb.append(" = call i8* @malloc(i64 ");
-        sb.append(t.visit(sizeVisitor));
-        sb.append(")\n");
+    public Expr genNew(Type type) {
+        String tmpPtr = cg.malloc(type.visit(sizeVisitor));
 
         // cast to right pointer type
-        // <result2> = bitcast i8* <result1> to i32*
-        String tmpCastedPtr = getTmpName();
-        sb.append("    ");
-        sb.append(tmpCastedPtr);
-        sb.append(" = bitcast i8* ");
-        sb.append(tmpPtr);
-        sb.append(" to ");
-        sb.append(type);
-        sb.append("*\n");
+        String tmpCastedPtr = cg.cast("bitcast", "i8*", tmpPtr, cg.typeName(type) + "*");
 
-        return new Expr(new Location(tmpCastedPtr), sb.toString());
+        return new Expr(new Location(tmpCastedPtr), cg.get());
     }
     @Override
     public String genDelete(Type t, moc.gc.Expr expr) {
-        StringBuilder sb = new StringBuilder(50);
-        String type = t.visit(typeVisitor);
-
-        String tmpValue = getValue(type, expr, sb);
+        String type = cg.typeName(t);
+        String tmpValue = cg.getValue(type, expr);
 
         // cast to i8* (~ void*)
-        // <result> = bitcast i32* <ptr> to i8*
-        String tmpPtr = getTmpName();
-        sb.append("    ");
-        sb.append(tmpPtr);
-        sb.append(" = bitcast ");
-        sb.append(type);
-        sb.append(' ');
-        sb.append(tmpValue);
-        sb.append(" to i8*\n");
+        String tmpPtr = cg.cast("bitcast", type, tmpValue, "i8*");
 
-        // call void @free(i8* <result>) #2
-        sb.append("    call void @free(i8* ");
-        sb.append(tmpPtr);
-        sb.append(")\n");
+        cg.free(tmpPtr);
 
-        return sb.toString();
+        return cg.get();
     }
 
     @Override
@@ -271,46 +182,34 @@ public class Machine extends AbstractMachine {
         String funName, FunctionType fun,
         ArrayList<moc.gc.Expr> exprs
     ) {
-        StringBuilder sb = new StringBuilder();
-        String returnType = fun.getReturnType().visit(typeVisitor);
+        String returnType = cg.typeName(fun.getReturnType());
 
         ArrayList<String> names = new ArrayList<String>();
         Iterator<Type> it = fun.getParameterTypes().iterator();
         Iterator<moc.gc.Expr> exprIt = exprs.iterator();
         while (exprIt.hasNext()) {
-            names.add(getValue(it.next().visit(typeVisitor), exprIt.next(), sb));
+            names.add(cg.getValue(cg.typeName(it.next()), exprIt.next()));
         }
 
         // %retval = call i32 @funName(parameters)
-        String tmpValueName = getTmpName();
-        sb.append("    ");
+        String tmpValueName = null;
 
         if (!(fun.getReturnType() instanceof VoidType)) {
-            sb.append(tmpValueName);
-            sb.append(" = call ");
+            tmpValueName = cg.callNonVoid(returnType, funName);
         }
         else {
-            sb.append("call ");
+            cg.callVoid(returnType, funName);
         }
-        sb.append(returnType);
-        sb.append(" @");
-        sb.append(funName);
-        sb.append('(');
 
         it = fun.getParameterTypes().iterator();
         Iterator<String> nameIt = names.iterator();
         while (it.hasNext()) {
-            sb.append(it.next().visit(typeVisitor));
-            sb.append(' ');
-            sb.append(nameIt.next());
-            if (it.hasNext()) {
-                sb.append(", ");
-            }
+            cg.parameter(cg.typeName(it.next()), nameIt.next(), it.hasNext());
         }
 
-        sb.append(")\n");
+        cg.callEnd();
 
-        return new Expr(new Location(tmpValueName), sb.toString());
+        return new Expr(new Location(tmpValueName), cg.get());
     }
     @Override
     public Expr genSizeOf(Type type) {
@@ -319,39 +218,15 @@ public class Machine extends AbstractMachine {
 
     @Override
     public Expr genIdent(InfoVar info) {
-        StringBuilder sb = new StringBuilder();
-
-        String tmpValueName = getTmpName();
-        sb.append("    ");
-        sb.append(tmpValueName);
-        sb.append(" = load ");
-        sb.append(info.getType().visit(typeVisitor));
-        sb.append("* ");
-        sb.append(info.getLoc());
-        sb.append('\n');
-
-        return new Expr(new Location(tmpValueName), sb.toString());
+        String tmp = cg.load(cg.typeName(info.getType()), info.getLoc().toString());
+        return new Expr(new Location(tmp), cg.get());
     }
     @Override
-    public Expr genAff(Type t, moc.gc.Location loc, moc.gc.Expr gcrhs) {
-        Expr rhs = (Expr)gcrhs;
-
-        StringBuilder sb = new StringBuilder(50);
-
-        String type = t.visit(typeVisitor);
-        String rhsCode= getValue(type, rhs, sb);
-        String tmpValueName = getTmpName();
-
-        sb.append("    store ");
-        sb.append(type);
-        sb.append(tmpValueName);
-        sb.append(", ");
-        sb.append(type);
-        sb.append("* ");
-        sb.append(rhsCode);
-        sb.append('\n');
-
-        return new Expr(rhs.getLoc(), sb.toString());
+    public Expr genAff(Type t, moc.gc.Location loc, moc.gc.Expr rhs) {
+        String type = cg.typeName(t);
+        String rhsCode = cg.getValue(type, rhs);
+        cg.store(type, getTmpName(), rhsCode);
+        return new Expr((Location)rhs.getLoc(), cg.get());
     }
     @Override
     public moc.gc.Expr genNonAff(Type t, moc.gc.Expr expr) {
@@ -364,39 +239,37 @@ public class Machine extends AbstractMachine {
     }
     @Override
     public Expr genNotInt(moc.gc.Expr expr) {
-        StringBuilder sb = new StringBuilder(50);
+        String exprCode = cg.getValue("i64", expr);
 
-        String exprCode = getValue("i64", expr, sb);
+        // compare to 0
+        String tmp = cg.binaryOperator("icmp eq", "i64", exprCode, "0");
 
-        // <tmpValueName> = icmp eq i64 <exprCode>, 0
-        String tmpValueName = getTmpName();
-        sb.append("    ");
-        sb.append(tmpValueName);
-        sb.append(" = icmp eq i64 ");
-        sb.append(exprCode);
-        sb.append(", 0\n");
+        // cast to i64
+        String tmp2 = cg.cast("zext", "i1", tmp, "i64");
 
-        // <tmpCastedName> = zext i1 <tmpValueName> to i64
-        String tmpCastedName = getTmpName();
-        sb.append("    ");
-        sb.append(tmpCastedName);
-        sb.append(" = zext i1 ");
-        sb.append(tmpValueName);
-        sb.append(" to i64");
-
-        return new Expr(new Location(tmpCastedName), sb.toString());
+        return new Expr(new Location(tmp2), cg.get());
     }
     @Override
-    public moc.gc.Expr genDeref(moc.gc.Expr expr) {
-        return expr; // TODO:code
+    public moc.gc.Expr genDeref(Type t, moc.gc.Expr expr) {
+        String type = cg.typeName(((Pointer)t).getPointee());
+        String exprCode = cg.getValue(type, expr);
+        String tmp = cg.load(type, exprCode);
+        return new Expr(new Location(tmp), cg.get());
     }
     @Override
-    public moc.gc.Expr genArrSub(moc.gc.Expr lhs, moc.gc.Expr rhs) {
-        return lhs; // TODO:code
+    public moc.gc.Expr genArrSub(Type t, moc.gc.Expr lhs, moc.gc.Expr rhs) {
+        String type = cg.typeName(t);
+        String lhsCode = cg.getValue(type, lhs);
+        String rhsCode = cg.getValue("i64", rhs);
+        String tmp = cg.getelementptr(
+            type, lhsCode, new String[]{"i32", "0", "i64", rhsCode}
+        );
+        String tmp2 = cg.load(cg.typeName(((Array)t).getPointee()), tmp);
+        return new Expr(new Location(tmp2), cg.get());
     }
     @Override
     public moc.gc.Expr genCast(Type from, Type to, moc.gc.Expr expr) {
-        return expr; // TODO:code
+        return to.visit(from.visit(new CasterFromVisitor())).cast(cg, (Expr)expr);
     }
 
     @Override
@@ -430,39 +303,26 @@ public class Machine extends AbstractMachine {
         return genIntBinaryOp("and", lhs, rhs);
     }
     private Expr genIntBinaryOp(String what, moc.gc.Expr lhs, moc.gc.Expr rhs) {
-        StringBuilder sb = new StringBuilder();
-
         String type = "i64";
-        String lhsCode = getValue(type, lhs, sb);
-        String rhsCode = getValue(type, rhs, sb);
-        String tmpValueName = getTmpName();
+        String lhsCode = cg.getValue(type, lhs);
+        String rhsCode = cg.getValue(type, rhs);
 
-        // <result> = add <ty> <op1>, <op2>
-        sb.append("    ");
-        sb.append(tmpValueName);
-        sb.append(" = ");
-        sb.append(what);
-        sb.append(' ');
-        sb.append(type);
-        sb.append(' ');
-        sb.append(lhsCode);
-        sb.append(", ");
-        sb.append(rhsCode);
-        sb.append('\n');
+        String tmp = cg.binaryOperator(what, "i64", lhsCode, rhsCode);
 
-        return new Expr(new Location(tmpValueName), sb.toString());
+        return new Expr(new Location(tmp), cg.get());
     }
 
     @Override
     public String genComment(String comment) {
-        return "    ; " + comment + '\n';
+        cg.comment(comment);
+        return cg.get();
     }
 
-    private String getTmpName() {
+    protected String getTmpName() {
         return "%" + ++lastTmp;
     }
 
-    private String getGlobalTmpName() {
+    protected String getGlobalTmpName() {
         return "@" + ++lastGlobalTmp;
     }
 
@@ -471,9 +331,9 @@ public class Machine extends AbstractMachine {
      * `null`, or an unnamed temporary like `%1`; if expr is not a constant,
      * prepend the code used to genererate the value.
      *
-     * @warning: the function has side effect on sb and may increment lastTmp!
+     * Warning: the function has side effect on sb and may increment lastTmp!
      */
-    private String getValue(String type, moc.gc.Expr expr, StringBuilder sb) {
+    protected String getValue(String type, moc.gc.Expr expr, StringBuilder sb) {
         if (expr.getLoc() != null) {
             sb.append(expr.getCode());
             return expr.getLoc().toString();
@@ -535,41 +395,11 @@ public class Machine extends AbstractMachine {
             return unescaped.charAt(1);
         }
     }
-}
 
-/** A visitor to get the llvm representation of types.
- */
-class RepresentationVisitor implements TypeVisitor<String> {
-    public String visit(IntegerType what)   { return "i64"; }
-    public String visit(CharacterType what) { return "i8"; }
-
-    public String visit(VoidType what)      { return "void"; }
-    public String visit(NullType what)      { return "i8*"; }
-
-    public String visit(Array what) {
-        return "["
-            + what.getNbElements()
-            + " x "
-            + what.getPointee().visit(this)
-            + "]";
+    protected void indent(StringBuilder sb) {
+        if (bloc >= 0) {
+            sb.append("    ");
+        }
     }
-    public String visit(Pointer what) {
-        return what.getPointee().visit(this) + "*";
-    }
-}
-
-/** A visitor to get the size of types.
- */
-class SizeVisitor implements TypeVisitor<Integer> {
-    public Integer visit(IntegerType what)   { return 8; }
-    public Integer visit(CharacterType what) { return 1; }
-
-    public Integer visit(VoidType what)      { return 0; }
-    public Integer visit(NullType what)      { return 8; }
-
-    public Integer visit(Array what) {
-        return what.getPointee().visit(this) * what.getNbElements();
-    }
-    public Integer visit(Pointer what)       { return 8; }
 }
 

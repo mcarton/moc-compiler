@@ -7,11 +7,11 @@ package moc.gc.llvm;
  * If the location is <code>null</code>, the expression is a constant
  * (<code>null</code>, <code>42</code>, <code>YES</code>, etc.).
  */
-public class Expr implements moc.gc.Expr {
+final class Expr implements moc.gc.Expr {
     Location loc;
     String code;
 
-    public Expr(Location loc, String code) {
+    Expr(Location loc, String code) {
         this.loc = loc;
         this.code = code;
     }

@@ -21,18 +21,26 @@ public class Machine extends AbstractMachine {
 
     // location stuffs:
     @Override
-    public void newFunction() {
+    public void beginFunction() {
     }
 
     @Override
-    public void newBloc() {
+    public void endFunction() {
+    }
+
+    @Override
+    public void beginBloc() {
+    }
+
+    @Override
+    public void endBloc() {
     }
 
     @Override
     public Location getLocationFor(String name, Type type) {
         return null;
     }
- 
+
     // code generation stuffs:
     @Override
     public String genFunction(
@@ -44,6 +52,16 @@ public class Machine extends AbstractMachine {
 
     @Override
     public String genReturn(FunctionType f, moc.gc.Expr expr) {
+        return ""; // TODO:code
+    }
+
+    @Override
+    public String genAsm(String code) {
+        return code.substring(1, code.length()-1);
+    }
+
+    @Override
+    public String genGlobalAsm(String code) {
         return ""; // TODO:code
     }
 
@@ -148,11 +166,11 @@ public class Machine extends AbstractMachine {
         return null;
     }
     @Override
-    public moc.gc.Expr genDeref(moc.gc.Expr expr) {
+    public moc.gc.Expr genDeref(Type type, moc.gc.Expr expr) {
         return expr; // TODO:code
     }
     @Override
-    public moc.gc.Expr genArrSub(moc.gc.Expr lhs, moc.gc.Expr rhs) {
+    public moc.gc.Expr genArrSub(Type type, moc.gc.Expr lhs, moc.gc.Expr rhs) {
         return lhs; // TODO:code
     }
     @Override

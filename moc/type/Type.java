@@ -9,14 +9,24 @@ public interface Type {
     public boolean constructsFrom(Type other);
 
     /**
-     * True iff we can compare the two types with the given operator.
+     * True iff we can write `(ThisType)other`.
      */
-    public boolean comparableWith(Type other, String operator);
+    public boolean castsFrom(Type other);
 
     /**
-     * True iff we can test the type (ie. in if (...)).
+     * True iff we can compare the two types with the given operator.
+     */
+    public boolean comparableWith(Type other);
+
+    /**
+     * True iff we can test the type (ie.\ in if (...)).
      */
     public boolean testable();
+
+    /**
+     * True iff both types are equals.
+     */
+    public boolean equals(Type other);
 
     public abstract <R> R visit(TypeVisitor<R> visitor);
 }

@@ -41,7 +41,7 @@ pdf:
 
 .PHONY: javadoc
 javadoc:
-	javadoc -d javadoc -classpath $(GJAR) \
+	javadoc -private -d javadoc -classpath $(GJAR) \
 	    moc.compiler \
 	    moc.gc \
 	    moc.gc.llvm \

@@ -56,7 +56,7 @@ public abstract class AbstractMachine implements IMachine {
 
     public final int stringSize(String unescaped) {
         int size = 1; // includes \0
- 
+
         boolean backslash = false;
         for (int i = 1; i < unescaped.length()-1; ++i) { // exludes ""
             if (unescaped.charAt(i) == '\\') {
@@ -72,6 +72,11 @@ public abstract class AbstractMachine implements IMachine {
         }
 
         return size;
+    }
+
+    @Override
+    public String genBloc(String code) {
+        return code;
     }
 
     @Override
