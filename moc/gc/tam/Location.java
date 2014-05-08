@@ -25,7 +25,7 @@ public class Location implements moc.gc.Location {
 
     @Override
     public String toString() {
-        return "[" + dep + "/" + reg + "]";
+        return ""+ dep + "";
     }
 }
 

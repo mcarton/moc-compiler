@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import moc.gc.*;
 import moc.symbols.*;
 import moc.type.*;
-
 /**
  * The TAM machine and its generation functions.
  */
@@ -68,8 +67,20 @@ public class Machine extends AbstractMachine {
 
     @Override
     public String genVarDecl(Type t, moc.gc.Location loc) {
-        return ""; // TODO:code
+        StringBuilder sb = new StringBuilder(50);
+
+//      String type = t.visit(typeVisitor);
+
+        sb.append("    ");
+        sb.append("LOADL ");
+        sb.append(t.visit(sizeVisitor));
+        sb.append('\n');
+        sb.append("    ");
+        sb.append("SUBR Malloc");
+        sb.append('\n');
+        return sb.toString();
     }
+    
     @Override
     public String genVarDecl(Type t, moc.gc.Location loc, moc.gc.Expr expr) {
         return ""; // TODO:code

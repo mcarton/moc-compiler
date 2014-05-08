@@ -2,7 +2,7 @@ package moc.type;
 
 public interface Type {
     /**
-     * True iff we can write `aa = bb` with aa of type `this` and bb of type
+     * True if we can write `aa = bb` with aa of type `this` and bb of type
      * `other`. It is not necessary to have `bb = aa`.  For example a NullType
      * can be affected to a Int*, but the opposite is false.
      */
