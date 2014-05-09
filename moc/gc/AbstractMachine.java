@@ -78,6 +78,10 @@ public abstract class AbstractMachine implements IMachine {
     public String genBloc(String code) {
         return code;
     }
+    @Override
+    public String genInsts(String code) {
+        return code;
+    }
 
     /**
      * Default implementation that returns an empty string.

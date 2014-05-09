@@ -61,8 +61,9 @@ public interface IMachine {
     );
     String genReturn(FunctionType f, Expr expr);
 
-    String genInst(Expr expr);
     String genBloc(String code);
+    String genInst(Expr expr);
+    String genInsts(String code);
     String genAsm(String code);
     String genUsing(String name, Type type);
     String genGlobalAsm(String code);

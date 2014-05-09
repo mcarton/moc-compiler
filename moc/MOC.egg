@@ -283,7 +283,7 @@ global
     }
 }
 #gen {
-    BLOC^code = BLOC^machine.genBloc(INSTS^code);
+    BLOC^code = BLOC^machine.genInsts(INSTS^code);
     BLOC^machine.endBloc();
 }
 
@@ -403,7 +403,7 @@ INST -> BLOC #returns #gen;
     INST^returns = BLOC^returns;
 }
 #gen {
-    INST^code = BLOC^code; -- TODO:code
+    INST^code = INST^machine.genBloc(BLOC^code);
 
 }
 
