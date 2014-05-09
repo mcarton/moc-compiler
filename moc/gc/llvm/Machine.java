@@ -255,6 +255,13 @@ public final class Machine extends AbstractMachine {
     }
 
     @Override
+    public String genUsing(String name, Type type) {
+        return genComment(
+            "using " + name + " = " + type + " (" + type.visit(cg.reprVisitor) + ")"
+        );
+    }
+
+    @Override
     public Expr genSubInt(moc.gc.Expr expr) {
         return genBinaryOpImpl("i64", "sub", new Expr(null, "0"), expr);
     }

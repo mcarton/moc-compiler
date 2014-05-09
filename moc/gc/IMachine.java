@@ -64,6 +64,7 @@ public interface IMachine {
     String genInst(Expr expr);
     String genBloc(String code);
     String genAsm(String code);
+    String genUsing(String name, Type type);
     String genGlobalAsm(String code);
 
     /** Generates code for variable declaration without definition.

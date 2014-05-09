@@ -79,6 +79,14 @@ public abstract class AbstractMachine implements IMachine {
         return code;
     }
 
+    /**
+     * Default implementation that returns an empty string.
+     */
+    @Override
+    public String genUsing(String name, Type type) {
+        return genComment("using " + name + " = " + type);
+    }
+
     @Override
     public final TypedExpr genUnaryOp(String what, Type type, Expr expr) {
         // TODO:MOC: booleans with not

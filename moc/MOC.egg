@@ -343,7 +343,7 @@ INST -> using typeident affect TYPE semicolon #symbolTable #gen;
     }
 }
 #gen {
-    INST^code = ""; -- TODO:code
+    INST^code = INST^machine.genUsing(typeident^txt, TYPE^type);
 }
 
 -- local variable declaration with or without initialisation
@@ -530,7 +530,7 @@ AX -> OPREL R #type;
     elseif (instanceof(AX^htype, CharacterType) && instanceof(R^type, CharacterType)) {
         AX^expr = AX^machine.genCharBinaryOp(OPREL^sym, AX^hexpr, R^expr);
     }
-    -- TODO: pointers and NULL with == and !=
+    -- TODO:code: pointers and NULL with == and !=
     else {
         error(OP_type, AX^htype, R^type, OPREL^sym);
     }
