@@ -421,7 +421,7 @@ INST -> if opar E cpar BLOC ELSE #returns #gen;
     }
 }
 #gen {
-    INST^code = ""; -- TODO:code
+    INST^code = INST^machine.genIf(E^expr, BLOC^code, ELSE^code);
 
 }
 
@@ -430,7 +430,7 @@ ELSE -> else BLOC #returns #gen;
     ELSE^returns = BLOC^returns;
 }
 #gen {
-    ELSE^code = BLOC^code; -- TODO:code
+    ELSE^code = ELSE^machine.genElse(BLOC^code);
 }
 
 ELSE -> #returns #gen;
@@ -438,7 +438,7 @@ ELSE -> #returns #gen;
     ELSE^returns = 0;
 }
 #gen {
-    ELSE^code = ""; -- TODO:code
+    ELSE^code = ELSE^machine.genElse();
 }
 
 -- function return

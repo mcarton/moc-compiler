@@ -142,6 +142,19 @@ public final class Machine extends AbstractMachine {
     }
 
     @Override
+    public String genIf(moc.gc.Expr cond, String thenCode, String elseCode) {
+        return thenCode; // TODO:code
+    }
+    @Override
+    public String genElse() {
+        return null; // intentional
+    }
+    @Override
+    public String genElse(String code) {
+        return code; // intentional
+    }
+
+    @Override
     public String genVarDecl(Type type, moc.gc.Location loc) {
         cg.alloca(loc.toString(), cg.typeName(type));
         return cg.get();

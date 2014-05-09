@@ -68,6 +68,10 @@ public interface IMachine {
     String genUsing(String name, Type type);
     String genGlobalAsm(String code);
 
+    String genIf(Expr cond, String thenCode, String elseCode);
+    String genElse();
+    String genElse(String code);
+
     /** Generates code for variable declaration without definition.
      */
     String genVarDecl(Type t, Location location);

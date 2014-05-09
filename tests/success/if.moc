@@ -1,0 +1,11 @@
+Int main() {
+    Int a;
+    Int b;
+    if (a < b) {
+        return a+b;
+    }
+    else {
+        return a-b;
+    }
+}
+

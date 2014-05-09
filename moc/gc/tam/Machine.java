@@ -71,6 +71,19 @@ public class Machine extends AbstractMachine {
     }
 
     @Override
+    public String genIf(moc.gc.Expr cond, String thenCode, String elseCode) {
+        return thenCode; // TODO:code
+    }
+    @Override
+    public String genElse() {
+        return null; // TODO:code
+    }
+    @Override
+    public String genElse(String code) {
+        return code; // TODO:code
+    }
+
+    @Override
     public String genVarDecl(Type t, moc.gc.Location loc) {
         StringBuilder sb = new StringBuilder(50);
 
