@@ -107,36 +107,5 @@ public abstract class AbstractMachine implements IMachine {
     public Expr genParen(Expr expr) {
         return expr;
     }
-
-    @Override
-    public final TypedExpr genBinaryOp(
-        String what, Type lhsType, Expr lhs, Type rhsType, Expr rhs
-    ) {
-        // TODO:MOC: booleans with or and and
-        if (lhsType instanceof IntegerType && rhsType instanceof IntegerType) {
-            if (what.equals("+")) {
-                return new TypedExpr(genAddInt(lhs, rhs), new IntegerType());
-            }
-            else if (what.equals("-")) {
-                return new TypedExpr(genSubInt(lhs, rhs), new IntegerType());
-            }
-            else if (what.equals("or")) {
-                return new TypedExpr(genOrInt(lhs, rhs), new IntegerType());
-            }
-            else if (what.equals("*")) {
-                return new TypedExpr(genMultInt(lhs, rhs), new IntegerType());
-            }
-            else if (what.equals("/")) {
-                return new TypedExpr(genDivInt(lhs, rhs), new IntegerType());
-            }
-            else if (what.equals("%")) {
-                return new TypedExpr(genModInt(lhs, rhs), new IntegerType());
-            }
-            else if (what.equals("&&")) {
-                return new TypedExpr(genAndInt(lhs, rhs), new IntegerType());
-            }
-        }
-        return null;
-    }
 }
 

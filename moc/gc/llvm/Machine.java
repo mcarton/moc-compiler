@@ -3,6 +3,8 @@ package moc.gc.llvm;
 import java.lang.UnsupportedOperationException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.HashMap;
+import java.util.Map;
 import moc.compiler.MOCException;
 import moc.gc.*;
 import moc.symbols.*;
@@ -15,13 +17,21 @@ public final class Machine extends AbstractMachine {
     int lastGlobalTmp = -1;
     int lastTmp = 0; // name of the last generated temporary
     int bloc = -1; // the bloc we are in
+    Map<String, String> binaryOperators = new HashMap<String, String>();
 
     SizeVisitor sizeVisitor = new SizeVisitor();
-
     CodeGenerator cg = new CodeGenerator(this);
 
     public Machine(int verbosity, ArrayList<String> warnings) {
         super(verbosity, warnings);
+
+        binaryOperators.put("+", "add");
+        binaryOperators.put("-", "sub");
+        binaryOperators.put("*", "mul");
+        binaryOperators.put("/", "sdiv");
+        binaryOperators.put("%", "srem");
+        binaryOperators.put("||", "or");
+        binaryOperators.put("&&", "and");
     }
 
     @Override
@@ -240,7 +250,7 @@ public final class Machine extends AbstractMachine {
 
     @Override
     public Expr genSubInt(moc.gc.Expr expr) {
-        return genSubInt(new Expr(null, "0"), expr);
+        return genIntBinaryOpImpl("sub", new Expr(null, "0"), expr);
     }
     @Override
     public Expr genNotInt(moc.gc.Expr expr) {
@@ -278,36 +288,17 @@ public final class Machine extends AbstractMachine {
     }
 
     @Override
-    public Expr genAddInt(moc.gc.Expr lhs, moc.gc.Expr rhs) {
-        return genIntBinaryOp("add", lhs, rhs);
+    public Expr genIntBinaryOp(String what, moc.gc.Expr lhs, moc.gc.Expr rhs) {
+        // TODO:code: ensure 0 or 1 with or and and
+        return genIntBinaryOpImpl(binaryOperators.get(what), lhs, rhs);
     }
     @Override
-    public Expr genSubInt(moc.gc.Expr lhs, moc.gc.Expr rhs) {
-        return genIntBinaryOp("sub", lhs, rhs);
+    public Expr genCharBinaryOp(String what, moc.gc.Expr lhs, moc.gc.Expr rhs) {
+        // TODO:code:
+        return null;
     }
-    @Override
-    public Expr genOrInt(moc.gc.Expr lhs, moc.gc.Expr rhs) {
-        // TODO: ensure 0 or 1
-        return genIntBinaryOp("or", lhs, rhs);
-    }
-    @Override
-    public Expr genMultInt(moc.gc.Expr lhs, moc.gc.Expr rhs) {
-        return genIntBinaryOp("mul", lhs, rhs);
-    }
-    @Override
-    public Expr genDivInt(moc.gc.Expr lhs, moc.gc.Expr rhs) {
-        return genIntBinaryOp("sdiv", lhs, rhs);
-    }
-    @Override
-    public Expr genModInt(moc.gc.Expr lhs, moc.gc.Expr rhs) {
-        return genIntBinaryOp("srem", lhs, rhs);
-    }
-    @Override
-    public Expr genAndInt(moc.gc.Expr lhs, moc.gc.Expr rhs) {
-        // TODO: ensure 0 or 1
-        return genIntBinaryOp("and", lhs, rhs);
-    }
-    private Expr genIntBinaryOp(String what, moc.gc.Expr lhs, moc.gc.Expr rhs) {
+
+    private Expr genIntBinaryOpImpl(String what, moc.gc.Expr lhs, moc.gc.Expr rhs) {
         String type = "i64";
         String lhsCode = cg.getValue(type, lhs);
         String rhsCode = cg.getValue(type, rhs);

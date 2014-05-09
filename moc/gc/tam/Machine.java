@@ -171,37 +171,13 @@ public class Machine extends AbstractMachine {
     }
 
     @Override
-    public Expr genAddInt(moc.gc.Expr lhs, moc.gc.Expr rhs) {
+    public Expr genIntBinaryOp(String op, moc.gc.Expr lhs, moc.gc.Expr rhs) {
         // TODO:code
         return null;
     }
+
     @Override
-    public Expr genSubInt(moc.gc.Expr lhs, moc.gc.Expr rhs) {
-        // TODO:code
-        return null;
-    }
-    @Override
-    public Expr genOrInt(moc.gc.Expr lhs, moc.gc.Expr rhs) {
-        // TODO:code
-        return null;
-    }
-    @Override
-    public Expr genMultInt(moc.gc.Expr lhs, moc.gc.Expr rhs) {
-        // TODO:code
-        return null;
-    }
-    @Override
-    public Expr genDivInt(moc.gc.Expr lhs, moc.gc.Expr rhs) {
-        // TODO:code
-        return null;
-    }
-    @Override
-    public Expr genModInt(moc.gc.Expr lhs, moc.gc.Expr rhs) {
-        // TODO:code
-        return null;
-    }
-    @Override
-    public Expr genAndInt(moc.gc.Expr lhs, moc.gc.Expr rhs) {
+    public Expr genCharBinaryOp(String op, moc.gc.Expr lhs, moc.gc.Expr rhs) {
         // TODO:code
         return null;
     }

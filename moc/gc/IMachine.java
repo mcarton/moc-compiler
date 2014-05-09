@@ -112,17 +112,8 @@ public interface IMachine {
     Expr genParen(Expr expr);
     Expr genCast(Type from, Type to, Expr expr);
 
-    /** Dispatch the binary operator call to the proper method for the
-     *  corresponding operators and types.
-     */
-    TypedExpr genBinaryOp(String what, Type lhsType, Expr lhs, Type rhsType, Expr rhs);
-    Expr genAddInt(Expr lhs, Expr rhs);
-    Expr genSubInt(Expr lhs, Expr rhs);
-    Expr genOrInt(Expr lhs, Expr rhs);
-    Expr genMultInt(Expr lhs, Expr rhs);
-    Expr genDivInt(Expr lhs, Expr rhs);
-    Expr genModInt(Expr lhs, Expr rhs);
-    Expr genAndInt(Expr lhs, Expr rhs);
+    Expr genIntBinaryOp(String op, Expr lhs, Expr rhs);
+    Expr genCharBinaryOp(String op, Expr lhs, Expr rhs);
 
     String genComment(String comment);
 }

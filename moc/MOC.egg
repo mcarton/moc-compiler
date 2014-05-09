@@ -516,11 +516,9 @@ A -> R #init AX #gen;
     A^expr = AX^expr;
 }
 
-AX -> #type #gen;
-#type {
-    AX^type = AX^htype;
-}
+AX -> #gen;
 #gen {
+    AX^type = AX^htype;
     AX^expr = AX^hexpr;
 }
 
@@ -559,13 +557,9 @@ RX -> #type;
 
 RX -> OPADD T #gen RX #gen2;
 #gen {
-    TypedExpr typedExpr = RX^machine.genBinaryOp(
-        OPADD^sym, RX^htype, RX^hexpr, T^type, T^expr
-    );
-
-    if (typedExpr != null) {
-        RX1^hexpr = typedExpr.getExpr();
-        RX1^htype = typedExpr.getType();
+    if (instanceof(RX^htype, IntegerType) && instanceof(T^type, IntegerType)) {
+        RX1^hexpr = RX^machine.genIntBinaryOp(OPADD^sym, RX^hexpr, T^expr);
+        RX1^htype = RX^htype;
     }
     else {
         error(OP_type, RX^htype, T^type, OPADD^sym);
@@ -600,13 +594,9 @@ TX -> #type;
 
 TX -> OPMUL F #gen TX #gen2;
 #gen {
-    TypedExpr typedExpr = TX^machine.genBinaryOp(
-        OPMUL^sym, TX^htype, TX^hexpr, F^type, F^expr
-    );
-
-    if (typedExpr != null) {
-        TX1^hexpr = typedExpr.getExpr();
-        TX1^htype = typedExpr.getType();
+    if (instanceof(TX^htype, IntegerType) && instanceof(F^type, IntegerType)) {
+        TX1^hexpr = TX^machine.genIntBinaryOp(OPMUL^sym, TX^hexpr, F^expr);
+        TX1^htype = TX^htype;
     }
     else {
         error(OP_type, TX^htype, F^type, OPMUL^sym);
