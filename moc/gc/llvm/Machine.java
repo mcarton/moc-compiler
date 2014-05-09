@@ -32,6 +32,12 @@ public final class Machine extends AbstractMachine {
         binaryOperators.put("%", "srem");
         binaryOperators.put("||", "or");
         binaryOperators.put("&&", "and");
+        binaryOperators.put("<", "icmp slt");
+        binaryOperators.put("<=", "icmp sle");
+        binaryOperators.put(">", "icmp sgt");
+        binaryOperators.put(">=", "icmp sge");
+        binaryOperators.put("==", "icmp eq");
+        binaryOperators.put("!=", "icmp ne");
     }
 
     @Override
@@ -250,7 +256,7 @@ public final class Machine extends AbstractMachine {
 
     @Override
     public Expr genSubInt(moc.gc.Expr expr) {
-        return genIntBinaryOpImpl("sub", new Expr(null, "0"), expr);
+        return genBinaryOpImpl("i64", "sub", new Expr(null, "0"), expr);
     }
     @Override
     public Expr genNotInt(moc.gc.Expr expr) {
@@ -288,22 +294,28 @@ public final class Machine extends AbstractMachine {
     }
 
     @Override
-    public Expr genIntBinaryOp(String what, moc.gc.Expr lhs, moc.gc.Expr rhs) {
-        // TODO:code: ensure 0 or 1 with or and and
-        return genIntBinaryOpImpl(binaryOperators.get(what), lhs, rhs);
+    public Expr genIntBinaryOp(String op, moc.gc.Expr lhs, moc.gc.Expr rhs) {
+        return genBinaryOpImpl("i64", binaryOperators.get(op), lhs, rhs);
     }
     @Override
-    public Expr genCharBinaryOp(String what, moc.gc.Expr lhs, moc.gc.Expr rhs) {
-        // TODO:code:
-        return null;
+    public Expr genCharBinaryOp(String op, moc.gc.Expr lhs, moc.gc.Expr rhs) {
+        return genBinaryOpImpl("i8", binaryOperators.get(op), lhs, rhs);
     }
 
-    private Expr genIntBinaryOpImpl(String what, moc.gc.Expr lhs, moc.gc.Expr rhs) {
-        String type = "i64";
+    private Expr genBinaryOpImpl(
+        String type, String op, moc.gc.Expr lhs, moc.gc.Expr rhs
+    ) {
         String lhsCode = cg.getValue(type, lhs);
         String rhsCode = cg.getValue(type, rhs);
 
-        String tmp = cg.binaryOperator(what, "i64", lhsCode, rhsCode);
+        String tmp = cg.binaryOperator(op, type, lhsCode, rhsCode);
+
+        if(op.equals("&&") || op.equals("||")) {
+            // TODO:code: ensure 0 or 1
+        }
+        else if (op.startsWith("icmp")) {
+            tmp = cg.cast("zext", "i1", tmp, "i64");
+        }
 
         return new Expr(new Location(tmp), cg.get());
     }

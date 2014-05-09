@@ -524,14 +524,18 @@ AX -> #gen;
 
 AX -> OPREL R #type;
 #type {
-    if (AX^htype.comparableWith(R^type)) {
-        AX^type = new IntegerType();
-        -- TODO:code
-        AX^expr = AX^hexpr;
+    if (instanceof(AX^htype, IntegerType) && instanceof(R^type, IntegerType)) {
+        AX^expr = AX^machine.genIntBinaryOp(OPREL^sym, AX^hexpr, R^expr);
     }
+    elseif (instanceof(AX^htype, CharacterType) && instanceof(R^type, CharacterType)) {
+        AX^expr = AX^machine.genCharBinaryOp(OPREL^sym, AX^hexpr, R^expr);
+    }
+    -- TODO: pointers and NULL with == and !=
     else {
-        error(TYPE_notComparable, AX^htype, R^type);
+        error(OP_type, AX^htype, R^type, OPREL^sym);
     }
+
+    AX^type = new IntegerType();
 }
 
 -- additions
