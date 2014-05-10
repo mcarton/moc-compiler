@@ -346,16 +346,24 @@ public final class Machine extends AbstractMachine {
         String lhsCode = getValue(type, lhs);
         String rhsCode = getValue(type, rhs);
 
-        String tmp = cg.binaryOperator(op, type, lhsCode, rhsCode);
+        String tmp = genBinaryOpImpl(type, op, lhsCode, rhsCode);
+        return new Expr(new Location(tmp), cg.get());
+    }
 
-        if(op.equals("&&") || op.equals("||")) {
-            // TODO:code: ensure 0 or 1
+    private String genBinaryOpImpl(
+        String type, String op, String lhs, String rhs
+    ) {
+        String tmp = cg.binaryOperator(op, type, lhs, rhs);
+
+        if(op.equals("and") || op.equals("or")) {
+            // ensure than result is 0 or 1
+            tmp = genBinaryOpImpl("i64", "icmp ne", tmp, "0");
         }
         else if (op.startsWith("icmp")) {
             tmp = cg.cast("zext", "i1", tmp, "i64");
         }
 
-        return new Expr(new Location(tmp), cg.get());
+        return tmp;
     }
 
     @Override
