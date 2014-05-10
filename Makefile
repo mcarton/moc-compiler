@@ -30,11 +30,21 @@ att:
 
 test: test-llvm test-tam
 
+save-llvm:
+	(for i in tests/success/*.ll; do cp $$i $$i.old; done)
+cmp-llvm:
+	(for i in tests/success/*.ll.old; do echo $$i; diff $$i $${i%.old}; done || true)
 test-llvm:
 	@cd tests; ./test.py llvm
+	make cmp-llvm
 
+save-tam:
+	(for i in tests/success/*.tam; do cp $$i $$i.old; done)
+cmp-tam:
+	(for i in tests/success/*.tam.old; do echo $$i; diff $$i $${i%.old}; done || true)
 test-tam:
 	@cd tests; ./test.py tam
+	make cmp-tam
 
 pdf:
 	cd report; make pdf
