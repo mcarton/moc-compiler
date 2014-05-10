@@ -17,6 +17,7 @@ public final class Machine extends AbstractMachine {
     int lastGlobalTmp = -1;
     int lastTmp = 0; // name of the last generated temporary
     int bloc = -1; // the bloc we are in
+    int labelCount = 0;
     Map<String, String> binaryOperators = new HashMap<String, String>();
 
     SizeVisitor sizeVisitor = new SizeVisitor();
@@ -111,6 +112,8 @@ public final class Machine extends AbstractMachine {
             cg.ret();
         }
 
+        cg.unreachable(); // this is kind of a hack in case the last
+                          // instruction is an if-else instruction
         cg.endFunction();
 
         return cg.get();
@@ -143,7 +146,22 @@ public final class Machine extends AbstractMachine {
 
     @Override
     public String genIf(moc.gc.Expr cond, String thenCode, String elseCode) {
-        return thenCode; // TODO:code
+        String condLabel = "%Cond." + labelCount;
+        String thenLabel =  "Then." + labelCount;
+        String elseLabel =  "Else." + labelCount;
+        String endLabel  =  "End."  + labelCount;
+
+        // TODO: here we cast from i64 to i1 but the condition was probably
+        //       casted from i1 to i64 just before
+        String tmp = cg.getValue("i64", cond);
+        cg.cast(condLabel, "trunc", "i64", tmp, "i1");
+        cg.br(condLabel, thenLabel, elseLabel);
+        cg.label(thenLabel);
+        cg.append(thenCode);
+        cg.label(elseLabel);
+        cg.append(elseCode);
+        cg.label(endLabel);
+        return cg.get();
     }
     @Override
     public String genElse() {

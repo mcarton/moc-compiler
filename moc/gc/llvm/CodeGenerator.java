@@ -25,6 +25,10 @@ final class CodeGenerator {
         sb.setLength(0);
     }
 
+    void append(String what) {
+        sb.append(what);
+    }
+
     String get() {
         String code = sb.toString();
         reset();
@@ -73,6 +77,17 @@ final class CodeGenerator {
         return tmp;
     }
 
+    void br(String code, String thenLabel, String elseLabel) {
+        indent(sb);
+        sb.append("br i1 ");
+        sb.append(code);
+        sb.append(", label %");
+        sb.append(thenLabel);
+        sb.append(", label %");
+        sb.append(elseLabel);
+        sb.append('\n');
+    }
+
     /** {@code ) } */
     void callEnd() {
         sb.append(")\n");
@@ -107,7 +122,17 @@ final class CodeGenerator {
     String cast(String op, String from, String what, String to) {
         String tmpCastedName = machine.getTmpName();
         indent(sb);
-        sb.append(tmpCastedName);
+        castImpl(tmpCastedName, op, from, what, to);
+        return tmpCastedName;
+    }
+
+    void cast(String where, String op, String from, String what, String to) {
+        indent(sb);
+        castImpl(where, op, from, what, to);
+    }
+
+    private void castImpl(String where, String op, String from, String what, String to) {
+        sb.append(where);
         sb.append(" = ");
         sb.append(op);
         sb.append(' ');
@@ -117,7 +142,6 @@ final class CodeGenerator {
         sb.append(" to ");
         sb.append(to);
         sb.append('\n');
-        return tmpCastedName;
     }
 
     /** {@code ; <comment>} */
@@ -161,6 +185,11 @@ final class CodeGenerator {
     void globalAsm(String code) {
         declarationSb.append(code);
         declarationSb.append('\n');
+    }
+
+    void label(String name) {
+        sb.append(name);
+        sb.append(":\n");
     }
 
     /** {@code <tmp> = load <type>* <where> } */
@@ -230,6 +259,11 @@ final class CodeGenerator {
         sb.append("* ");
         sb.append(where);
         sb.append('\n');
+    }
+
+    void unreachable() {
+        indent(sb);
+        sb.append("unreachable\n");
     }
 
     // function declaration
