@@ -382,7 +382,8 @@ global
         INST^code = INST^machine.genVarDecl(TYPE^type, loc);
     }
     else {
-        INST^code = INST^machine.genVarDecl(TYPE^type, loc, EX^expr);
+        Expr tmp = INST^machine.genCast(EX^type, TYPE^type, EX^expr);
+        INST^code = INST^machine.genVarDecl(TYPE^type, loc, tmp);
     }
 }
 
@@ -421,8 +422,8 @@ INST -> if opar E cpar BLOC ELSE #returns #gen;
     }
 }
 #gen {
-    INST^code = INST^machine.genIf(E^expr, BLOC^code, ELSE^code);
-
+    Expr tmp = INST^machine.genCast(E^type, new IntegerType(), E^expr);
+    INST^code = INST^machine.genIf(tmp, BLOC^code, ELSE^code);
 }
 
 ELSE -> else if opar E cpar BLOC ELSE #returns #gen;
@@ -438,8 +439,8 @@ ELSE -> else if opar E cpar BLOC ELSE #returns #gen;
     }
 }
 #gen {
-    ELSE^code = ELSE^machine.genIf(E^expr, BLOC^code, ELSE1^code);
-
+    Expr tmp = ELSE^machine.genCast(E^type, new IntegerType(), E^expr);
+    ELSE^code = ELSE^machine.genElseIf(tmp, BLOC^code, ELSE1^code);
 }
 
 ELSE -> else BLOC #returns #gen;
@@ -468,8 +469,9 @@ INST -> return E semicolon #type #gen;
     }
 }
 #gen {
-    INST^code
-        = INST^machine.genReturn(INST^symbolTable.getCurrentFunction(), E^expr);
+    FunctionType function = INST^symbolTable.getCurrentFunction();
+    Expr tmp = INST^machine.genCast(E^type, function.getReturnType(), E^expr);
+    INST^code = INST^machine.genReturn(function, tmp);
 }
 
 -- expressions
@@ -499,7 +501,8 @@ E -> A EX #type;
     }
     else {
         -- TODO: A must be an lvalue
-        E^expr = E^machine.genAff(A^type, A^expr.getLoc(), EX^expr);
+        Expr tmp = E^machine.genCast(EX^type, A^type, EX^expr);
+        E^expr = E^machine.genAff(A^type, A^expr.getLoc(), tmp);
     }
 }
 

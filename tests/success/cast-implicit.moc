@@ -1,0 +1,17 @@
+Int* foo() {
+    Int* a = NULL;
+    Char* b = "enseeiht";
+
+    return a;
+}
+
+Int* bar() {
+    return NULL;
+}
+
+void main() {
+    Int* a;
+    if (a) {
+    }
+}
+

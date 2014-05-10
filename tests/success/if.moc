@@ -1,6 +1,12 @@
 Int main() {
     Int a;
     Int b;
+
+    Int* c = new(Int);
+    if(c) {
+        a = b;
+    }
+
     if (a < b) {
         return a+b;
     }
