@@ -4,8 +4,13 @@ Int main() {
     if (a < b) {
         return a+b;
     }
-    else {
-        return a-b;
-    }
+    else {if(a > b) {
+        if(a == 42) {
+            return a-b;
+        }
+        else {
+            return 42;
+        }
+    }}
 }
 

@@ -83,6 +83,11 @@ public abstract class AbstractMachine implements IMachine {
         return code;
     }
 
+    @Override
+    public String genElseIf(Expr cond, String thenCode, String elseCode) {
+        return genIf(cond, thenCode, elseCode);
+    }
+
     /**
      * Default implementation that returns an empty string.
      */

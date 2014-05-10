@@ -150,6 +150,7 @@ public final class Machine extends AbstractMachine {
         String thenLabel =  "Then." + labelCount;
         String elseLabel =  "Else." + labelCount;
         String endLabel  =  "End."  + labelCount;
+        ++labelCount;
 
         // TODO: here we cast from i64 to i1 but the condition was probably
         //       casted from i1 to i64 just before
