@@ -10,7 +10,7 @@ option k = 2;
 inh source : MOCSourceFile for PROGRAM;
 -- the target machine for code generation
 inh machine : IMachine for
-    ENTITIES, FUNCTION, ASM, INST, BLOC, INSTS, ELSE,
+    ENTITIES, FUNCTION, ASM, INST, BLOC, INSTS, IF, ELSE,
     FUNC_PARAMETERS, FUNC_PARAMETER, FUNC_PARAMETERSX, ARGS, ARGSX,
     E, EX, A, AX, R, RX, T, TX, F,
     REFS, STYPE, TYPE, SIZEOFEXPR
@@ -21,7 +21,7 @@ inh machine : IMachine for
 
 -- the current symbols table
 inh symbolTable : SymbolTable for
-    ENTITIES, BLOC, ELSE, INST, INSTS, ARGS, ARGSX,
+    ENTITIES, BLOC, IF, ELSE, INST, INSTS, ARGS, ARGSX,
     FUNCTION, FUNC_PARAMETER, FUNC_PARAMETERS, FUNC_PARAMETERSX,
     TYPE, STYPE, REFS, SIZEOFEXPR,
     F, TX, T, RX, R, AX, A, EX, E
@@ -29,7 +29,7 @@ inh symbolTable : SymbolTable for
 
 -- 0 => empty statement, 1 => non-empty but does not return, 2 => returns
 syn returns : int for
-    INST, INSTS, BLOC, ELSE;
+    INST, INSTS, BLOC, IF, ELSE;
 
 -- types:
 syn type : Type for
@@ -51,7 +51,7 @@ inh types : TypeList for
 syn sym : String for OPREL, OPADD, OPMUL, OPUN;
 
 syn code : String for
-    ENTITIES, BLOC, ELSE, INST, INSTS,
+    ENTITIES, BLOC, IF, ELSE, INST, INSTS,
     FUNCTION, ASM
 ;
 syn expr : Expr for
@@ -409,38 +409,16 @@ INST -> BLOC #returns #gen;
 }
 
 -- conditional
-INST -> if opar E cpar BLOC ELSE #returns #gen;
-#returns {
-    if (!E^type.testable()) {
-        error(TYPE_unexpected, "int", E^type);
-    }
-    elseif (BLOC^returns == 2 && ELSE^returns != 1) {
-        INST^returns = 2;
-    }
-    else {
-        INST^returns = 1;
-    }
-}
+INST -> IF #gen;
 #gen {
-    Expr tmp = INST^machine.genCast(E^type, new IntegerType(), E^expr);
-    INST^code = INST^machine.genIf(tmp, BLOC^code, ELSE^code);
+    INST^code = INST^machine.genIfInst(IF^code);
+    INST^returns = IF^returns;
 }
 
-ELSE -> else if opar E cpar BLOC ELSE #returns #gen;
-#returns {
-    if (!E^type.testable()) {
-        error(TYPE_unexpected, "int", E^type);
-    }
-    elseif (BLOC^returns == 2 && ELSE1^returns != 1) {
-        ELSE^returns = 2;
-    }
-    else {
-        ELSE^returns = 1;
-    }
-}
+ELSE -> else IF #gen;
 #gen {
-    Expr tmp = ELSE^machine.genCast(E^type, new IntegerType(), E^expr);
-    ELSE^code = ELSE^machine.genElseIf(tmp, BLOC^code, ELSE1^code);
+    ELSE^code = ELSE^machine.genElseIf(IF^code);
+    ELSE^returns = IF^returns;
 }
 
 ELSE -> else BLOC #returns #gen;
@@ -457,6 +435,27 @@ ELSE -> #returns #gen;
 }
 #gen {
     ELSE^code = ELSE^machine.genElse();
+}
+
+IF -> if opar E cpar #cast BLOC ELSE #returns #gen;
+global
+    Expr casted;
+#returns {
+    if (!E^type.testable()) {
+        error(TYPE_unexpected, "int", E^type);
+    }
+    elseif (BLOC^returns == 2 && ELSE^returns != 1) {
+        IF^returns = 2;
+    }
+    else {
+        IF^returns = 1;
+    }
+}
+#cast {
+    casted = IF^machine.genCast(E^type, new IntegerType(), E^expr);
+}
+#gen {
+    IF^code = IF^machine.genIf(casted, BLOC^code, ELSE^code);
 }
 
 -- function return

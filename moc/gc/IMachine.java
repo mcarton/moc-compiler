@@ -68,8 +68,9 @@ public interface IMachine {
     String genUsing(String name, Type type);
     String genGlobalAsm(String code);
 
+    String genIfInst(String code);
     String genIf(Expr cond, String thenCode, String elseCode);
-    String genElseIf(Expr cond, String thenCode, String elseCode);
+    String genElseIf(String code);
     String genElse();
     String genElse(String code);
 

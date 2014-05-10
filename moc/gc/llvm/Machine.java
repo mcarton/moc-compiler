@@ -156,11 +156,25 @@ public final class Machine extends AbstractMachine {
         //       casted from i1 to i64 just before
         String tmp = getValue("i64", cond);
         cg.cast(condLabel, "trunc", "i64", tmp, "i1");
-        cg.br(condLabel, thenLabel, elseLabel);
+
+        if (elseCode != null) {
+            cg.br(condLabel, thenLabel, elseLabel);
+        }
+        else {
+            cg.br(condLabel, thenLabel, endLabel);
+        }
+
         cg.label(thenLabel);
         cg.append(thenCode);
-        cg.label(elseLabel);
-        cg.append(elseCode);
+
+        if (elseCode != null) {
+            cg.label(elseLabel);
+            cg.append(elseCode);
+        }
+        else {
+            cg.br(endLabel);
+        }
+
         cg.label(endLabel);
         return cg.get();
     }

@@ -77,6 +77,14 @@ final class CodeGenerator {
         return tmp;
     }
 
+    /** {@code br label %<label> } */
+    void br(String label) {
+        indent();
+        append("br label %");
+        append(label);
+        append('\n');
+    }
+
     /** {@code br i1 <cond>, label %<thenLabel>, label %<elseLabel> */
     void br(String cond, String thenLabel, String elseLabel) {
         indent();
