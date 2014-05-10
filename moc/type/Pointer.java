@@ -33,13 +33,6 @@ public final class Pointer extends AbstractType<Pointer> {
         return constructsFrom(other) || other instanceof Pointer;
     }
 
-    /** A pointer is comparable with other pointers and the {@link NullType}.
-     */
-    @Override
-    public boolean comparableWith(Type other) {
-        return other instanceof Pointer || other instanceof NullType;
-    }
-
     @Override
     public boolean testable() {
         return true;

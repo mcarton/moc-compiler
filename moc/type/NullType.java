@@ -12,11 +12,6 @@ public final class NullType extends AbstractType<NullType> {
     }
 
     @Override
-    public boolean comparableWith(Type other) {
-        return other instanceof Pointer || other instanceof NullType;
-    }
-
-    @Override
     public boolean testable() {
         return true;
     }

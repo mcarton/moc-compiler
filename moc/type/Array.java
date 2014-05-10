@@ -32,14 +32,6 @@ public final class Array extends AbstractType<Array> {
             && ((Array)other).nbElements == nbElements;
     }
 
-    /**
-     * Arrays are not comparable.
-     */
-    @Override
-    public boolean comparableWith(Type other) {
-        return false;
-    }
-
     @Override
     public <R> R visit(TypeVisitor<R> visitor) {
         return visitor.visit(this);

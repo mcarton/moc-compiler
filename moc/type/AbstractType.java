@@ -18,13 +18,6 @@ abstract class AbstractType<T extends Type> implements Type {
     }
 
     /**
-     * Default implementation where type is comparable only to itself.
-     */
-    public boolean comparableWith(Type other) {
-        return equals(other);
-    }
-
-    /**
      * Default implementation where the type is not testable.
      */
     public boolean testable() {

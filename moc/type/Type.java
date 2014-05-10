@@ -14,11 +14,6 @@ public interface Type {
     public boolean castsFrom(Type other);
 
     /**
-     * True iff we can compare the two types with the given operator.
-     */
-    public boolean comparableWith(Type other);
-
-    /**
      * True iff we can test the type (ie.\ in if (...)).
      */
     public boolean testable();

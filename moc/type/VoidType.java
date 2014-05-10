@@ -14,11 +14,6 @@ public final class VoidType extends AbstractType<VoidType> {
     }
 
     @Override
-    public boolean comparableWith(Type other) {
-        return false;
-    }
-
-    @Override
     public <R> R visit(TypeVisitor<R> visitor) {
         return visitor.visit(this);
     }
