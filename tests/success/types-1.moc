@@ -1,12 +1,17 @@
 Int main() {
     Int i = 0;
-    Int j = 42;
+    i = 42;
 
     Char c = 'a';
+    Char d;
+    d = c;
 
     Char[9] s = "enseeiht";
+    Char[9] t;
+    s = t;
+
     Int* ip = NULL;
 
-    return j;
+    return i;
 }
 
