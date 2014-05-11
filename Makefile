@@ -64,5 +64,8 @@ clean:
 	find tests/ -name "*.tam" -delete
 	find tests/ -name "*.ll" -delete
 	find tests/ -name "*.s" -delete
+	find tests/ -name "*.old" -delete
 	rm -rf moc/egg
+	rm -rf javadoc
+	rm -f a.out
 	cd report; make clean
