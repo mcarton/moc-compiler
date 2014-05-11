@@ -551,7 +551,28 @@ AX -> OPREL R #type;
     elseif (instanceof(AX^htype, CharacterType) && instanceof(R^type, CharacterType)) {
         AX^expr = AX^machine.genCharBinaryOp(OPREL^sym, AX^hexpr, R^expr);
     }
-    -- TODO:code: pointers and NULL with == and !=
+    elseif (OPREL^sym.equals("==") || OPREL^sym.equals("!=")) {
+        boolean lhsNull = instanceof(AX^htype, NullType);
+        boolean rhsNull = instanceof(R ^ type, NullType);
+
+        if (lhsNull && rhsNull) {
+            AX^expr = AX^machine.genInt("1");
+        }
+        elseif (
+            instanceof(AX^htype, Pointer)
+        &&  (rhsNull || instanceof(R^type, Pointer))
+        ) {
+            Expr tmp = AX^machine.genCast(R^type, AX^htype, R^expr);
+            AX^expr = AX^machine.genPtrBinaryOp(OPREL^sym, AX^htype, AX^hexpr, tmp);
+        }
+        elseif (
+            instanceof(R^type, Pointer)
+        &&  (lhsNull || instanceof(AX^htype, Pointer))
+        ) {
+            Expr tmp = AX^machine.genCast(AX^htype, R^type, AX^hexpr);
+            AX^expr = AX^machine.genPtrBinaryOp(OPREL^sym, R^type, tmp, R^expr);
+        }
+    }
     else {
         error(OP_type, AX^htype, R^type, OPREL^sym);
     }

@@ -122,6 +122,7 @@ public interface IMachine {
 
     Expr genIntBinaryOp(String op, Expr lhs, Expr rhs);
     Expr genCharBinaryOp(String op, Expr lhs, Expr rhs);
+    Expr genPtrBinaryOp(String op, Type pointer, Expr lhs, Expr rhs);
 
     String genComment(String comment);
 }

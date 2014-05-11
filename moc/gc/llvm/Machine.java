@@ -371,6 +371,14 @@ public final class Machine extends AbstractMachine {
     public Expr genCharBinaryOp(String op, moc.gc.Expr lhs, moc.gc.Expr rhs) {
         return genBinaryOpImpl("i8", binaryOperators.get(op), lhs, rhs);
     }
+    @Override
+    public Expr genPtrBinaryOp(
+        String op, Type pointer,
+        moc.gc.Expr lhs, moc.gc.Expr rhs
+    ) {
+        String typename = cg.typeName(pointer);
+        return genBinaryOpImpl(typename, binaryOperators.get(op), lhs, rhs);
+    }
 
     private Expr genBinaryOpImpl(
         String type, String op, moc.gc.Expr lhs, moc.gc.Expr rhs

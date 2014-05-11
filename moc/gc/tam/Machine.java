@@ -194,6 +194,14 @@ public class Machine extends AbstractMachine {
         // TODO:code
         return null;
     }
+    @Override
+    public Expr genPtrBinaryOp(
+        String op, Type pointer,
+        moc.gc.Expr lhs, moc.gc.Expr rhs
+    ) {
+        // TODO:code
+        return null;
+    }
 
     @Override
     public String genComment(String comment) {
