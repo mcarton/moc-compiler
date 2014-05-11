@@ -96,7 +96,12 @@ class FromPointerCaster extends DefaultCaster {
         return new RegularCaster("ptrtoint", from, to);
     }
     public Caster visit(Pointer to) {
-        return new RegularCaster("bitcast", from, to);
+        if (from.equals(to)) {
+            return IdentityCaster.instance;
+        }
+        else {
+            return new RegularCaster("bitcast", from, to);
+        }
     }
 }
 
