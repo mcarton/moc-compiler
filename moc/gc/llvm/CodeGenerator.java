@@ -208,7 +208,14 @@ final class CodeGenerator {
         declAppend('\n');
     }
 
+    void implicitLabel(String name) {
+        append("\n; <label>:");
+        append(name);
+        append(":\n");
+    }
+
     void label(String name) {
+        append('\n');
         append(name);
         append(":\n");
     }

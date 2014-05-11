@@ -129,12 +129,15 @@ public final class Machine extends AbstractMachine {
             copy(paramType, "%__p"+ ++paramIt, paramName);
         }
 
-        if (!params.isEmpty() && !returnsVoid) {
+        if (!params.isEmpty() || !returnsVoid) {
             cg.comment("end of generated code for return value and parameters");
             cg.skipLine();
         }
 
         cg.body(block);
+
+        cg.br("End");
+        cg.label("End");
 
         if (returnsVoid) {
             cg.ret();
@@ -156,6 +159,8 @@ public final class Machine extends AbstractMachine {
         String typename = cg.typeName(returnType);
         String tmp = cg.getValue(typename, expr);
         copy(returnType, tmp, "%__return");
+        cg.br("End");
+        cg.implicitLabel(Integer.toString(++lastTmp));
         return cg.get();
     }
 
