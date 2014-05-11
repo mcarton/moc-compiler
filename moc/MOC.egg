@@ -10,7 +10,7 @@ option k = 2;
 inh source : MOCSourceFile for PROGRAM;
 -- the target machine for code generation
 inh machine : IMachine for
-    ENTITIES, FUNCTION, ASM, INST, BLOC, INSTS, IF, ELSE,
+    ENTITIES, FUNCTION, ASM, INST, BLOCK, INSTS, IF, ELSE,
     FUNC_PARAMETERS, FUNC_PARAMETER, FUNC_PARAMETERSX, ARGS, ARGSX,
     E, EX, A, AX, R, RX, T, TX, F,
     REFS, STYPE, TYPE, SIZEOFEXPR
@@ -21,7 +21,7 @@ inh machine : IMachine for
 
 -- the current symbols table
 inh symbolTable : SymbolTable for
-    ENTITIES, BLOC, IF, ELSE, INST, INSTS, ARGS, ARGSX,
+    ENTITIES, BLOCK, IF, ELSE, INST, INSTS, ARGS, ARGSX,
     FUNCTION, FUNC_PARAMETER, FUNC_PARAMETERS, FUNC_PARAMETERSX,
     TYPE, STYPE, REFS, SIZEOFEXPR,
     F, TX, T, RX, R, AX, A, EX, E
@@ -29,7 +29,7 @@ inh symbolTable : SymbolTable for
 
 -- 0 => empty statement, 1 => non-empty but does not return, 2 => returns
 syn returns : int for
-    INST, INSTS, BLOC, IF, ELSE;
+    INST, INSTS, BLOCK, IF, ELSE;
 
 -- types:
 syn type : Type for
@@ -51,7 +51,7 @@ inh types : TypeList for
 syn sym : String for OPREL, OPADD, OPMUL, OPUN;
 
 syn code : String for
-    ENTITIES, BLOC, IF, ELSE, INST, INSTS,
+    ENTITIES, BLOCK, IF, ELSE, INST, INSTS,
     FUNCTION, ASM
 ;
 syn expr : Expr for
@@ -159,18 +159,18 @@ ASM -> asm opar string cpar semicolon #gen;
 }
 
 -- functions
-FUNCTION -> TYPE ident #csymbols opar FUNC_PARAMETERS #usymbols cpar BLOC #gen;
+FUNCTION -> TYPE ident #csymbols opar FUNC_PARAMETERS #usymbols cpar BLOCK #gen;
 global
-    SymbolTable blocTds;
+    SymbolTable blockTds;
     TypeList types;
     ArrayList<Location> parameters;
     FunctionType fun;
 #csymbols {
     FUNCTION^machine.beginFunction();
 
-    blocTds = new SymbolTable(FUNCTION^symbolTable);
-    FUNC_PARAMETERS^symbolTable = blocTds;
-    BLOC^symbolTable = blocTds;
+    blockTds = new SymbolTable(FUNCTION^symbolTable);
+    FUNC_PARAMETERS^symbolTable = blockTds;
+    BLOCK^symbolTable = blockTds;
 
     types = new TypeList();
     FUNC_PARAMETERS^types = types;
@@ -184,16 +184,16 @@ global
     }
     else {
         fun = new FunctionType(TYPE^type, types);
-        blocTds.setCurrentFunction(ident^txt, fun);
+        blockTds.setCurrentFunction(ident^txt, fun);
     }
 }
 #gen {
-    if (BLOC^returns != 2 && !instanceof(TYPE^type, VoidType)) {
+    if (BLOCK^returns != 2 && !instanceof(TYPE^type, VoidType)) {
         error(FUN_missingReturn);
     }
     elseif (fun != null) {
         FUNCTION^code = FUNCTION^machine.genFunction(
-            fun, parameters, ident^txt, BLOC^code
+            fun, parameters, ident^txt, BLOCK^code
         );
     }
 
@@ -266,25 +266,25 @@ STYPE -> typeident #gen;
     }
 }
 
--- method body and instructions blocs
-BLOC -> #symbolTable occbra INSTS ccbra #message #gen;
+-- method body and instructions blocks
+BLOCK -> #symbolTable occbra INSTS ccbra #message #gen;
 global
     SymbolTable symbolTable;
 #symbolTable {
-    BLOC^machine.beginBloc();
+    BLOCK^machine.beginBlock();
 
-    symbolTable = new SymbolTable(BLOC^symbolTable);
+    symbolTable = new SymbolTable(BLOCK^symbolTable);
     INSTS^symbolTable = symbolTable;
 }
 #message {
-    BLOC^returns = INSTS^returns;
-    if (BLOC^machine.verbosity() >= 5) {
+    BLOCK^returns = INSTS^returns;
+    if (BLOCK^machine.verbosity() >= 5) {
         write("Symbols: " + symbolTable.toString()+"\n");
     }
 }
 #gen {
-    BLOC^code = BLOC^machine.genInsts(INSTS^code);
-    BLOC^machine.endBloc();
+    BLOCK^code = BLOCK^machine.genInsts(INSTS^code);
+    BLOCK^machine.endBlock();
 }
 
 -- instructions
@@ -398,13 +398,13 @@ INST -> E semicolon #returns #gen;
     }
 }
 
--- instruction block
-INST -> BLOC #returns #gen;
+-- instruction blockk
+INST -> BLOCK #returns #gen;
 #returns {
-    INST^returns = BLOC^returns;
+    INST^returns = BLOCK^returns;
 }
 #gen {
-    INST^code = INST^machine.genBloc(BLOC^code);
+    INST^code = INST^machine.genBlock(BLOCK^code);
 
 }
 
@@ -421,12 +421,12 @@ ELSE -> else IF #gen;
     ELSE^returns = IF^returns;
 }
 
-ELSE -> else BLOC #returns #gen;
+ELSE -> else BLOCK #returns #gen;
 #returns {
-    ELSE^returns = BLOC^returns;
+    ELSE^returns = BLOCK^returns;
 }
 #gen {
-    ELSE^code = ELSE^machine.genElse(BLOC^code);
+    ELSE^code = ELSE^machine.genElse(BLOCK^code);
 }
 
 ELSE -> #returns #gen;
@@ -437,14 +437,14 @@ ELSE -> #returns #gen;
     ELSE^code = ELSE^machine.genElse();
 }
 
-IF -> if opar E cpar #cast BLOC ELSE #returns #gen;
+IF -> if opar E cpar #cast BLOCK ELSE #returns #gen;
 global
     Expr casted;
 #returns {
     if (!E^type.testable()) {
         error(TYPE_unexpected, "int", E^type);
     }
-    elseif (BLOC^returns == 2 && ELSE^returns != 1) {
+    elseif (BLOCK^returns == 2 && ELSE^returns != 1) {
         IF^returns = 2;
     }
     else {
@@ -455,7 +455,7 @@ global
     casted = IF^machine.genCast(E^type, new IntegerType(), E^expr);
 }
 #gen {
-    IF^code = IF^machine.genIf(casted, BLOC^code, ELSE^code);
+    IF^code = IF^machine.genIf(casted, BLOCK^code, ELSE^code);
 }
 
 -- function return
@@ -841,7 +841,7 @@ ARGSX -> comma E #type ARGSX;
 -- -- methods
 --METHODES -> ;
 --METHODES -> METHODE  METHODES;
---METHODE -> QUAL PTYPE   MFUNC_PARAMETERS BLOC;
+--METHODE -> QUAL PTYPE   MFUNC_PARAMETERS BLOCK;
 -- --method or attribute qualifier: + = class, - = instance
 --QUAL -> plus;
 --QUAL -> minus;

@@ -16,7 +16,7 @@ import moc.type.*;
 public final class Machine extends AbstractMachine {
     int lastGlobalTmp = -1;
     int lastTmp = 0; // name of the last generated temporary
-    int bloc = -1; // the bloc we are in
+    int block = -1; // the block we are in
     int labelCount = 0;
     Map<String, String> binaryOperators = new HashMap<String, String>();
 
@@ -55,34 +55,34 @@ public final class Machine extends AbstractMachine {
     @Override
     public void beginFunction() {
         lastTmp = 0;
-        ++bloc;
+        ++block;
     }
 
     @Override
     public void endFunction() {
-        --bloc;
+        --block;
     }
 
     @Override
-    public void beginBloc() {
-        ++bloc;
+    public void beginBlock() {
+        ++block;
     }
 
     @Override
-    public void endBloc() {
-        --bloc;
+    public void endBlock() {
+        --block;
     }
 
     @Override
     public Location getLocationFor(String name, Type type) {
-        return new Location('%' + name + bloc);
+        return new Location('%' + name + block);
     }
 
     // code generation stuffs:
     @Override
     public String genFunction(
         FunctionType f, ArrayList<moc.gc.Location> params,
-        String name, String bloc
+        String name, String block
     ) {
         cg.beginDefine(cg.typeName(f.getReturnType()), name);
 
@@ -119,7 +119,7 @@ public final class Machine extends AbstractMachine {
             cg.skipLine();
         }
 
-        cg.body(bloc);
+        cg.body(block);
 
         if (returnsVoid) {
             cg.ret();

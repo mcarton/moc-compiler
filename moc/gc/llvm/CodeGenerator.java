@@ -324,8 +324,8 @@ final class CodeGenerator {
         }
     }
 
-    void body(String bloc) {
-        append(bloc);
+    void body(String block) {
+        append(block);
     }
 
     void endDefine() {

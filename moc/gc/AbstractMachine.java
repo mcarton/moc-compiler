@@ -75,7 +75,7 @@ public abstract class AbstractMachine implements IMachine {
     }
 
     @Override
-    public String genBloc(String code) {
+    public String genBlock(String code) {
         return code;
     }
     @Override

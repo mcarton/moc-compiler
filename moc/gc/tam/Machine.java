@@ -29,11 +29,11 @@ public class Machine extends AbstractMachine {
     }
 
     @Override
-    public void beginBloc() {
+    public void beginBlock() {
     }
 
     @Override
-    public void endBloc() {
+    public void endBlock() {
     }
 
     @Override
@@ -45,9 +45,9 @@ public class Machine extends AbstractMachine {
     @Override
     public String genFunction(
         FunctionType f, ArrayList<moc.gc.Location> parameters,
-        String name, String bloc
+        String name, String block
     ) {
-        return bloc; // TODO:code
+        return block; // TODO:code
     }
 
     @Override

@@ -39,13 +39,13 @@ public interface IMachine {
      */
     void endFunction();
 
-    /** Indicates the machine we enter a new bloc.
+    /** Indicates the machine we enter a new block.
      */
-    void beginBloc();
+    void beginBlock();
 
-    /** Indicates the machine we exit a bloc.
+    /** Indicates the machine we exit a block.
      */
-    void endBloc();
+    void endBlock();
 
     /** Get the machine-dependant Location for a variable named
      *  <code>name</code> with type <code>type</code> declared here.
@@ -61,7 +61,7 @@ public interface IMachine {
     );
     String genReturn(FunctionType f, Expr expr);
 
-    String genBloc(String code);
+    String genBlock(String code);
     String genInst(Expr expr);
     String genInsts(String code);
     String genAsm(String code);
