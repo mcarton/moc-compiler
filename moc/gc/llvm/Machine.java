@@ -469,11 +469,5 @@ public final class Machine extends AbstractMachine {
             return unescaped.charAt(1);
         }
     }
-
-    protected void indent(StringBuilder sb) {
-        if (bloc >= 0) {
-            sb.append("    ");
-        }
-    }
 }
 

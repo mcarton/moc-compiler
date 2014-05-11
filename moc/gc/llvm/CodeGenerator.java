@@ -311,7 +311,7 @@ final class CodeGenerator {
     }
 
     void indent() {
-        append("    ");
+        append("  ");
     }
 }
 
