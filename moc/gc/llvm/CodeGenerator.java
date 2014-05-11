@@ -15,8 +15,10 @@ final class CodeGenerator {
         this.sb = new StringBuilder();
 
         String declarations =
-                "declare i8* @malloc(i64)\n"
-              + "declare void @free(i8*)\n";
+              "declare i8* @malloc(i64)\n"
+            + "declare void @free(i8*)\n"
+            + "declare void @llvm.memcpy.p0i8.p0i8.i64(i8* nocapture, i8* nocapture readonly, i64, i32, i1)\n"
+        ;
 
         this.declarationSb = new StringBuilder(declarations);
     }
@@ -233,6 +235,19 @@ final class CodeGenerator {
         append(size);
         append(")\n");
         return tmpPtr;
+    }
+
+    /** {@code call void @llvm.memcpy.p0i8.p0i8.i64(i8* <where>, i8* <what>, i64 <size>, i32 0, i1 false) }
+     */
+    void memcpy(String where, String what, int size) {
+        indent();
+        append("call void @llvm.memcpy.p0i8.p0i8.i64(i8* ");
+        append(where);
+        append(", i8* ");
+        append(what);
+        append(", i64 ");
+        append(size);
+        append(", i32 0, i1 false)\n"); // 0 alignment means not aligned
     }
 
     /**

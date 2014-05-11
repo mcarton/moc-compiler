@@ -168,8 +168,6 @@ global
     ArrayList<Location> parameters;
     FunctionType fun;
 #csymbols {
-    FUNCTION^machine.beginFunction();
-
     blockTds = new SymbolTable(FUNCTION^symbolTable);
     FUNC_PARAMETERS^symbolTable = blockTds;
     BLOCK^symbolTable = blockTds;
@@ -186,6 +184,9 @@ global
     }
     else {
         fun = new FunctionType(TYPE^type, types);
+
+        FUNCTION^machine.beginFunction(fun);
+
         blockTds.setCurrentFunction(ident^txt, fun);
     }
 }

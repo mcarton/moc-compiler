@@ -21,7 +21,7 @@ public class Machine extends AbstractMachine {
 
     // location stuffs:
     @Override
-    public void beginFunction() {
+    public void beginFunction(FunctionType fun) {
     }
 
     @Override

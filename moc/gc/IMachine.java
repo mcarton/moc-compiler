@@ -33,7 +33,7 @@ public interface IMachine {
     // location stuffs:
     /** Indicates the machine we enter a function definition.
      */
-    void beginFunction();
+    void beginFunction(FunctionType fun);
 
     /** Indicates the machine we exit a function definition.
      */

@@ -53,9 +53,15 @@ public final class Machine extends AbstractMachine {
 
     // location stuffs:
     @Override
-    public void beginFunction() {
+    public void beginFunction(FunctionType fun) {
         lastTmp = 0;
         ++block;
+
+        for (Type parameter : fun.getParameterTypes()) {
+            if (parameter.isArray()) {
+                lastTmp += 2;
+            }
+        }
     }
 
     @Override
@@ -84,13 +90,22 @@ public final class Machine extends AbstractMachine {
         FunctionType f, ArrayList<moc.gc.Location> params,
         String name, String block
     ) {
+        int returnTmp = lastTmp;
+        lastTmp = 0;
         cg.beginDefine(cg.typeName(f.getReturnType()), name);
 
         // parameter names of the form "__p0", "__p1"
         Iterator<Type> it = f.getParameterTypes().iterator();
         int paramIt = 0;
         while (it.hasNext()) {
-            cg.parameter(cg.typeName(it.next()), "%__p" + ++paramIt, it.hasNext());
+            Type type = it.next();
+            String typename = cg.typeName(type);
+
+            if (type.isArray()) {
+                typename += '*';
+            }
+
+            cg.parameter(typename, "%__p" + ++paramIt, it.hasNext());
         }
 
         cg.endDefine();
@@ -108,10 +123,10 @@ public final class Machine extends AbstractMachine {
         it = f.getParameterTypes().iterator();
         paramIt = 0;
         while (it.hasNext()) {
-            String paramType = cg.typeName(it.next());
+            Type paramType = it.next();
             String paramName = locIt.next().toString();
-            cg.alloca(paramName, paramType);
-            cg.store(paramType, "%__p"+ ++paramIt, paramName);
+            cg.alloca(paramName, cg.typeName(paramType));
+            copy(paramType, "%__p"+ ++paramIt, paramName);
         }
 
         if (!params.isEmpty() && !returnsVoid) {
@@ -125,6 +140,7 @@ public final class Machine extends AbstractMachine {
             cg.ret();
         }
         else {
+            lastTmp = returnTmp;
             String tmp = cg.load(returnType, "%__return");
             cg.ret(returnType, tmp);
         }
@@ -136,9 +152,10 @@ public final class Machine extends AbstractMachine {
 
     @Override
     public String genReturn(FunctionType f, moc.gc.Expr expr) {
-        String returnType = cg.typeName(f.getReturnType());
-        String tmp = cg.getValue(returnType, expr);
-        cg.store(returnType, tmp, "%__return");
+        Type returnType = f.getReturnType();
+        String typename = cg.typeName(returnType);
+        String tmp = cg.getValue(typename, expr);
+        copy(returnType, tmp, "%__return");
         return cg.get();
     }
 
@@ -208,11 +225,11 @@ public final class Machine extends AbstractMachine {
         return cg.get();
     }
     @Override
-    public String genVarDecl(Type t, moc.gc.Location loc, moc.gc.Expr expr) {
-        cg.comment("declaration of " + loc + " (" + t + ')');
-        String type = cg.typeName(t);
-        cg.alloca(loc.toString(), type);
-        cg.store(type, getValue(type, expr), loc.toString());
+    public String genVarDecl(Type type, moc.gc.Location loc, moc.gc.Expr expr) {
+        cg.comment("declaration of " + loc + " (" + type + ')');
+        String typename = cg.typeName(type);
+        cg.alloca(loc.toString(), typename);
+        copy(type, getValue(typename, expr), loc.toString());
         cg.skipLine();
         return cg.get();
     }
@@ -304,13 +321,13 @@ public final class Machine extends AbstractMachine {
         return new Expr((Location)info.getLoc(), "", !(info.getType().isArray()));
     }
     @Override
-    public Expr genAff(Type t, moc.gc.Expr lhs, moc.gc.Expr rhs) {
+    public Expr genAff(Type type, moc.gc.Expr lhs, moc.gc.Expr rhs) {
         Location loc = (Location)lhs.getLoc();
-        String type = cg.typeName(t);
-        getValue(type, lhs); // useless but optimized out by llc and may have
-                             // consumed some temporary names
-        String rhsCode = getValue(type, rhs);
-        cg.store(type, rhsCode, loc.toString());
+        String typename = cg.typeName(type);
+        getValue(typename, lhs); // useless but optimized out by llc and may have
+                                 // consumed some temporary names
+        String rhsCode = getValue(typename, rhs);
+        copy(type, rhsCode, loc.toString());
         return new Expr(loc, cg.get());
     }
     @Override
@@ -439,6 +456,18 @@ public final class Machine extends AbstractMachine {
         }
         else {
             return expr.getCode();
+        }
+    }
+
+    private void copy(Type type, String what, String where) {
+        if (type.isArray()) {
+            String typename = cg.typeName(type) + '*';
+            String castedWhat  = cg.cast("bitcast", typename, what,  "i8*");
+            String castedWhere = cg.cast("bitcast", typename, where, "i8*");
+            cg.memcpy(castedWhere, castedWhat, type.visit(sizeVisitor));
+        }
+        else {
+            cg.store(cg.typeName(type), what, where);
         }
     }
 
