@@ -93,7 +93,7 @@ public interface IMachine {
     Expr genSizeOf(Type type);
 
     Expr genIdent(InfoVar info);
-    Expr genAff(Type type, Location lhs, Expr rhs);
+    Expr genAff(Type type, Expr lhs, Expr rhs);
     Expr genNonAff(Type type, Expr expr);
 
     /** Dispatch the unary operator call to the proper method for the

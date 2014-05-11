@@ -501,7 +501,7 @@ E -> A EX #type;
     else {
         -- TODO: A must be an lvalue
         Expr tmp = E^machine.genCast(EX^type, A^type, EX^expr);
-        E^expr = E^machine.genAff(A^type, A^expr.getLoc(), tmp);
+        E^expr = E^machine.genAff(A^type, A^expr, tmp);
     }
 }
 

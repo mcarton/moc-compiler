@@ -150,7 +150,7 @@ public class Machine extends AbstractMachine {
         return null;
     }
     @Override
-    public Expr genAff(Type t, moc.gc.Location loc, moc.gc.Expr gcrhs) {
+    public Expr genAff(Type t, moc.gc.Expr loc, moc.gc.Expr gcrhs) {
         // TODO:code
         return null;
     }

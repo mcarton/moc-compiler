@@ -284,15 +284,17 @@ public final class Machine extends AbstractMachine {
 
     @Override
     public Expr genIdent(InfoVar info) {
-        String tmp = cg.load(cg.typeName(info.getType()), info.getLoc().toString());
-        return new Expr(new Location(tmp), cg.get());
+        return new Expr((Location)info.getLoc(), "", true);
     }
     @Override
-    public Expr genAff(Type t, moc.gc.Location loc, moc.gc.Expr rhs) {
+    public Expr genAff(Type t, moc.gc.Expr lhs, moc.gc.Expr rhs) {
+        Location loc = (Location)lhs.getLoc();
         String type = cg.typeName(t);
+        getValue(type, lhs); // useless but optimized out by llc and may have
+                             // consumed some temporary names
         String rhsCode = getValue(type, rhs);
-        cg.store(type, getTmpName(), rhsCode);
-        return new Expr((Location)rhs.getLoc(), cg.get());
+        cg.store(type, rhsCode, loc.toString());
+        return new Expr(loc, cg.get());
     }
     @Override
     public moc.gc.Expr genNonAff(Type t, moc.gc.Expr expr) {
@@ -324,10 +326,9 @@ public final class Machine extends AbstractMachine {
     }
     @Override
     public moc.gc.Expr genDeref(Type t, moc.gc.Expr expr) {
-        String type = cg.typeName(((Pointer)t).getPointee());
-        String exprCode = getValue(type, expr);
-        String tmp = cg.load(type, exprCode);
-        return new Expr(new Location(tmp), cg.get());
+        String type = cg.typeName(t);
+        String tmp = getValue(type, expr);
+        return new Expr(new Location(tmp), cg.get(), true);
     }
     @Override
     public moc.gc.Expr genArrSub(Type t, moc.gc.Expr lhs, moc.gc.Expr rhs) {
@@ -404,7 +405,12 @@ public final class Machine extends AbstractMachine {
     protected String getValue(String type, moc.gc.Expr expr) {
         if (expr.getLoc() != null) {
             cg.append(expr.getCode());
-            return expr.getLoc().toString();
+            if (((Expr)expr).needsLoad()) {
+                return cg.load(type, expr.getLoc().toString());
+            }
+            else {
+                return expr.getLoc().toString();
+            }
         }
         else {
             return expr.getCode();
