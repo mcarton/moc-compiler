@@ -77,7 +77,11 @@ final class CodeGenerator {
         return tmp;
     }
 
-    /** {@code br label %<label> } */
+    /**
+     * {@code br label %<label> }
+     *
+     * Note: a {@code br} ends an llvm block.
+     */
     void br(String label) {
         indent();
         append("br label %");
@@ -85,7 +89,11 @@ final class CodeGenerator {
         append('\n');
     }
 
-    /** {@code br i1 <cond>, label %<thenLabel>, label %<elseLabel> */
+    /**
+     * {@code br i1 <cond>, label %<thenLabel>, label %<elseLabel>}
+     *
+     * Note: a {@code br} ends an llvm block.
+     */
     void br(String cond, String thenLabel, String elseLabel) {
         indent();
         append("br i1 ");
@@ -227,15 +235,36 @@ final class CodeGenerator {
         return tmpPtr;
     }
 
-    /** Special case for "ret void". @see #ret(String, String) */
+    /**
+     * {@code <tmp> = bitcast i8 0 to i8 }
+     *
+     * There is no real no-op instruction in llvm IR code, but this is
+     * optimized out by llc and used by llvm-gcc.
+     */
+    void noop() {
+        String tmp = machine.getTmpName();
+        indent();
+        append(tmp);
+        append(" = bitcast i8 0 to i8\n");
+    }
+
+    /**
+     * Special case for "ret void".
+     *
+     * Note: a {@code ret} ends an llvm code block.
+     * @see #ret(String, String)
+     */
     void ret() {
         indent();
         append("ret void\n");
     }
 
-    /** {@code ret <type> <what> } */
+    /**
+     * {@code ret <type> <what> }
+     *
+     * Note: a {@code ret} ends an llvm code block.
+     */
     void ret(String type, String what) {
-
         indent();
         append("ret ");
         append(type);

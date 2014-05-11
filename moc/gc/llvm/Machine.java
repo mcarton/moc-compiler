@@ -95,6 +95,14 @@ public final class Machine extends AbstractMachine {
 
         cg.endDefine();
 
+        // allocate space for return value
+        boolean returnsVoid = f.getReturnType() instanceof VoidType;
+        String returnType = null;
+        if (!returnsVoid) {
+            returnType = cg.typeName(f.getReturnType());
+            cg.alloca("%__return", returnType);
+        }
+
         // allocate space for parameters
         Iterator<moc.gc.Location> locIt = params.iterator();
         it = f.getParameterTypes().iterator();
@@ -106,19 +114,21 @@ public final class Machine extends AbstractMachine {
             cg.store(paramType, "%__p"+ ++paramIt, paramName);
         }
 
-        if (!params.isEmpty()) {
-            cg.comment("end of generated for parameters code");
+        if (!params.isEmpty() && !returnsVoid) {
+            cg.comment("end of generated code for return value and parameters");
             cg.skipLine();
         }
 
         cg.body(bloc);
 
-        if (f.getReturnType() instanceof VoidType) {
+        if (returnsVoid) {
             cg.ret();
         }
+        else {
+            String tmp = cg.load(returnType, "%__return");
+            cg.ret(returnType, tmp);
+        }
 
-        cg.unreachable(); // this is kind of a hack in case the last
-                          // instruction is an if-else instruction
         cg.endFunction();
 
         return cg.get();
@@ -127,7 +137,8 @@ public final class Machine extends AbstractMachine {
     @Override
     public String genReturn(FunctionType f, moc.gc.Expr expr) {
         String returnType = cg.typeName(f.getReturnType());
-        cg.ret(returnType, getValue(returnType, expr));
+        String tmp = cg.getValue(returnType, expr);
+        cg.store(returnType, tmp, "%__return");
         return cg.get();
     }
 
@@ -165,21 +176,15 @@ public final class Machine extends AbstractMachine {
         String tmp = getValue("i64", cond);
         cg.cast(condLabel, "trunc", "i64", tmp, "i1");
 
-        if (elseCode != null) {
-            cg.br(condLabel, thenLabel, elseLabel);
-        }
-        else {
-            cg.br(condLabel, thenLabel, endLabel);
-        }
-
+        cg.br(condLabel, thenLabel, elseCode != null ? elseLabel : endLabel);
         cg.label(thenLabel);
+
         cg.append(thenCode);
+        cg.br(endLabel);
 
         if (elseCode != null) {
             cg.label(elseLabel);
             cg.append(elseCode);
-        }
-        else {
             cg.br(endLabel);
         }
 
