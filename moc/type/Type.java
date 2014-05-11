@@ -24,5 +24,12 @@ public interface Type {
     public boolean equals(Type other);
 
     public abstract <R> R visit(TypeVisitor<R> visitor);
+
+    public boolean isArray();
+    public boolean isChar();
+    public boolean isInt();
+    public boolean isNull();
+    public boolean isPointer();
+    public boolean isVoid();
 }
 

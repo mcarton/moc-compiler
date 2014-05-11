@@ -103,7 +103,7 @@ public abstract class AbstractMachine implements IMachine {
     @Override
     public final TypedExpr genUnaryOp(String what, Type type, Expr expr) {
         // TODO:MOC: booleans with not
-        if (type instanceof IntegerType) {
+        if (type.isInt()) {
             if (what.equals("+")) {
                 return new TypedExpr(genAddInt(expr), new IntegerType());
             }

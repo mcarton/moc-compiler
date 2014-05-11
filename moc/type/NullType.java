@@ -23,7 +23,12 @@ public final class NullType extends AbstractType<NullType> {
 
     @Override
     public boolean equals(Type other) {
-        return other instanceof NullType;
+        return true;
+    }
+
+    @Override
+    public boolean isNull() {
+        return true;
     }
 }
 

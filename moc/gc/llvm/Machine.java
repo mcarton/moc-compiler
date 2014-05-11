@@ -96,7 +96,7 @@ public final class Machine extends AbstractMachine {
         cg.endDefine();
 
         // allocate space for return value
-        boolean returnsVoid = f.getReturnType() instanceof VoidType;
+        boolean returnsVoid = f.getReturnType().isVoid();
         String returnType = null;
         if (!returnsVoid) {
             returnType = cg.typeName(f.getReturnType());
@@ -277,7 +277,7 @@ public final class Machine extends AbstractMachine {
 
         String tmpValueName = null;
 
-        if (!(fun.getReturnType() instanceof VoidType)) {
+        if (!(fun.getReturnType().isVoid())) {
             tmpValueName = cg.callNonVoid(returnType, funName);
         }
         else {
@@ -301,7 +301,7 @@ public final class Machine extends AbstractMachine {
 
     @Override
     public Expr genIdent(InfoVar info) {
-        return new Expr((Location)info.getLoc(), "", true);
+        return new Expr((Location)info.getLoc(), "", !(info.getType().isArray()));
     }
     @Override
     public Expr genAff(Type t, moc.gc.Expr lhs, moc.gc.Expr rhs) {

@@ -9,8 +9,7 @@ public final class CharacterType extends AbstractType<CharacterType> {
     }
 
     public boolean castsFrom(Type other) {
-        return constructsFrom(other)
-            || other instanceof IntegerType;
+        return constructsFrom(other) || other.isInt();
     }
 
     @Override
@@ -20,7 +19,12 @@ public final class CharacterType extends AbstractType<CharacterType> {
 
     @Override
     public boolean equals(Type other) {
-        return other instanceof CharacterType;
+        return other.isChar();
+    }
+
+    @Override
+    public boolean isChar() {
+        return true;
     }
 }
 

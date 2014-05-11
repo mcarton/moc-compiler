@@ -27,7 +27,7 @@ public final class Array extends AbstractType<Array> {
      */
     @Override
     public boolean constructsFrom(Type other) {
-        return other instanceof Array
+        return other.isArray()
             && pointee.constructsFrom(((Array)other).pointee)
             && ((Array)other).nbElements == nbElements;
     }
@@ -39,9 +39,14 @@ public final class Array extends AbstractType<Array> {
 
     @Override
     public boolean equals(Type other) {
-        return other instanceof Array
+        return other.isArray()
             && ((Array)other).getNbElements() == getNbElements()
             && ((Array)other).getPointee().equals(getPointee());
+    }
+
+    @Override
+    public boolean isArray() {
+        return true;
     }
 }
 

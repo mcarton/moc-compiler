@@ -20,7 +20,12 @@ public final class VoidType extends AbstractType<VoidType> {
 
     @Override
     public boolean equals(Type other) {
-        return other instanceof VoidType;
+        return other.isVoid();
+    }
+
+    @Override
+    public boolean isVoid() {
+        return true;
     }
 }
 

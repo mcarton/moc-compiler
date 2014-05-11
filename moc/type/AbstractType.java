@@ -30,5 +30,30 @@ abstract class AbstractType<T extends Type> implements Type {
         return visitor.visit((T)this);
     }
     */
+
+    @Override
+    public boolean isArray() {
+        return false;
+    }
+    @Override
+    public boolean isChar() {
+        return false;
+    }
+    @Override
+    public boolean isInt() {
+        return false;
+    }
+    @Override
+    public boolean isNull() {
+        return false;
+    }
+    @Override
+    public boolean isPointer() {
+        return false;
+    }
+    @Override
+    public boolean isVoid() {
+        return false;
+    }
 }
 

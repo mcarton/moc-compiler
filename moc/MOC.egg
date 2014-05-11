@@ -190,7 +190,7 @@ global
     }
 }
 #gen {
-    if (BLOCK^returns != 2 && !instanceof(TYPE^type, VoidType)) {
+    if (BLOCK^returns != 2 && !TYPE^type.isVoid()) {
         error(FUN_missingReturn);
     }
     elseif (fun != null) {
@@ -214,7 +214,7 @@ FUNC_PARAMETER -> TYPE ident #symbolTable;
     if (FUNC_PARAMETER^symbolTable.localSearch(ident^txt) != null) {
         error(VAR_exists, ident^txt);
     }
-    elseif (instanceof(TYPE^type, VoidType)) {
+    elseif (TYPE^type.isVoid()) {
         error(TYPE_void);
     }
     else {
@@ -332,7 +332,7 @@ INST -> using typeident affect TYPE semicolon #symbolTable #gen;
     if (INST^symbolTable.localSearch(typeident^txt) != null) {
         error(TYPE_exists, typeident^txt);
     }
-    elseif (instanceof(TYPE^type, VoidType)) {
+    elseif (TYPE^type.isVoid()) {
         error(TYPE_void);
     }
     else {
@@ -364,7 +364,7 @@ global
             error(TYPE_unexpected, TYPE^type, EX^type);
         }
 
-        if (instanceof(TYPE^type, VoidType)) {
+        if (TYPE^type.isVoid()) {
             error(TYPE_void);
         }
 
@@ -545,30 +545,21 @@ AX -> #gen;
 
 AX -> OPREL R #type;
 #type {
-    if (instanceof(AX^htype, IntegerType) && instanceof(R^type, IntegerType)) {
+    if (AX^htype.isInt() && R^type.isInt()) {
         AX^expr = AX^machine.genIntBinaryOp(OPREL^sym, AX^hexpr, R^expr);
     }
-    elseif (instanceof(AX^htype, CharacterType) && instanceof(R^type, CharacterType)) {
+    elseif (AX^htype.isChar() && R^type.isChar()) {
         AX^expr = AX^machine.genCharBinaryOp(OPREL^sym, AX^hexpr, R^expr);
     }
     elseif (OPREL^sym.equals("==") || OPREL^sym.equals("!=")) {
-        boolean lhsNull = instanceof(AX^htype, NullType);
-        boolean rhsNull = instanceof(R ^ type, NullType);
-
-        if (lhsNull && rhsNull) {
+        if (AX^htype.isNull() && R^type.isNull()) {
             AX^expr = AX^machine.genInt("1");
         }
-        elseif (
-            instanceof(AX^htype, Pointer)
-        &&  (rhsNull || instanceof(R^type, Pointer))
-        ) {
+        elseif (AX^htype.isPointer() && (R^type.isNull() || R^type.isPointer())) {
             Expr tmp = AX^machine.genCast(R^type, AX^htype, R^expr);
             AX^expr = AX^machine.genPtrBinaryOp(OPREL^sym, AX^htype, AX^hexpr, tmp);
         }
-        elseif (
-            instanceof(R^type, Pointer)
-        &&  (lhsNull || instanceof(AX^htype, Pointer))
-        ) {
+        elseif (R^type.isPointer() && (AX^htype.isNull() || AX^htype.isPointer())) {
             Expr tmp = AX^machine.genCast(AX^htype, R^type, AX^hexpr);
             AX^expr = AX^machine.genPtrBinaryOp(OPREL^sym, R^type, tmp, R^expr);
         }
@@ -603,7 +594,7 @@ RX -> #type;
 
 RX -> OPADD T #gen RX #gen2;
 #gen {
-    if (instanceof(RX^htype, IntegerType) && instanceof(T^type, IntegerType)) {
+    if (RX^htype.isInt() && T^type.isInt()) {
         RX1^hexpr = RX^machine.genIntBinaryOp(OPADD^sym, RX^hexpr, T^expr);
         RX1^htype = RX^htype;
     }
@@ -640,7 +631,7 @@ TX -> #type;
 
 TX -> OPMUL F #gen TX #gen2;
 #gen {
-    if (instanceof(TX^htype, IntegerType) && instanceof(F^type, IntegerType)) {
+    if (TX^htype.isInt() && F^type.isInt()) {
         TX1^hexpr = TX^machine.genIntBinaryOp(OPMUL^sym, TX^hexpr, F^expr);
         TX1^htype = TX^htype;
     }
@@ -657,7 +648,7 @@ TX -> osbra E csbra #type;
 #type {
     match (TX^htype) {
         case Array {
-            if (instanceof(E^type, IntegerType)) {
+            if (E^type.isInt()) {
                 TX^type = TX^htype.getPointee();
                 TX^expr = TX^machine.genArrSub(TX^htype, TX^hexpr, E^expr);
             }
@@ -718,7 +709,7 @@ F -> OPUN F #type;
 -- new/delete expressions
 F -> new opar TYPE cpar #type;
 #type {
-    if (instanceof(TYPE^type, VoidType)) {
+    if (TYPE^type.isVoid()) {
         error(TYPE_void);
     }
     else {
@@ -729,7 +720,7 @@ F -> new opar TYPE cpar #type;
 
 INST -> delete opar E cpar semicolon #gen;
 #gen {
-    if (instanceof(E^type, Pointer)) {
+    if (E^type.isPointer()) {
         INST^code = INST^machine.genDelete(E^type, E^expr);
     }
     else {
