@@ -60,6 +60,8 @@ syn expr : Expr for
 inh hexpr : Expr for TX, RX, AX;
 inh exprs : ArrayList<Expr> for ARGS, ARGSX;
 
+inh currIndex : ListIterator<Type> for ARGS, ARGSX;
+
 --terminals
 space separator    is "[\r\n\t ]+";
 comment comm       is "\/\/[^\n]*\n";
@@ -745,38 +747,36 @@ F -> opar TYPE cpar F #type;
 }
 
 -- subprogram call
-F -> ident opar #types ARGS cpar #type;
+F -> ident opar #types ARGS cpar #gen;
 global
-    TypeList types;
+    FunctionType fun;
     ArrayList<Expr> exprs;
 #types {
-    types = new TypeList();
-    ARGS^types = types;
-    exprs = new ArrayList<Expr>();
-    ARGS^exprs = exprs;
-}
-#type {
-    Info info  = F^symbolTable.globalSearch(ident^txt);
+    Info info = F^symbolTable.globalSearch(ident^txt);
+
     if (info == null) {
         error(FUN_unknown, ident^txt);
     }
     else {
         match (info) {
             case InfoFun {
-                FunctionType fun = info.getType();
+                fun = info.getType();
                 F^type = fun.getReturnType();
 
-                if (fun.callableWith(types)) {
-                    F^expr = F^machine.genCall(ident^txt, fun, exprs);
-                }
-                else {
-                    error(FUN_unexpected, fun.getParameterTypes(), types);
-                }
+                ARGS^types = fun.getParameterTypes();
+                exprs = new ArrayList<Expr>();
+                ARGS^exprs = exprs;
+                ARGS^currIndex = fun.getParameterTypes().iterator();
             }
             default {
                 error(FUN_notCallable, ident^txt);
             }
         }
+    }
+}
+#gen {
+    if (fun != null) {
+        F^expr = F^machine.genCall(ident^txt, fun, exprs);
     }
 }
 
@@ -814,19 +814,33 @@ F -> mult F #type;
 }
 
 -- subprogram call arguments
-ARGS -> ;
+ARGS -> #types;
+#types {
+    if (ARGS^currIndex.hasNext()) {
+        error(FUN_notEnough);
+    }
+}
+
 ARGS -> E #type ARGSX;
 #type {
-    ARGS^types.add(E^type);
-    ARGS^exprs.add(E^expr);
+    if (!ARGS^currIndex.hasNext()) {
+        error(FUN_tooMuch);
+    }
+    else {
+        Type type = ARGS^currIndex.next();
+        if (type.constructsFrom(E^type)) {
+            ARGS^exprs.add(ARGS^machine.genCast(E^type, type, E^expr));
+        }
+        else {
+            error(
+                FUN_wrongParameter, ARGS^currIndex.previousIndex(), type, E^type
+            );
+        }
+    }
 }
 
 ARGSX -> ;
-ARGSX -> comma E #type ARGSX;
-#type {
-    ARGSX^types.add(E^type);
-    ARGSX^exprs.add(E^expr);
-}
+ARGSX -> comma ARGS;
 
 -- TODO:MOC:
 --ENTITIES -> IMPLEMENTATION ENTITIES;

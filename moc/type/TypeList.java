@@ -1,7 +1,7 @@
 package moc.type;
 
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.ListIterator;
 
 public final class TypeList {
     ArrayList<Type> list = new ArrayList<Type>();
@@ -13,8 +13,8 @@ public final class TypeList {
         return list.size();
     }
 
-    public Iterator<Type> iterator() {
-        return list.iterator();
+    public ListIterator<Type> iterator() {
+        return list.listIterator();
     }
 
     public void add(Type c) {

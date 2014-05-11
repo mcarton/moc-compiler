@@ -3,8 +3,13 @@ Int main() {
     Int b;
 
     Int* c = new(Int);
-    if(c) {
+    if (c) {
         a = b;
+    }
+
+    if (c) {
+    }
+    else {
     }
 
     if (a < b) {

@@ -9,9 +9,14 @@ Int* bar() {
     return NULL;
 }
 
+void baz(Int* a) {
+}
+
 void main() {
     Int* a;
     if (a) {
     }
+
+    baz(NULL);
 }
 
