@@ -106,6 +106,11 @@ public final class Machine extends AbstractMachine {
             cg.store(paramType, "%__p"+ ++paramIt, paramName);
         }
 
+        if (!params.isEmpty()) {
+            cg.comment("end of generated for parameters code");
+            cg.skipLine();
+        }
+
         cg.body(bloc);
 
         if (f.getReturnType() instanceof VoidType) {
@@ -135,12 +140,15 @@ public final class Machine extends AbstractMachine {
     public String genAsm(String code) {
         cg.comment("inline asm:");
         cg.asm(code.substring(1, code.length()-1));
+        cg.skipLine();
         return cg.get();
     }
 
     @Override
     public String genGlobalAsm(String code) {
+        cg.globalComment("inline asm:");
         cg.globalAsm(code.substring(1, code.length()-1));
+        cg.skipLine();
         return "";
     }
 
@@ -189,14 +197,18 @@ public final class Machine extends AbstractMachine {
 
     @Override
     public String genVarDecl(Type type, moc.gc.Location loc) {
+        cg.comment("declaration of " + loc + " (" + type + ')');
         cg.alloca(loc.toString(), cg.typeName(type));
+        cg.skipLine();
         return cg.get();
     }
     @Override
     public String genVarDecl(Type t, moc.gc.Location loc, moc.gc.Expr expr) {
+        cg.comment("declaration of " + loc + " (" + t + ')');
         String type = cg.typeName(t);
         cg.alloca(loc.toString(), type);
         cg.store(type, getValue(type, expr), loc.toString());
+        cg.skipLine();
         return cg.get();
     }
 

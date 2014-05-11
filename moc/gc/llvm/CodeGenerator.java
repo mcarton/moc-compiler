@@ -192,6 +192,12 @@ final class CodeGenerator {
         declAppend('\n');
     }
 
+    void globalComment(String comment) {
+        declAppend("; ");
+        declAppend(comment);
+        declAppend('\n');
+    }
+
     void label(String name) {
         append(name);
         append(":\n");
@@ -312,6 +318,10 @@ final class CodeGenerator {
 
     void indent() {
         append("  ");
+    }
+
+    void skipLine() {
+        append('\n');
     }
 }
 
