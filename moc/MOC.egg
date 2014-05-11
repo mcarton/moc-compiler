@@ -837,25 +837,28 @@ F -> mult F #type;
 -- subprogram call arguments
 ARGS -> #types;
 #types {
-    if (ARGS^currIndex.hasNext()) {
+    if (ARGS^currIndex != null && ARGS^currIndex.hasNext()) {
         error(FUN_notEnough);
     }
 }
 
 ARGS -> E #type ARGSX;
 #type {
-    if (!ARGS^currIndex.hasNext()) {
-        error(FUN_tooMuch);
-    }
-    else {
-        Type type = ARGS^currIndex.next();
-        if (type.constructsFrom(E^type)) {
-            ARGS^exprs.add(ARGS^machine.genCast(E^type, type, E^expr));
+    if (ARGS^currIndex != null) {
+        if (!ARGS^currIndex.hasNext()) {
+            error(FUN_tooMuch);
         }
         else {
-            error(
-                FUN_wrongParameter, ARGS^currIndex.previousIndex(), type, E^type
-            );
+            Type type = ARGS^currIndex.next();
+            if (type.constructsFrom(E^type)) {
+                ARGS^exprs.add(ARGS^machine.genCast(E^type, type, E^expr));
+            }
+            else {
+                error(
+                    FUN_wrongParameter,
+                    ARGS^currIndex.previousIndex(), type, E^type
+                );
+            }
         }
     }
 }
