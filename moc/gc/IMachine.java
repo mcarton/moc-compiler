@@ -96,14 +96,6 @@ public interface IMachine {
     Expr genAff(Type type, Expr lhs, Expr rhs);
     Expr genNonAff(Type type, Expr expr);
 
-    /** Dispatch the unary operator call to the proper method for the
-     *  corresponding operator and type.
-     */
-    TypedExpr genUnaryOp(String what, Type type, Expr expr);
-    Expr genAddInt(Expr expr);
-    Expr genSubInt(Expr expr);
-    Expr genNotInt(Expr expr);
-
     /**
      * Dereference a pointer.
      *
@@ -119,6 +111,8 @@ public interface IMachine {
     Expr genArrSub(Type type, Expr lhs, Expr rhs);
     Expr genParen(Expr expr);
     Expr genCast(Type from, Type to, Expr expr);
+
+    Expr genIntUnaryOp(String op, Expr expr);
 
     Expr genIntBinaryOp(String op, Expr lhs, Expr rhs);
     Expr genCharBinaryOp(String op, Expr lhs, Expr rhs);

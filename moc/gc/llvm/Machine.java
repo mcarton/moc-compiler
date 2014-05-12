@@ -348,22 +348,6 @@ public final class Machine extends AbstractMachine {
     }
 
     @Override
-    public Expr genSubInt(moc.gc.Expr expr) {
-        return genBinaryOpImpl("i64", "sub", new Expr(null, "0"), expr);
-    }
-    @Override
-    public Expr genNotInt(moc.gc.Expr expr) {
-        String exprCode = getValue("i64", expr);
-
-        // compare to 0
-        String tmp = cg.binaryOperator("icmp eq", "i64", exprCode, "0");
-
-        // cast to i64
-        String tmp2 = cg.cast("zext", "i1", tmp, "i64");
-
-        return new Expr(new Location(tmp2), cg.get());
-    }
-    @Override
     public moc.gc.Expr genDeref(Type t, moc.gc.Expr expr) {
         String type = cg.typeName(t);
         String tmp = getValue(type, expr);
@@ -383,6 +367,28 @@ public final class Machine extends AbstractMachine {
     @Override
     public moc.gc.Expr genCast(Type from, Type to, moc.gc.Expr expr) {
         return to.visit(from.visit(new CasterFromVisitor())).cast(cg, (Expr)expr);
+    }
+
+    @Override
+    public moc.gc.Expr genIntUnaryOp(String op, moc.gc.Expr expr) {
+        switch (op) {
+            case "+":
+                return expr;
+            case "-":
+                return genBinaryOpImpl("i64", "sub", new Expr(null, "0"), expr);
+            case "!":
+                String exprCode = getValue("i64", expr);
+
+                // compare to 0
+                String tmp = cg.binaryOperator("icmp eq", "i64", exprCode, "0");
+
+                // cast to i64
+                String tmp2 = cg.cast("zext", "i1", tmp, "i64");
+
+                return new Expr(new Location(tmp2), cg.get());
+            default:
+                return null;
+        }
     }
 
     @Override

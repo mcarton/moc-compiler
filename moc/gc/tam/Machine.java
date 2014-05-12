@@ -161,16 +161,6 @@ public class Machine extends AbstractMachine {
     }
 
     @Override
-    public Expr genSubInt(moc.gc.Expr expr) {
-        // TODO:code
-        return null;
-    }
-    @Override
-    public Expr genNotInt(moc.gc.Expr expr) {
-        // TODO:code
-        return null;
-    }
-    @Override
     public moc.gc.Expr genDeref(Type type, moc.gc.Expr expr) {
         return expr; // TODO:code
     }
@@ -181,6 +171,12 @@ public class Machine extends AbstractMachine {
     @Override
     public moc.gc.Expr genCast(Type from, Type to, moc.gc.Expr expr) {
         return expr; // TODO:code
+    }
+
+    @Override
+    public moc.gc.Expr genIntUnaryOp(String op, moc.gc.Expr expr) {
+        // TODO:code
+        return expr;
     }
 
     @Override

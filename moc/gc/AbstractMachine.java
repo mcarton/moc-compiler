@@ -100,29 +100,6 @@ public abstract class AbstractMachine implements IMachine {
         return genComment("using " + name + " = " + type);
     }
 
-    @Override
-    public final TypedExpr genUnaryOp(String what, Type type, Expr expr) {
-        // TODO:MOC: booleans with not
-        if (type.isInt()) {
-            if (what.equals("+")) {
-                return new TypedExpr(genAddInt(expr), new IntegerType());
-            }
-            else if (what.equals("-")) {
-                return new TypedExpr(genSubInt(expr), new IntegerType());
-            }
-            else if (what.equals("!")) {
-                return new TypedExpr(genNotInt(expr), new IntegerType());
-            }
-        }
-        return null;
-    }
-
-    /** Default implementation that returns the given expression. */
-    @Override
-    public Expr genAddInt(Expr expr) {
-        return expr;
-    }
-
     /** Default implementation that returns the given expression. */
     @Override
     public Expr genParen(Expr expr) {

@@ -595,6 +595,7 @@ RX -> #type;
 
 RX -> OPADD T #gen RX #gen2;
 #gen {
+    -- TODO:moc: || with booleans
     if (RX^htype.isInt() && T^type.isInt()) {
         RX1^hexpr = RX^machine.genIntBinaryOp(OPADD^sym, RX^hexpr, T^expr);
         RX1^htype = RX^htype;
@@ -632,6 +633,7 @@ TX -> #type;
 
 TX -> OPMUL F #gen TX #gen2;
 #gen {
+    -- TODO:moc: && with booleans
     if (TX^htype.isInt() && F^type.isInt()) {
         TX1^hexpr = TX^machine.genIntBinaryOp(OPMUL^sym, TX^hexpr, F^expr);
         TX1^htype = TX^htype;
@@ -696,11 +698,10 @@ OPUN -> minus #get; #get { OPUN^sym = "-"; }
 OPUN -> not   #get; #get { OPUN^sym = "!"; }
 F -> OPUN F #type;
 #type {
-    TypedExpr typedExpr = F^machine.genUnaryOp(OPUN^sym, F1^type, F1^expr);
-
-    if (typedExpr != null) {
-        F^expr = typedExpr.getExpr();
-        F^type = typedExpr.getType();
+    -- TODO:moc: ! with booleans
+    if (F1^type.isInt()) {
+        F^expr = F^machine.genIntUnaryOp(OPUN^sym, F1^expr);
+        F^type = F1^type;
     }
     else {
         error(OP_un_type, F1^type, OPUN^sym);
