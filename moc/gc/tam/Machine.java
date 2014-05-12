@@ -76,7 +76,7 @@ public class Machine extends AbstractMachine {
         sb.append(t.visit(sizeVisitor));
         sb.append('\n');
         sb.append("    ");
-        sb.append("SUBR Malloc");
+        sb.append("PUSH");
         sb.append('\n');
         return sb.toString();
     }
@@ -87,13 +87,6 @@ public class Machine extends AbstractMachine {
 
 //      String type = t.visit(typeVisitor);
 
-        sb.append("    ");
-        sb.append("LOADL ");
-        sb.append(t.visit(sizeVisitor));
-        sb.append('\n');
-        sb.append("    ");
-        sb.append("SUBR Malloc");
-        sb.append('\n'); 
         sb.append("expr.getCode()"); 
         sb.append('\n'); 
         return sb.toString();
@@ -120,7 +113,18 @@ public class Machine extends AbstractMachine {
     }
     @Override
     public Expr genNew(Type t) {
-        return null; // TODO:code
+        StringBuilder sb = new StringBuilder(50);
+
+//      String type = t.visit(typeVisitor);
+
+        sb.append("    ");
+        sb.append("LOADL ");
+        sb.append(t.visit(sizeVisitor));
+        sb.append('\n');
+        sb.append("    ");
+        sb.append("SUBR Malloc");
+        sb.append('\n');
+        return new Expr(sb.toString());
     }
     @Override
     public String genDelete(Type t, moc.gc.Expr expr) {
