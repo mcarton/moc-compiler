@@ -10,10 +10,16 @@ package moc.gc.llvm;
 final class Expr implements moc.gc.Expr {
     Location loc;
     String code;
+    boolean needsLoad = false;
 
     Expr(Location loc, String code) {
         this.loc = loc;
         this.code = code;
+    }
+
+    Expr(Location loc, String code, boolean needsLoad) {
+        this(loc, code);
+        this.needsLoad = needsLoad;
     }
 
     @Override
@@ -24,6 +30,10 @@ final class Expr implements moc.gc.Expr {
     @Override
     public String getCode() {
         return code;
+    }
+
+    public boolean needsLoad() {
+        return needsLoad;
     }
 }
 

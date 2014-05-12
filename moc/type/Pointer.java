@@ -22,22 +22,15 @@ public final class Pointer extends AbstractType<Pointer> {
     @Override
     public boolean constructsFrom(Type other) {
         // TODO:moc: inheritance
-        return other instanceof Pointer && ((Pointer)other).pointee.constructsFrom(pointee)
-            || other instanceof Array   && ((Array)other).getPointee().constructsFrom(pointee)
-            || other instanceof NullType;
+        return other.isPointer() && ((Pointer)other).pointee.constructsFrom(pointee)
+            || other.isArray()   && ((Array)other).getPointee().constructsFrom(pointee)
+            || other.isNull();
     }
 
     @Override
     public boolean castsFrom(Type other) {
         // TODO:moc: inheritance
-        return constructsFrom(other) || other instanceof Pointer;
-    }
-
-    /** A pointer is comparable with other pointers and the {@link NullType}.
-     */
-    @Override
-    public boolean comparableWith(Type other) {
-        return other instanceof Pointer || other instanceof NullType;
+        return constructsFrom(other) || other.isPointer();
     }
 
     @Override
@@ -52,8 +45,13 @@ public final class Pointer extends AbstractType<Pointer> {
 
     @Override
     public boolean equals(Type other) {
-        return other instanceof Pointer
+        return other.isPointer()
             && ((Pointer)other).getPointee().equals(getPointee());
+    }
+
+    @Override
+    public boolean isPointer() {
+        return true;
     }
 }
 

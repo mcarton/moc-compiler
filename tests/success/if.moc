@@ -1,0 +1,27 @@
+Int main() {
+    Int a;
+    Int b;
+
+    Int* c = new(Int);
+    if (c) {
+        a = b;
+    }
+
+    if (c) {
+    }
+    else {
+    }
+
+    if (a < b) {
+        return a+b;
+    }
+    else if(a > b) {
+        if(a == 42) {
+            return a-b;
+        }
+        else {
+            return 42;
+        }
+    }
+}
+

@@ -1,0 +1,22 @@
+Int* foo() {
+    Int* a = NULL;
+    Char* b = "enseeiht";
+
+    return a;
+}
+
+Int* bar() {
+    return NULL;
+}
+
+void baz(Int* a) {
+}
+
+void main() {
+    Int* a;
+    if (a) {
+    }
+
+    baz(NULL);
+}
+

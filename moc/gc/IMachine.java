@@ -33,19 +33,19 @@ public interface IMachine {
     // location stuffs:
     /** Indicates the machine we enter a function definition.
      */
-    void beginFunction();
+    void beginFunction(FunctionType fun);
 
     /** Indicates the machine we exit a function definition.
      */
     void endFunction();
 
-    /** Indicates the machine we enter a new bloc.
+    /** Indicates the machine we enter a new block.
      */
-    void beginBloc();
+    void beginBlock();
 
-    /** Indicates the machine we exit a bloc.
+    /** Indicates the machine we exit a block.
      */
-    void endBloc();
+    void endBlock();
 
     /** Get the machine-dependant Location for a variable named
      *  <code>name</code> with type <code>type</code> declared here.
@@ -61,9 +61,18 @@ public interface IMachine {
     );
     String genReturn(FunctionType f, Expr expr);
 
-    String genBloc(String code);
+    String genBlock(String code);
+    String genInst(Expr expr);
+    String genInsts(String code);
     String genAsm(String code);
+    String genUsing(String name, Type type);
     String genGlobalAsm(String code);
+
+    String genIfInst(String code);
+    String genIf(Expr cond, String thenCode, String elseCode);
+    String genElseIf(String code);
+    String genElse();
+    String genElse(String code);
 
     /** Generates code for variable declaration without definition.
      */
@@ -84,7 +93,7 @@ public interface IMachine {
     Expr genSizeOf(Type type);
 
     Expr genIdent(InfoVar info);
-    Expr genAff(Type type, Location lhs, Expr rhs);
+    Expr genAff(Type type, Expr lhs, Expr rhs);
     Expr genNonAff(Type type, Expr expr);
 
     /** Dispatch the unary operator call to the proper method for the
@@ -111,17 +120,9 @@ public interface IMachine {
     Expr genParen(Expr expr);
     Expr genCast(Type from, Type to, Expr expr);
 
-    /** Dispatch the binary operator call to the proper method for the
-     *  corresponding operators and types.
-     */
-    TypedExpr genBinaryOp(String what, Type lhsType, Expr lhs, Type rhsType, Expr rhs);
-    Expr genAddInt(Expr lhs, Expr rhs);
-    Expr genSubInt(Expr lhs, Expr rhs);
-    Expr genOrInt(Expr lhs, Expr rhs);
-    Expr genMultInt(Expr lhs, Expr rhs);
-    Expr genDivInt(Expr lhs, Expr rhs);
-    Expr genModInt(Expr lhs, Expr rhs);
-    Expr genAndInt(Expr lhs, Expr rhs);
+    Expr genIntBinaryOp(String op, Expr lhs, Expr rhs);
+    Expr genCharBinaryOp(String op, Expr lhs, Expr rhs);
+    Expr genPtrBinaryOp(String op, Type pointer, Expr lhs, Expr rhs);
 
     String genComment(String comment);
 }

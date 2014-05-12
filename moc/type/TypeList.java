@@ -1,9 +1,9 @@
 package moc.type;
 
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.ListIterator;
 
-public final class TypeList {
+public final class TypeList implements Iterable<Type> {
     ArrayList<Type> list = new ArrayList<Type>();
 
     /** Return the number of elements in the list, not the sum of the size of
@@ -13,8 +13,8 @@ public final class TypeList {
         return list.size();
     }
 
-    public Iterator<Type> iterator() {
-        return list.iterator();
+    public ListIterator<Type> iterator() {
+        return list.listIterator();
     }
 
     public void add(Type c) {

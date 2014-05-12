@@ -2,12 +2,10 @@ a.out
 *.swp
 *.class
 moc/egg
-tests/*.tam
-tests/*.ll
-tests/*.s
 tests/**/*.tam
 tests/**/*.ll
 tests/**/*.s
+tests/**/*.old
 rapport/*.log
 rapport/*.aux
 rapport/*.log

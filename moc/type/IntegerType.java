@@ -9,8 +9,7 @@ public final class IntegerType extends AbstractType<IntegerType> {
     }
 
     public boolean castsFrom(Type other) {
-        return constructsFrom(other)
-            || other instanceof CharacterType;
+        return constructsFrom(other) || other.isChar();
     }
 
     @Override
@@ -25,7 +24,12 @@ public final class IntegerType extends AbstractType<IntegerType> {
 
     @Override
     public boolean equals(Type autre) {
-        return autre instanceof IntegerType;
+        return autre.isInt();
+    }
+
+    @Override
+    public boolean isInt() {
+        return true;
     }
 }
 

@@ -75,14 +75,35 @@ public abstract class AbstractMachine implements IMachine {
     }
 
     @Override
-    public String genBloc(String code) {
+    public String genBlock(String code) {
         return code;
+    }
+    @Override
+    public String genInsts(String code) {
+        return code;
+    }
+
+    @Override
+    public String genIfInst(String code) {
+        return code;
+    }
+    @Override
+    public String genElseIf(String code) {
+        return code;
+    }
+
+    /**
+     * Default implementation that returns an empty string.
+     */
+    @Override
+    public String genUsing(String name, Type type) {
+        return genComment("using " + name + " = " + type);
     }
 
     @Override
     public final TypedExpr genUnaryOp(String what, Type type, Expr expr) {
         // TODO:MOC: booleans with not
-        if (type instanceof IntegerType) {
+        if (type.isInt()) {
             if (what.equals("+")) {
                 return new TypedExpr(genAddInt(expr), new IntegerType());
             }
@@ -106,37 +127,6 @@ public abstract class AbstractMachine implements IMachine {
     @Override
     public Expr genParen(Expr expr) {
         return expr;
-    }
-
-    @Override
-    public final TypedExpr genBinaryOp(
-        String what, Type lhsType, Expr lhs, Type rhsType, Expr rhs
-    ) {
-        // TODO:MOC: booleans with or and and
-        if (lhsType instanceof IntegerType && rhsType instanceof IntegerType) {
-            if (what.equals("+")) {
-                return new TypedExpr(genAddInt(lhs, rhs), new IntegerType());
-            }
-            else if (what.equals("-")) {
-                return new TypedExpr(genSubInt(lhs, rhs), new IntegerType());
-            }
-            else if (what.equals("or")) {
-                return new TypedExpr(genOrInt(lhs, rhs), new IntegerType());
-            }
-            else if (what.equals("*")) {
-                return new TypedExpr(genMultInt(lhs, rhs), new IntegerType());
-            }
-            else if (what.equals("/")) {
-                return new TypedExpr(genDivInt(lhs, rhs), new IntegerType());
-            }
-            else if (what.equals("%")) {
-                return new TypedExpr(genModInt(lhs, rhs), new IntegerType());
-            }
-            else if (what.equals("&&")) {
-                return new TypedExpr(genAndInt(lhs, rhs), new IntegerType());
-            }
-        }
-        return null;
     }
 }
 

@@ -10,7 +10,7 @@ option k = 2;
 inh source : MOCSourceFile for PROGRAM;
 -- the target machine for code generation
 inh machine : IMachine for
-    ENTITIES, FUNCTION, ASM, INST, BLOC, INSTS, ELSE,
+    ENTITIES, FUNCTION, ASM, INST, BLOCK, INSTS, IF, ELSE,
     FUNC_PARAMETERS, FUNC_PARAMETER, FUNC_PARAMETERSX, ARGS, ARGSX,
     E, EX, A, AX, R, RX, T, TX, F,
     REFS, STYPE, TYPE, SIZEOFEXPR
@@ -21,7 +21,7 @@ inh machine : IMachine for
 
 -- the current symbols table
 inh symbolTable : SymbolTable for
-    ENTITIES, BLOC, ELSE, INST, INSTS, ARGS, ARGSX,
+    ENTITIES, BLOCK, IF, ELSE, INST, INSTS, ARGS, ARGSX,
     FUNCTION, FUNC_PARAMETER, FUNC_PARAMETERS, FUNC_PARAMETERSX,
     TYPE, STYPE, REFS, SIZEOFEXPR,
     F, TX, T, RX, R, AX, A, EX, E
@@ -29,7 +29,7 @@ inh symbolTable : SymbolTable for
 
 -- 0 => empty statement, 1 => non-empty but does not return, 2 => returns
 syn returns : int for
-    INST, INSTS, BLOC, ELSE;
+    INST, INSTS, BLOCK, IF, ELSE;
 
 -- types:
 syn type : Type for
@@ -51,7 +51,7 @@ inh types : TypeList for
 syn sym : String for OPREL, OPADD, OPMUL, OPUN;
 
 syn code : String for
-    ENTITIES, BLOC, ELSE, INST, INSTS,
+    ENTITIES, BLOCK, IF, ELSE, INST, INSTS,
     FUNCTION, ASM
 ;
 syn expr : Expr for
@@ -59,6 +59,8 @@ syn expr : Expr for
 ;
 inh hexpr : Expr for TX, RX, AX;
 inh exprs : ArrayList<Expr> for ARGS, ARGSX;
+
+inh currIndex : ListIterator<Type> for ARGS, ARGSX;
 
 --terminals
 space separator    is "[\r\n\t ]+";
@@ -159,18 +161,16 @@ ASM -> asm opar string cpar semicolon #gen;
 }
 
 -- functions
-FUNCTION -> TYPE ident #csymbols opar FUNC_PARAMETERS #usymbols cpar BLOC #gen;
+FUNCTION -> TYPE ident #csymbols opar FUNC_PARAMETERS #usymbols cpar BLOCK #gen;
 global
-    SymbolTable blocTds;
+    SymbolTable blockTds;
     TypeList types;
     ArrayList<Location> parameters;
     FunctionType fun;
 #csymbols {
-    FUNCTION^machine.beginFunction();
-
-    blocTds = new SymbolTable(FUNCTION^symbolTable);
-    FUNC_PARAMETERS^symbolTable = blocTds;
-    BLOC^symbolTable = blocTds;
+    blockTds = new SymbolTable(FUNCTION^symbolTable);
+    FUNC_PARAMETERS^symbolTable = blockTds;
+    BLOCK^symbolTable = blockTds;
 
     types = new TypeList();
     FUNC_PARAMETERS^types = types;
@@ -184,16 +184,19 @@ global
     }
     else {
         fun = new FunctionType(TYPE^type, types);
-        blocTds.setCurrentFunction(ident^txt, fun);
+
+        FUNCTION^machine.beginFunction(fun);
+
+        blockTds.setCurrentFunction(ident^txt, fun);
     }
 }
 #gen {
-    if (BLOC^returns != 2 && !instanceof(TYPE^type, VoidType)) {
+    if (BLOCK^returns != 2 && !TYPE^type.isVoid()) {
         error(FUN_missingReturn);
     }
     elseif (fun != null) {
         FUNCTION^code = FUNCTION^machine.genFunction(
-            fun, parameters, ident^txt, BLOC^code
+            fun, parameters, ident^txt, BLOCK^code
         );
     }
 
@@ -212,7 +215,7 @@ FUNC_PARAMETER -> TYPE ident #symbolTable;
     if (FUNC_PARAMETER^symbolTable.localSearch(ident^txt) != null) {
         error(VAR_exists, ident^txt);
     }
-    elseif (instanceof(TYPE^type, VoidType)) {
+    elseif (TYPE^type.isVoid()) {
         error(TYPE_void);
     }
     else {
@@ -266,25 +269,25 @@ STYPE -> typeident #gen;
     }
 }
 
--- method body and instructions blocs
-BLOC -> #symbolTable occbra INSTS ccbra #message #gen;
+-- method body and instructions blocks
+BLOCK -> #symbolTable occbra INSTS ccbra #message #gen;
 global
     SymbolTable symbolTable;
 #symbolTable {
-    BLOC^machine.beginBloc();
+    BLOCK^machine.beginBlock();
 
-    symbolTable = new SymbolTable(BLOC^symbolTable);
+    symbolTable = new SymbolTable(BLOCK^symbolTable);
     INSTS^symbolTable = symbolTable;
 }
 #message {
-    BLOC^returns = INSTS^returns;
-    if (BLOC^machine.verbosity() >= 5) {
+    BLOCK^returns = INSTS^returns;
+    if (BLOCK^machine.verbosity() >= 5) {
         write("Symbols: " + symbolTable.toString()+"\n");
     }
 }
 #gen {
-    BLOC^code = BLOC^machine.genBloc(INSTS^code);
-    BLOC^machine.endBloc();
+    BLOCK^code = BLOCK^machine.genInsts(INSTS^code);
+    BLOCK^machine.endBlock();
 }
 
 -- instructions
@@ -330,7 +333,7 @@ INST -> using typeident affect TYPE semicolon #symbolTable #gen;
     if (INST^symbolTable.localSearch(typeident^txt) != null) {
         error(TYPE_exists, typeident^txt);
     }
-    elseif (instanceof(TYPE^type, VoidType)) {
+    elseif (TYPE^type.isVoid()) {
         error(TYPE_void);
     }
     else {
@@ -343,7 +346,7 @@ INST -> using typeident affect TYPE semicolon #symbolTable #gen;
     }
 }
 #gen {
-    INST^code = ""; -- TODO:code
+    INST^code = INST^machine.genUsing(typeident^txt, TYPE^type);
 }
 
 -- local variable declaration with or without initialisation
@@ -362,7 +365,7 @@ global
             error(TYPE_unexpected, TYPE^type, EX^type);
         }
 
-        if (instanceof(TYPE^type, VoidType)) {
+        if (TYPE^type.isVoid()) {
             error(TYPE_void);
         }
 
@@ -382,7 +385,8 @@ global
         INST^code = INST^machine.genVarDecl(TYPE^type, loc);
     }
     else {
-        INST^code = INST^machine.genVarDecl(TYPE^type, loc, EX^expr);
+        Expr tmp = INST^machine.genCast(EX^type, TYPE^type, EX^expr);
+        INST^code = INST^machine.genVarDecl(TYPE^type, loc, tmp);
     }
 }
 
@@ -393,44 +397,39 @@ INST -> E semicolon #returns #gen;
 }
 #gen {
     if (E^expr != null) {
-        INST^code = E^expr.getCode(); -- TODO:code
+        INST^code = INST^machine.genInst(E^expr);
     }
 }
 
--- instruction block
-INST -> BLOC #returns #gen;
+-- instruction blockk
+INST -> BLOCK #returns #gen;
 #returns {
-    INST^returns = BLOC^returns;
+    INST^returns = BLOCK^returns;
 }
 #gen {
-    INST^code = BLOC^code; -- TODO:code
+    INST^code = INST^machine.genBlock(BLOCK^code);
 
 }
 
 -- conditional
-INST -> if opar E cpar BLOC ELSE #returns #gen;
-#returns {
-    if (!E^type.testable()) {
-        error(TYPE_unexpected, "int", E^type);
-    }
-    elseif (BLOC^returns == 2 && ELSE^returns != 1) {
-        INST^returns = 2;
-    }
-    else {
-        INST^returns = 1;
-    }
-}
+INST -> IF #gen;
 #gen {
-    INST^code = ""; -- TODO:code
-
+    INST^code = INST^machine.genIfInst(IF^code);
+    INST^returns = IF^returns;
 }
 
-ELSE -> else BLOC #returns #gen;
+ELSE -> else IF #gen;
+#gen {
+    ELSE^code = ELSE^machine.genElseIf(IF^code);
+    ELSE^returns = IF^returns;
+}
+
+ELSE -> else BLOCK #returns #gen;
 #returns {
-    ELSE^returns = BLOC^returns;
+    ELSE^returns = BLOCK^returns;
 }
 #gen {
-    ELSE^code = BLOC^code; -- TODO:code
+    ELSE^code = ELSE^machine.genElse(BLOCK^code);
 }
 
 ELSE -> #returns #gen;
@@ -438,7 +437,28 @@ ELSE -> #returns #gen;
     ELSE^returns = 0;
 }
 #gen {
-    ELSE^code = ""; -- TODO:code
+    ELSE^code = ELSE^machine.genElse();
+}
+
+IF -> if opar E cpar #cast BLOCK ELSE #returns #gen;
+global
+    Expr casted;
+#returns {
+    if (!E^type.testable()) {
+        error(TYPE_unexpected, "int", E^type);
+    }
+    elseif (BLOCK^returns == 2 && ELSE^returns != 1) {
+        IF^returns = 2;
+    }
+    else {
+        IF^returns = 1;
+    }
+}
+#cast {
+    casted = IF^machine.genCast(E^type, new IntegerType(), E^expr);
+}
+#gen {
+    IF^code = IF^machine.genIf(casted, BLOCK^code, ELSE^code);
 }
 
 -- function return
@@ -451,8 +471,9 @@ INST -> return E semicolon #type #gen;
     }
 }
 #gen {
-    INST^code
-        = INST^machine.genReturn(INST^symbolTable.getCurrentFunction(), E^expr);
+    FunctionType function = INST^symbolTable.getCurrentFunction();
+    Expr tmp = INST^machine.genCast(E^type, function.getReturnType(), E^expr);
+    INST^code = INST^machine.genReturn(function, tmp);
 }
 
 -- expressions
@@ -482,7 +503,8 @@ E -> A EX #type;
     }
     else {
         -- TODO: A must be an lvalue
-        E^expr = E^machine.genAff(A^type, A^expr.getLoc(), EX^expr);
+        Expr tmp = E^machine.genCast(EX^type, A^type, EX^expr);
+        E^expr = E^machine.genAff(A^type, A^expr, tmp);
     }
 }
 
@@ -516,24 +538,38 @@ A -> R #init AX #gen;
     A^expr = AX^expr;
 }
 
-AX -> #type #gen;
-#type {
-    AX^type = AX^htype;
-}
+AX -> #gen;
 #gen {
+    AX^type = AX^htype;
     AX^expr = AX^hexpr;
 }
 
 AX -> OPREL R #type;
 #type {
-    if (AX^htype.comparableWith(R^type)) {
-        AX^type = new IntegerType();
-        -- TODO:code
-        AX^expr = AX^hexpr;
+    if (AX^htype.isInt() && R^type.isInt()) {
+        AX^expr = AX^machine.genIntBinaryOp(OPREL^sym, AX^hexpr, R^expr);
+    }
+    elseif (AX^htype.isChar() && R^type.isChar()) {
+        AX^expr = AX^machine.genCharBinaryOp(OPREL^sym, AX^hexpr, R^expr);
+    }
+    elseif (OPREL^sym.equals("==") || OPREL^sym.equals("!=")) {
+        if (AX^htype.isNull() && R^type.isNull()) {
+            AX^expr = AX^machine.genInt("1");
+        }
+        elseif (AX^htype.isPointer() && (R^type.isNull() || R^type.isPointer())) {
+            Expr tmp = AX^machine.genCast(R^type, AX^htype, R^expr);
+            AX^expr = AX^machine.genPtrBinaryOp(OPREL^sym, AX^htype, AX^hexpr, tmp);
+        }
+        elseif (R^type.isPointer() && (AX^htype.isNull() || AX^htype.isPointer())) {
+            Expr tmp = AX^machine.genCast(AX^htype, R^type, AX^hexpr);
+            AX^expr = AX^machine.genPtrBinaryOp(OPREL^sym, R^type, tmp, R^expr);
+        }
     }
     else {
-        error(TYPE_notComparable, AX^htype, R^type);
+        error(OP_type, AX^htype, R^type, OPREL^sym);
     }
+
+    AX^type = new IntegerType();
 }
 
 -- additions
@@ -559,13 +595,9 @@ RX -> #type;
 
 RX -> OPADD T #gen RX #gen2;
 #gen {
-    TypedExpr typedExpr = RX^machine.genBinaryOp(
-        OPADD^sym, RX^htype, RX^hexpr, T^type, T^expr
-    );
-
-    if (typedExpr != null) {
-        RX1^hexpr = typedExpr.getExpr();
-        RX1^htype = typedExpr.getType();
+    if (RX^htype.isInt() && T^type.isInt()) {
+        RX1^hexpr = RX^machine.genIntBinaryOp(OPADD^sym, RX^hexpr, T^expr);
+        RX1^htype = RX^htype;
     }
     else {
         error(OP_type, RX^htype, T^type, OPADD^sym);
@@ -600,13 +632,9 @@ TX -> #type;
 
 TX -> OPMUL F #gen TX #gen2;
 #gen {
-    TypedExpr typedExpr = TX^machine.genBinaryOp(
-        OPMUL^sym, TX^htype, TX^hexpr, F^type, F^expr
-    );
-
-    if (typedExpr != null) {
-        TX1^hexpr = typedExpr.getExpr();
-        TX1^htype = typedExpr.getType();
+    if (TX^htype.isInt() && F^type.isInt()) {
+        TX1^hexpr = TX^machine.genIntBinaryOp(OPMUL^sym, TX^hexpr, F^expr);
+        TX1^htype = TX^htype;
     }
     else {
         error(OP_type, TX^htype, F^type, OPMUL^sym);
@@ -621,7 +649,7 @@ TX -> osbra E csbra #type;
 #type {
     match (TX^htype) {
         case Array {
-            if (instanceof(E^type, IntegerType)) {
+            if (E^type.isInt()) {
                 TX^type = TX^htype.getPointee();
                 TX^expr = TX^machine.genArrSub(TX^htype, TX^hexpr, E^expr);
             }
@@ -682,7 +710,7 @@ F -> OPUN F #type;
 -- new/delete expressions
 F -> new opar TYPE cpar #type;
 #type {
-    if (instanceof(TYPE^type, VoidType)) {
+    if (TYPE^type.isVoid()) {
         error(TYPE_void);
     }
     else {
@@ -693,7 +721,7 @@ F -> new opar TYPE cpar #type;
 
 INST -> delete opar E cpar semicolon #gen;
 #gen {
-    if (instanceof(E^type, Pointer)) {
+    if (E^type.isPointer()) {
         INST^code = INST^machine.genDelete(E^type, E^expr);
     }
     else {
@@ -732,38 +760,36 @@ F -> opar TYPE cpar F #type;
 }
 
 -- subprogram call
-F -> ident opar #types ARGS cpar #type;
+F -> ident opar #types ARGS cpar #gen;
 global
-    TypeList types;
+    FunctionType fun;
     ArrayList<Expr> exprs;
 #types {
-    types = new TypeList();
-    ARGS^types = types;
-    exprs = new ArrayList<Expr>();
-    ARGS^exprs = exprs;
-}
-#type {
-    Info info  = F^symbolTable.globalSearch(ident^txt);
+    Info info = F^symbolTable.globalSearch(ident^txt);
+
     if (info == null) {
         error(FUN_unknown, ident^txt);
     }
     else {
         match (info) {
             case InfoFun {
-                FunctionType fun = info.getType();
+                fun = info.getType();
                 F^type = fun.getReturnType();
 
-                if (fun.callableWith(types)) {
-                    F^expr = F^machine.genCall(ident^txt, fun, exprs);
-                }
-                else {
-                    error(FUN_unexpected, fun.getParameterTypes(), types);
-                }
+                ARGS^types = fun.getParameterTypes();
+                exprs = new ArrayList<Expr>();
+                ARGS^exprs = exprs;
+                ARGS^currIndex = fun.getParameterTypes().iterator();
             }
             default {
                 error(FUN_notCallable, ident^txt);
             }
         }
+    }
+}
+#gen {
+    if (fun != null) {
+        F^expr = F^machine.genCall(ident^txt, fun, exprs);
     }
 }
 
@@ -801,19 +827,36 @@ F -> mult F #type;
 }
 
 -- subprogram call arguments
-ARGS -> ;
+ARGS -> #types;
+#types {
+    if (ARGS^currIndex != null && ARGS^currIndex.hasNext()) {
+        error(FUN_notEnough);
+    }
+}
+
 ARGS -> E #type ARGSX;
 #type {
-    ARGS^types.add(E^type);
-    ARGS^exprs.add(E^expr);
+    if (ARGS^currIndex != null) {
+        if (!ARGS^currIndex.hasNext()) {
+            error(FUN_tooMuch);
+        }
+        else {
+            Type type = ARGS^currIndex.next();
+            if (type.constructsFrom(E^type)) {
+                ARGS^exprs.add(ARGS^machine.genCast(E^type, type, E^expr));
+            }
+            else {
+                error(
+                    FUN_wrongParameter,
+                    ARGS^currIndex.previousIndex(), type, E^type
+                );
+            }
+        }
+    }
 }
 
 ARGSX -> ;
-ARGSX -> comma E #type ARGSX;
-#type {
-    ARGSX^types.add(E^type);
-    ARGSX^exprs.add(E^expr);
-}
+ARGSX -> comma ARGS;
 
 -- TODO:MOC:
 --ENTITIES -> IMPLEMENTATION ENTITIES;
@@ -828,7 +871,7 @@ ARGSX -> comma E #type ARGSX;
 -- -- methods
 --METHODES -> ;
 --METHODES -> METHODE  METHODES;
---METHODE -> QUAL PTYPE   MFUNC_PARAMETERS BLOC;
+--METHODE -> QUAL PTYPE   MFUNC_PARAMETERS BLOCK;
 -- --method or attribute qualifier: + = class, - = instance
 --QUAL -> plus;
 --QUAL -> minus;

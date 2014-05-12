@@ -14,11 +14,6 @@ public interface Type {
     public boolean castsFrom(Type other);
 
     /**
-     * True iff we can compare the two types with the given operator.
-     */
-    public boolean comparableWith(Type other);
-
-    /**
      * True iff we can test the type (ie.\ in if (...)).
      */
     public boolean testable();
@@ -29,5 +24,12 @@ public interface Type {
     public boolean equals(Type other);
 
     public abstract <R> R visit(TypeVisitor<R> visitor);
+
+    public boolean isArray();
+    public boolean isChar();
+    public boolean isInt();
+    public boolean isNull();
+    public boolean isPointer();
+    public boolean isVoid();
 }
 

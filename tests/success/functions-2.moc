@@ -7,3 +7,15 @@ Int foo(Int a, Char b) {
     return foo(a, b);
 }
 
+void bar() {
+    // empty
+}
+
+void baz(Int a, Int c) {
+    // empty
+}
+
+Int qux() {
+    return 42;
+}
+

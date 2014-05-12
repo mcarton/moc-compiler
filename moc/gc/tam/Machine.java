@@ -21,7 +21,7 @@ public class Machine extends AbstractMachine {
 
     // location stuffs:
     @Override
-    public void beginFunction() {
+    public void beginFunction(FunctionType fun) {
     }
 
     @Override
@@ -29,11 +29,11 @@ public class Machine extends AbstractMachine {
     }
 
     @Override
-    public void beginBloc() {
+    public void beginBlock() {
     }
 
     @Override
-    public void endBloc() {
+    public void endBlock() {
     }
 
     @Override
@@ -45,14 +45,19 @@ public class Machine extends AbstractMachine {
     @Override
     public String genFunction(
         FunctionType f, ArrayList<moc.gc.Location> parameters,
-        String name, String bloc
+        String name, String block
     ) {
-        return bloc; // TODO:code
+        return block; // TODO:code
     }
 
     @Override
     public String genReturn(FunctionType f, moc.gc.Expr expr) {
         return ""; // TODO:code
+    }
+
+    @Override
+    public String genInst(moc.gc.Expr expr) {
+        return expr.getCode();
     }
 
     @Override
@@ -63,6 +68,19 @@ public class Machine extends AbstractMachine {
     @Override
     public String genGlobalAsm(String code) {
         return ""; // TODO:code
+    }
+
+    @Override
+    public String genIf(moc.gc.Expr cond, String thenCode, String elseCode) {
+        return thenCode; // TODO:code
+    }
+    @Override
+    public String genElse() {
+        return null; // TODO:code
+    }
+    @Override
+    public String genElse(String code) {
+        return code; // TODO:code
     }
 
     @Override
@@ -149,7 +167,7 @@ public class Machine extends AbstractMachine {
         return null;
     }
     @Override
-    public Expr genAff(Type t, moc.gc.Location loc, moc.gc.Expr gcrhs) {
+    public Expr genAff(Type t, moc.gc.Expr loc, moc.gc.Expr gcrhs) {
         // TODO:code
         return null;
     }
@@ -183,37 +201,21 @@ public class Machine extends AbstractMachine {
     }
 
     @Override
-    public Expr genAddInt(moc.gc.Expr lhs, moc.gc.Expr rhs) {
+    public Expr genIntBinaryOp(String op, moc.gc.Expr lhs, moc.gc.Expr rhs) {
+        // TODO:code
+        return null;
+    }
+
+    @Override
+    public Expr genCharBinaryOp(String op, moc.gc.Expr lhs, moc.gc.Expr rhs) {
         // TODO:code
         return null;
     }
     @Override
-    public Expr genSubInt(moc.gc.Expr lhs, moc.gc.Expr rhs) {
-        // TODO:code
-        return null;
-    }
-    @Override
-    public Expr genOrInt(moc.gc.Expr lhs, moc.gc.Expr rhs) {
-        // TODO:code
-        return null;
-    }
-    @Override
-    public Expr genMultInt(moc.gc.Expr lhs, moc.gc.Expr rhs) {
-        // TODO:code
-        return null;
-    }
-    @Override
-    public Expr genDivInt(moc.gc.Expr lhs, moc.gc.Expr rhs) {
-        // TODO:code
-        return null;
-    }
-    @Override
-    public Expr genModInt(moc.gc.Expr lhs, moc.gc.Expr rhs) {
-        // TODO:code
-        return null;
-    }
-    @Override
-    public Expr genAndInt(moc.gc.Expr lhs, moc.gc.Expr rhs) {
+    public Expr genPtrBinaryOp(
+        String op, Type pointer,
+        moc.gc.Expr lhs, moc.gc.Expr rhs
+    ) {
         // TODO:code
         return null;
     }
