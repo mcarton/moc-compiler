@@ -203,9 +203,33 @@ public class Machine extends AbstractMachine {
     @Override
     public Expr genIntBinaryOp(String op, moc.gc.Expr lhs, moc.gc.Expr rhs) {
         // TODO:code
-        return null;
+        StringBuilder sb = new StringBuilder(50);
+        sb.append("    ");
+        sb.append(lhs.getCode());
+        sb.append('\n'); 
+        sb.append("    ");
+        sb.append(rhs.getCode());
+        sb.append('\n'); 
+        sb.append("SUBR ");
+        sb.append("    ");
+        sb.append('\n'); 
+        switch(op){
+            case "+":
+                sb.append("IAdd");
+                break;
+            case "-":
+                sb.append("ISub");
+                break;
+            case "*":
+                sb.append("IMul");
+                break;
+           // case "/":
+           //     sb.append("IDiv");
+           //     break;
+        }
+        sb.append("    ");
+        return new Expr(sb.toString());
     }
-
     @Override
     public Expr genCharBinaryOp(String op, moc.gc.Expr lhs, moc.gc.Expr rhs) {
         // TODO:code
