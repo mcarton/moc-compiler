@@ -94,14 +94,20 @@ public class Machine extends AbstractMachine {
         sb.append(t.visit(sizeVisitor));
         sb.append('\n');
         sb.append("    ");
-        sb.append("SUBR Malloc");
+        sb.append("PUSH");
         sb.append('\n');
         return sb.toString();
     }
     
     @Override
     public String genVarDecl(Type t, moc.gc.Location loc, moc.gc.Expr expr) {
-        return ""; // TODO:code
+        StringBuilder sb = new StringBuilder(50);
+
+//      String type = t.visit(typeVisitor);
+
+        sb.append("expr.getCode()"); 
+        sb.append('\n'); 
+        return sb.toString();
     }
 
     @Override
@@ -125,7 +131,18 @@ public class Machine extends AbstractMachine {
     }
     @Override
     public Expr genNew(Type t) {
-        return null; // TODO:code
+        StringBuilder sb = new StringBuilder(50);
+
+//      String type = t.visit(typeVisitor);
+
+        sb.append("    ");
+        sb.append("LOADL ");
+        sb.append(t.visit(sizeVisitor));
+        sb.append('\n');
+        sb.append("    ");
+        sb.append("SUBR Malloc");
+        sb.append('\n');
+        return new Expr(sb.toString());
     }
     @Override
     public String genDelete(Type t, moc.gc.Expr expr) {
@@ -182,9 +199,33 @@ public class Machine extends AbstractMachine {
     @Override
     public Expr genIntBinaryOp(String op, moc.gc.Expr lhs, moc.gc.Expr rhs) {
         // TODO:code
-        return null;
+        StringBuilder sb = new StringBuilder(50);
+        sb.append("    ");
+        sb.append(lhs.getCode());
+        sb.append('\n'); 
+        sb.append("    ");
+        sb.append(rhs.getCode());
+        sb.append('\n'); 
+        sb.append("SUBR ");
+        sb.append("    ");
+        sb.append('\n'); 
+        switch(op){
+            case "+":
+                sb.append("IAdd");
+                break;
+            case "-":
+                sb.append("ISub");
+                break;
+            case "*":
+                sb.append("IMul");
+                break;
+           // case "/":
+           //     sb.append("IDiv");
+           //     break;
+        }
+        sb.append("    ");
+        return new Expr(sb.toString());
     }
-
     @Override
     public Expr genCharBinaryOp(String op, moc.gc.Expr lhs, moc.gc.Expr rhs) {
         // TODO:code
