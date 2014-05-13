@@ -1,7 +1,6 @@
-void main() {
+Int main() {
     Int a = sizeof(Int);
-    Int b = sizeof(a);
-    Int c = sizeof(a+b);
-    Int d = a+b;
+    Int d = a;
+    return sizeof(Char[42]);
 }
 
