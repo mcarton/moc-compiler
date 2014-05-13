@@ -11,9 +11,8 @@ import moc.type.*;
 public class Machine extends AbstractMachine {
     SizeVisitor sizeVisitor = new SizeVisitor();
 
-
-    Integer currentAddress = 0;
-    Stack<Integer> addressStack = new Stack();
+    int currentAddress = 0;
+    Stack<Integer> addressStack = new Stack<>();
 
     public Machine(int verbosity, ArrayList<String> warnings) {
         super(verbosity, warnings);
@@ -27,29 +26,27 @@ public class Machine extends AbstractMachine {
     // location stuffs:
     @Override
     public void beginFunction(FunctionType fun) {
-    }// TODO:check
-
+    }
 
     @Override
     public void endFunction() {
-    }// TODO:check
-
+    }
 
     @Override
     public void beginBlock() {
-        addressStack.push(currentAddress);// TODO:check
+        addressStack.push(currentAddress);
     }
 
     @Override
     public void endBlock() {
-        addressStack.pop();// TODO:check
+        currentAddress = addressStack.pop();
     }
 
     @Override
     public Location getLocationFor(String name, Type type) {
-        Location tempLoc = new Location(currentAddress,null);
-        currentAddress = currentAddress + type.visit(sizeVisitor);
-        return tempLoc; // TODO:check
+        Location tempLoc = new Location(currentAddress, null /* TODO:reg */);
+        currentAddress += type.visit(sizeVisitor);
+        return tempLoc;
     }
 
     // code generation stuffs:
@@ -116,22 +113,22 @@ public class Machine extends AbstractMachine {
 
     @Override
     public Expr genInt(String txt) {
-        return new Expr("\tLOADL " + txt + "\n");
+        return new Expr("    LOADL " + txt + "\n");
     }
     public Expr genInt(int nb) {
         return genInt(Integer.toString(nb));
     }
     @Override
     public Expr genString(int length, String txt) {
-        return new Expr("\tLOADL " + txt + "\n");
+        return new Expr("    LOADL " + txt + "\n");
     }
     @Override
     public Expr genCharacter(String txt) {
-        return new Expr("\tLOADL " + txt + "\n");
+        return new Expr("    LOADL " + txt + "\n");
     }
     @Override
     public Expr genNull() {
-        return new Expr("\tSUBR MVoid \n");
+        return new Expr("    SUBR MVoid \n");
     }
     @Override
     public Expr genNew(Type t) {
@@ -165,8 +162,7 @@ public class Machine extends AbstractMachine {
 
     @Override
     public Expr genIdent(InfoVar info) {
-        // TODO:check
-        return new Expr("",(Location)info.getLoc());
+        return new Expr("", (Location)info.getLoc());
     }
     @Override
     public Expr genAff(Type t, moc.gc.Expr loc, moc.gc.Expr gcrhs) {
@@ -247,7 +243,7 @@ public class Machine extends AbstractMachine {
 
     @Override
     public String genComment(String comment) {
-        return("; " + comment);
+        return("; " + comment + '\n');
     }
 }
 
