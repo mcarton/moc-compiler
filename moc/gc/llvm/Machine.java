@@ -90,12 +90,25 @@ public final class Machine extends AbstractMachine {
         FunctionType f, ArrayList<moc.gc.Location> params,
         String name, String block
     ) {
+        Type returnType = f.getReturnType();
+        boolean returnsArray = returnType.isArray();
+        boolean returnsVoid = returnType.isVoid() || returnsArray;
+        String returnTypeName = returnsVoid ? "void" : cg.typeName(returnType);
+
         int returnTmp = lastTmp;
         lastTmp = 0;
-        cg.beginDefine(cg.typeName(f.getReturnType()), name);
+        cg.beginDefine(returnTypeName, name);
+
+        // return type if array
+        Iterator<Type> it = f.getParameterTypes().iterator();
+        if (returnsArray) {
+            cg.parameter(
+                cg.typeName(returnType) + "* noalias sret", "%__return",
+                it.hasNext()
+            );
+        }
 
         // parameter names of the form "__p0", "__p1"
-        Iterator<Type> it = f.getParameterTypes().iterator();
         int paramIt = 0;
         while (it.hasNext()) {
             Type type = it.next();
@@ -111,11 +124,8 @@ public final class Machine extends AbstractMachine {
         cg.endDefine();
 
         // allocate space for return value
-        boolean returnsVoid = f.getReturnType().isVoid();
-        String returnType = null;
         if (!returnsVoid) {
-            returnType = cg.typeName(f.getReturnType());
-            cg.alloca("%__return", returnType);
+            cg.alloca("%__return", returnTypeName);
         }
 
         // allocate space for parameters
@@ -144,8 +154,8 @@ public final class Machine extends AbstractMachine {
         }
         else {
             lastTmp = returnTmp;
-            String tmp = cg.load(returnType, "%__return");
-            cg.ret(returnType, tmp);
+            String tmp = cg.load(returnTypeName, "%__return");
+            cg.ret(returnTypeName, tmp);
         }
 
         cg.endFunction();
@@ -288,7 +298,10 @@ public final class Machine extends AbstractMachine {
         String funName, FunctionType fun,
         ArrayList<moc.gc.Expr> exprs
     ) {
-        String returnType = cg.typeName(fun.getReturnType());
+        Type returnType = fun.getReturnType();
+        boolean returnsArray = returnType.isArray();
+        boolean returnsVoid = returnType.isVoid() || returnsArray;
+        String returnTypeName = returnsVoid ? "void" : cg.typeName(returnType);
 
         ArrayList<String> names = new ArrayList<String>();
         Iterator<Type> it = fun.getParameterTypes().iterator();
@@ -299,14 +312,24 @@ public final class Machine extends AbstractMachine {
 
         String tmpValueName = null;
 
-        if (!(fun.getReturnType().isVoid())) {
-            tmpValueName = cg.callNonVoid(returnType, funName);
+        if (!returnsVoid) {
+            tmpValueName = cg.callNonVoid(returnTypeName, funName);
         }
         else {
-            cg.callVoid(returnType, funName);
+            if (returnsArray) {
+                returnTypeName = cg.typeName(returnType);
+                tmpValueName = getTmpName();
+                cg.alloca(tmpValueName, returnTypeName);
+            }
+            cg.callVoid(funName);
         }
 
         it = fun.getParameterTypes().iterator();
+
+        if (returnsArray) {
+            cg.parameter(returnTypeName + '*', tmpValueName, it.hasNext());
+        }
+
         Iterator<String> nameIt = names.iterator();
         while (it.hasNext()) {
             Type type = it.next();

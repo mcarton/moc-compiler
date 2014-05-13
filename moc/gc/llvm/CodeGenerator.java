@@ -122,10 +122,10 @@ final class CodeGenerator {
         return tmp;
     }
 
-    /** {@code call <returnType> @<name>( } */
-    void callVoid(String returnType, String name) {
+    /** {@code call void @<name>( } */
+    void callVoid(String name) {
         indent();
-        callImpl(returnType, name);
+        callImpl("void", name);
     }
 
     /** {@code call <returnType> @<name>( } */
