@@ -1,6 +1,7 @@
 package moc.gc.tam;
 
 import java.util.ArrayList;
+import java.util.Stack;
 import moc.gc.*;
 import moc.symbols.*;
 import moc.type.*;
@@ -9,6 +10,10 @@ import moc.type.*;
  */
 public class Machine extends AbstractMachine {
     SizeVisitor sizeVisitor = new SizeVisitor();
+
+
+    Integer currentAddress = 0;
+    Stack<Integer> addressStack = new Stack();
 
     public Machine(int verbosity, ArrayList<String> warnings) {
         super(verbosity, warnings);
@@ -30,15 +35,19 @@ public class Machine extends AbstractMachine {
 
     @Override
     public void beginBlock() {
+        addressStack.push(currentAddress);// TODO:check
     }
 
     @Override
     public void endBlock() {
+        addressStack.pop();// TODO:check
     }
 
     @Override
     public Location getLocationFor(String name, Type type) {
-        return null;
+        Location tempLoc = new Location(currentAddress,null);
+        currentAddress = currentAddress + type.visit(sizeVisitor);
+        return tempLoc; // TODO:check
     }
 
     // code generation stuffs:
@@ -87,8 +96,6 @@ public class Machine extends AbstractMachine {
     public String genVarDecl(Type t, moc.gc.Location loc) {
         StringBuilder sb = new StringBuilder(50);
 
-//      String type = t.visit(typeVisitor);
-
         sb.append("    ");
         sb.append("LOADL ");
         sb.append(t.visit(sizeVisitor));
@@ -96,17 +103,16 @@ public class Machine extends AbstractMachine {
         sb.append("    ");
         sb.append("PUSH");
         sb.append('\n');
+        currentAddress = currentAddress + t.visit(sizeVisitor);
         return sb.toString();
     }
-    
     @Override
     public String genVarDecl(Type t, moc.gc.Location loc, moc.gc.Expr expr) {
         StringBuilder sb = new StringBuilder(50);
 
-//      String type = t.visit(typeVisitor);
-
-        sb.append("expr.getCode()"); 
-        sb.append('\n'); 
+        sb.append(expr.getCode());
+        sb.append('\n');
+        currentAddress = currentAddress + t.visit(sizeVisitor);
         return sb.toString();
     }
 
@@ -132,8 +138,6 @@ public class Machine extends AbstractMachine {
     @Override
     public Expr genNew(Type t) {
         StringBuilder sb = new StringBuilder(50);
-
-//      String type = t.visit(typeVisitor);
 
         sb.append("    ");
         sb.append("LOADL ");
@@ -163,8 +167,8 @@ public class Machine extends AbstractMachine {
 
     @Override
     public Expr genIdent(InfoVar info) {
-        // TODO:code
-        return null;
+        // TODO:check
+        return new Expr("",(Location)info.getLoc());
     }
     @Override
     public Expr genAff(Type t, moc.gc.Expr loc, moc.gc.Expr gcrhs) {
@@ -206,13 +210,13 @@ public class Machine extends AbstractMachine {
         StringBuilder sb = new StringBuilder(50);
         sb.append("    ");
         sb.append(lhs.getCode());
-        sb.append('\n'); 
+        sb.append('\n');
         sb.append("    ");
         sb.append(rhs.getCode());
-        sb.append('\n'); 
+        sb.append('\n');
         sb.append("SUBR ");
         sb.append("    ");
-        sb.append('\n'); 
+        sb.append('\n');
         switch(op){
             case "+":
                 sb.append("IAdd");
@@ -223,9 +227,9 @@ public class Machine extends AbstractMachine {
             case "*":
                 sb.append("IMul");
                 break;
-           // case "/":
-           //     sb.append("IDiv");
-           //     break;
+            case "/":
+                sb.append("IDiv");
+                break;
         }
         sb.append("    ");
         return new Expr(sb.toString());

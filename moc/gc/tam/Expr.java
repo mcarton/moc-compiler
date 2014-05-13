@@ -13,6 +13,16 @@ public class Expr implements moc.gc.Expr {
         this.isAddress = false;
     }
 
+    public Expr(String code, Location location) {
+        this.loc = location;
+        this.code = code;
+        this.isAddress = false;
+    }
+
+    public void setLoc(Location loc) {
+        this.loc = loc;
+    }
+
     @Override
     public Location getLoc() {
         return loc;
