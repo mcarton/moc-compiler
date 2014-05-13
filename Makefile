@@ -19,7 +19,7 @@ moc/egg/$(XMOC).java: moc/$(XMOC).egg
 	(cd moc ; $(JDIR)/java -jar ../$(EJAR) $(XMOC).egg)
 
 att:
-	$(JDIR)/javac -classpath $(GJAR) \
+	$(JDIR)/javac -Xlint:all,-fallthrough -classpath $(GJAR) \
 	    moc/compiler/*.java \
 	    moc/symbols/*.java \
 	    moc/type/*.java \
