@@ -9,6 +9,7 @@ void main() {
     Int[2][3] a;
     Int[3] b = a[1];
     Int c = b[1];
+    b[1] = c;
     Int* d = b;
     foo(b);
 }

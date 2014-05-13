@@ -309,7 +309,14 @@ public final class Machine extends AbstractMachine {
         it = fun.getParameterTypes().iterator();
         Iterator<String> nameIt = names.iterator();
         while (it.hasNext()) {
-            cg.parameter(cg.typeName(it.next()), nameIt.next(), it.hasNext());
+            Type type = it.next();
+            String typename = cg.typeName(type);
+
+            if (type.isArray()) {
+                typename += '*';
+            }
+
+            cg.parameter(typename, nameIt.next(), it.hasNext());
         }
 
         cg.callEnd();
@@ -323,7 +330,7 @@ public final class Machine extends AbstractMachine {
 
     @Override
     public Expr genIdent(InfoVar info) {
-        return new Expr((Location)info.getLoc(), "", !(info.getType().isArray()));
+        return new Expr((Location)info.getLoc(), "", !info.getType().isArray());
     }
     @Override
     public Expr genAff(Type type, moc.gc.Expr lhs, moc.gc.Expr rhs) {
@@ -361,8 +368,7 @@ public final class Machine extends AbstractMachine {
         String tmp = cg.getelementptr(
             type, lhsCode, new String[]{"i32", "0", "i64", rhsCode}
         );
-        String tmp2 = cg.load(cg.typeName(((Array)t).getPointee()), tmp);
-        return new Expr(new Location(tmp2), cg.get());
+        return new Expr(new Location(tmp), cg.get(), !((Array)t).getPointee().isArray());
     }
     @Override
     public moc.gc.Expr genCast(Type from, Type to, moc.gc.Expr expr) {
