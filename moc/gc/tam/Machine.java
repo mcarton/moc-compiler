@@ -27,11 +27,13 @@ public class Machine extends AbstractMachine {
     // location stuffs:
     @Override
     public void beginFunction(FunctionType fun) {
-    }
+    }// TODO:check
+
 
     @Override
     public void endFunction() {
-    }
+    }// TODO:check
+
 
     @Override
     public void beginBlock() {
@@ -97,11 +99,8 @@ public class Machine extends AbstractMachine {
         StringBuilder sb = new StringBuilder(50);
 
         sb.append("    ");
-        sb.append("LOADL ");
+        sb.append("PUSH ");
         sb.append(t.visit(sizeVisitor));
-        sb.append('\n');
-        sb.append("    ");
-        sb.append("PUSH");
         sb.append('\n');
         currentAddress = currentAddress + t.visit(sizeVisitor);
         return sb.toString();
@@ -111,7 +110,6 @@ public class Machine extends AbstractMachine {
         StringBuilder sb = new StringBuilder(50);
 
         sb.append(expr.getCode());
-        sb.append('\n');
         currentAddress = currentAddress + t.visit(sizeVisitor);
         return sb.toString();
     }
@@ -215,8 +213,6 @@ public class Machine extends AbstractMachine {
         sb.append(rhs.getCode());
         sb.append('\n');
         sb.append("SUBR ");
-        sb.append("    ");
-        sb.append('\n');
         switch(op){
             case "+":
                 sb.append("IAdd");
@@ -232,6 +228,7 @@ public class Machine extends AbstractMachine {
                 break;
         }
         sb.append("    ");
+        sb.append('\n');
         return new Expr(sb.toString());
     }
     @Override
