@@ -1,0 +1,6 @@
+// !return value: 42
+
+Int main() {
+    return 42;
+}
+

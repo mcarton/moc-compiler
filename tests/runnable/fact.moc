@@ -1,0 +1,15 @@
+// !return value: 120
+
+Int fact(Int n) {
+    if (n <= 1) {
+        return n;
+    }
+    else {
+        return n*fact(n-1);
+    }
+}
+
+Int main() {
+    return fact(5);
+}
+
