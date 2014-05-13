@@ -304,10 +304,15 @@ public final class Machine extends AbstractMachine {
         String returnTypeName = returnsVoid ? "void" : cg.typeName(returnType);
 
         ArrayList<String> names = new ArrayList<String>();
-        Iterator<Type> it = fun.getParameterTypes().iterator();
         Iterator<moc.gc.Expr> exprIt = exprs.iterator();
         while (exprIt.hasNext()) {
-            names.add(getValue(cg.typeName(it.next()), exprIt.next()));
+            printCode(exprIt.next());
+        }
+
+        Iterator<Type> it = fun.getParameterTypes().iterator();
+        exprIt = exprs.iterator();
+        while (exprIt.hasNext()) {
+            names.add(getValue(cg.typeName(it.next()), exprIt.next(), false));
         }
 
         String tmpValueName = null;
@@ -359,9 +364,11 @@ public final class Machine extends AbstractMachine {
     public Expr genAff(Type type, moc.gc.Expr lhs, moc.gc.Expr rhs) {
         Location loc = (Location)lhs.getLoc();
         String typename = cg.typeName(type);
-        getValue(typename, lhs); // useless but optimized out by llc and may have
-                                 // consumed some temporary names
-        String rhsCode = getValue(typename, rhs);
+        printCode(lhs);
+        printCode(rhs);
+        getValue(typename, lhs, false); // useless but optimized out by llc and
+                                        // may have consumed some temporary names
+        String rhsCode = getValue(typename, rhs, false);
         copy(type, rhsCode, loc.toString());
         return new Expr(loc, cg.get());
     }
@@ -386,6 +393,8 @@ public final class Machine extends AbstractMachine {
     @Override
     public moc.gc.Expr genArrSub(Type t, moc.gc.Expr lhs, moc.gc.Expr rhs) {
         String type = cg.typeName(t);
+        printCode(lhs);
+        printCode(rhs);
         String lhsCode = getValue(type, lhs);
         String rhsCode = getValue("i64", rhs);
         String tmp = cg.getelementptr(
@@ -440,8 +449,10 @@ public final class Machine extends AbstractMachine {
     private Expr genBinaryOpImpl(
         String type, String op, moc.gc.Expr lhs, moc.gc.Expr rhs
     ) {
-        String lhsCode = getValue(type, lhs);
-        String rhsCode = getValue(type, rhs);
+        printCode(lhs);
+        printCode(rhs);
+        String lhsCode = getValue(type, lhs, false);
+        String rhsCode = getValue(type, rhs, false);
 
         String tmp = genBinaryOpImpl(type, op, lhsCode, rhsCode);
         return new Expr(new Location(tmp), cg.get());
@@ -478,15 +489,33 @@ public final class Machine extends AbstractMachine {
     }
 
     /**
+     * Print the code for the expression if it has one.
+     * Warning: the function has side effect on cg and may increment lastTmp!
+     */
+    protected void printCode(moc.gc.Expr expr) {
+        if (expr.getLoc() != null) {
+            cg.append(expr.getCode());
+        }
+    }
+
+    /** {@ getValue(type, expr, false) } */
+    protected String getValue(String type, moc.gc.Expr expr) {
+        return getValue(type, expr, true);
+    }
+
+    /**
      * Get the value of the expression, it may be either a constant like `42` or
-     * `null`, or an unnamed temporary like `%1`; if expr is not a constant,
-     * prepend the code used to genererate the value.
+     * `null`, or an unnamed temporary like `%1`; if expr is not a constant
+     * and printCode is true, prepend the code used to genererate the value.
      *
      * Warning: the function has side effect on cg and may increment lastTmp!
      */
-    protected String getValue(String type, moc.gc.Expr expr) {
+    protected String getValue(String type, moc.gc.Expr expr, boolean printCode) {
         if (expr.getLoc() != null) {
-            cg.append(expr.getCode());
+            if (printCode) {
+                cg.append(expr.getCode());
+            }
+
             if (((Expr)expr).needsLoad()) {
                 return cg.load(type, expr.getLoc().toString());
             }
