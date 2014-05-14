@@ -17,6 +17,11 @@ public final class ClassType extends AbstractType<ClassType> {
         return superClass;
     }
 
+    public boolean inheritsFrom(Type other) {
+        return superClass != null
+           && (superClass.equals(other) || superClass.inheritsFrom(other));
+    }
+
     @Override
     public boolean constructsFrom(Type autre) {
         return false;

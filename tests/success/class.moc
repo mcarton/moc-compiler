@@ -2,11 +2,16 @@
 }
 @end
 
-@class World : Hello {
+@class Beautiful : Hello {
+}
+@end
+
+@class World : Beautiful {
 }
 @end
 
 void main() {
-    Hello* hello;
+    World* world;
+    Hello* hello = new(World);
 }
 

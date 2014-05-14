@@ -21,15 +21,13 @@ public final class Pointer extends AbstractType<Pointer> {
      */
     @Override
     public boolean constructsFrom(Type other) {
-        // TODO:moc: inheritance
-        return other.isPointer() && ((Pointer)other).pointee.constructsFrom(pointee)
+        return other.isPointer() && compatiblePointee(((Pointer)other).pointee)
             || other.isArray()   && ((Array)other).getPointee().constructsFrom(pointee)
             || other.isNull();
     }
 
     @Override
     public boolean castsFrom(Type other) {
-        // TODO:moc: inheritance
         return constructsFrom(other) || other.isPointer();
     }
 
@@ -52,6 +50,11 @@ public final class Pointer extends AbstractType<Pointer> {
     @Override
     public boolean isPointer() {
         return true;
+    }
+
+    private boolean compatiblePointee(Type other) {
+        return other.castsFrom(pointee)
+            || (other.isClass() && ((ClassType)other).inheritsFrom(pointee));
     }
 }
 
