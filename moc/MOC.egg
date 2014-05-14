@@ -847,6 +847,9 @@ ARGS -> #types;
         error(FUN_notEnough);
         ARGS^ok = false;
     }
+    else {
+        ARGS^ok = true;
+    }
 }
 
 ARGS -> E #type ARGSX #ok;
@@ -860,6 +863,7 @@ ARGS -> E #type ARGSX #ok;
             Type type = ARGS^currIndex.next();
             if (type.constructsFrom(E^type)) {
                 ARGS^exprs.add(ARGS^machine.genCast(E^type, type, E^expr));
+                ARGSX^hok = true;
             }
             else {
                 error(
@@ -883,7 +887,7 @@ ARGSX -> #ok;
 
 ARGSX -> comma ARGS #ok;
 #ok {
-    ARGSX^ok = ARGSX^hok && ARGS^ok;
+    ARGSX^ok = ARGS^ok;
 }
 
 -- TODO:MOC:
