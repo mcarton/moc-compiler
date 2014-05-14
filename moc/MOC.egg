@@ -62,6 +62,10 @@ inh exprs : ArrayList<Expr> for ARGS, ARGSX;
 
 inh currIndex : ListIterator<Type> for ARGS, ARGSX;
 
+-- ok is true iff there were no error
+syn  ok : boolean for ARGS, ARGSX;
+inh hok : boolean for ARGS, ARGSX;
+
 --terminals
 space separator    is "[\r\n\t ]+";
 comment comm       is "\/\/[^\n]*\n";
@@ -353,20 +357,25 @@ INST -> using typeident affect TYPE semicolon #symbolTable #gen;
 INST -> TYPE ident EX semicolon #symbolTable #gen;
 global
     Location loc;
+    boolean ok;
 #symbolTable {
     INST^returns = 1;
+    ok = true;
 
     Info info = INST^symbolTable.localSearch(ident^txt);
     if (info != null) {
         error(VAR_exists, ident^txt);
+        ok = false;
     }
     else {
         if (EX^type != null && !TYPE^type.constructsFrom(EX^type)) {
             error(TYPE_unexpected, TYPE^type, EX^type);
+            ok = false;
         }
 
         if (TYPE^type.isVoid()) {
             error(TYPE_void);
+            ok = false;
         }
 
         if (INST^machine.hasWarning("shadow")
@@ -381,12 +390,14 @@ global
     }
 }
 #gen {
-    if (EX^expr == null) {
-        INST^code = INST^machine.genVarDecl(TYPE^type, loc);
-    }
-    else {
-        Expr tmp = INST^machine.genCast(EX^type, TYPE^type, EX^expr);
-        INST^code = INST^machine.genVarDecl(TYPE^type, loc, tmp);
+    if (ok) {
+        if (EX^expr == null) {
+            INST^code = INST^machine.genVarDecl(TYPE^type, loc);
+        }
+        else {
+            Expr tmp = INST^machine.genCast(EX^type, TYPE^type, EX^expr);
+            INST^code = INST^machine.genVarDecl(TYPE^type, loc, tmp);
+        }
     }
 }
 
@@ -462,18 +473,20 @@ global
 }
 
 -- function return
-INST -> return E semicolon #type #gen;
-#type {
+INST -> return E semicolon #gen;
+#gen {
     INST^returns = 2;
     Type type = INST^symbolTable.getCurrentFunction().getReturnType();
-    if (E^type != null && !type.constructsFrom(E^type)) {
-        error(TYPE_unexpected, type, E^type);
+    if (E^type != null) {
+        if (type.constructsFrom(E^type)) {
+            FunctionType function = INST^symbolTable.getCurrentFunction();
+            Expr tmp = INST^machine.genCast(E^type, function.getReturnType(), E^expr);
+            INST^code = INST^machine.genReturn(function, tmp);
+        }
+        else {
+            error(TYPE_unexpected, type, E^type);
+        }
     }
-}
-#gen {
-    FunctionType function = INST^symbolTable.getCurrentFunction();
-    Expr tmp = INST^machine.genCast(E^type, function.getReturnType(), E^expr);
-    INST^code = INST^machine.genReturn(function, tmp);
 }
 
 -- expressions
@@ -762,8 +775,10 @@ F -> ident opar #types ARGS cpar #gen;
 global
     FunctionType fun;
     ArrayList<Expr> exprs;
+    boolean ok;
 #types {
     Info info = F^symbolTable.globalSearch(ident^txt);
+    ok = true;
 
     if (info == null) {
         error(FUN_unknown, ident^txt);
@@ -777,6 +792,7 @@ global
                 ARGS^types = fun.getParameterTypes();
                 exprs = new ArrayList<Expr>();
                 ARGS^exprs = exprs;
+                ARGS^hok = ok;
                 ARGS^currIndex = fun.getParameterTypes().iterator();
             }
             default {
@@ -786,7 +802,7 @@ global
     }
 }
 #gen {
-    if (fun != null) {
+    if (ARGS^ok && fun != null) {
         F^expr = F^machine.genCall(ident^txt, fun, exprs);
     }
 }
@@ -829,14 +845,16 @@ ARGS -> #types;
 #types {
     if (ARGS^currIndex != null && ARGS^currIndex.hasNext()) {
         error(FUN_notEnough);
+        ARGS^ok = false;
     }
 }
 
-ARGS -> E #type ARGSX;
+ARGS -> E #type ARGSX #ok;
 #type {
     if (ARGS^currIndex != null) {
         if (!ARGS^currIndex.hasNext()) {
             error(FUN_tooMuch);
+            ARGSX^hok = false;
         }
         else {
             Type type = ARGS^currIndex.next();
@@ -848,13 +866,25 @@ ARGS -> E #type ARGSX;
                     FUN_wrongParameter,
                     ARGS^currIndex.previousIndex(), type, E^type
                 );
+                ARGSX^hok = false;
             }
         }
     }
+
+}
+#ok {
+    ARGS^ok = ARGSX^ok;
 }
 
-ARGSX -> ;
-ARGSX -> comma ARGS;
+ARGSX -> #ok;
+#ok {
+    ARGSX^ok = ARGSX^hok;
+}
+
+ARGSX -> comma ARGS #ok;
+#ok {
+    ARGSX^ok = ARGSX^hok && ARGS^ok;
+}
 
 -- TODO:MOC:
 --ENTITIES -> IMPLEMENTATION ENTITIES;
