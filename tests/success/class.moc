@@ -1,14 +1,14 @@
-@class Hello {
+class Hello {
 }
-@end
+end
 
-@class Beautiful : Hello {
+class Beautiful : Hello {
 }
-@end
+end
 
-@class World : Beautiful {
+class World : Beautiful {
 }
-@end
+end
 
 void main() {
     World* world;

@@ -1,6 +1,6 @@
-@class Hello {
+class Hello {
 }
-@end
+end
 
 void main() {
     Hello hello;
