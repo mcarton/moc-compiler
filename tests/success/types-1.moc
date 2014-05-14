@@ -10,7 +10,7 @@ Int main() {
     Char[9] t;
     s = t;
 
-    Int* ip = NULL;
+    Int* ip = null;
 
     return i;
 }

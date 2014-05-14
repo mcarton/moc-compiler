@@ -1,12 +1,12 @@
 Int* foo() {
-    Int* a = NULL;
+    Int* a = null;
     Char* b = "enseeiht";
 
     return a;
 }
 
 Int* bar() {
-    return NULL;
+    return null;
 }
 
 void baz(Int* a) {
@@ -17,6 +17,6 @@ void main() {
     if (a) {
     }
 
-    baz(NULL);
+    baz(null);
 }
 

@@ -85,8 +85,7 @@ sugar delete       is "delete";
 sugar sizeof       is "sizeof";
 sugar asm          is "asm";
 sugar return       is "return";
-sugar null         is "NULL";
-sugar nil          is "nil";
+sugar null         is "null";
 sugar template     is "template";
 sugar using        is "using";
 sugar inf          is "\<";
@@ -939,8 +938,6 @@ F -> no #gen;
 --MFUNC_PARAMETER -> ident;
 -- -- selector  + parameter type + parameter name
 --MFUNC_PARAMETER -> ident colon  PTYPE ident;
----- object nil
---F -> nil;
 -- -- string MOC (starts with @)
 --F -> stringo;
 --  --self = Java "this"

@@ -1,6 +1,6 @@
 Int main() {
     Int a = (Int)'a';
-    Char* b = (Char*)NULL;
+    Char* b = (Char*)null;
     Char* c = (Char*)"enseeiht";
     Int* d;
     Char* e = (Char*)d;

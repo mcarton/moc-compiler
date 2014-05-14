@@ -10,7 +10,7 @@ Int main() {
     42 == 6*7;
     'a' == 'b';
     5 < 8;
-    new(Char) != NULL;
+    new(Char) != null;
 
     return j;
 }
