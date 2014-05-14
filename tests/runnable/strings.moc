@@ -1,0 +1,26 @@
+include(`puts.hoc')
+
+void modify_copy(Char[13] copy) {
+    put_string(copy);
+    copy[0] = 'h';
+    put_string(copy);
+}
+
+void modify(Char* copy) {
+    put_string(copy);
+    *copy = 'h';
+    put_string(copy);
+}
+
+Int main() {
+    Char[13] hello = "Hello world!";
+
+    put_string(hello);
+    modify_copy(hello);
+    put_string(hello);
+    modify(hello);
+    put_string(hello);
+
+    return 0;
+}
+
