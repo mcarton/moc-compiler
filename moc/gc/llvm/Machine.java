@@ -505,9 +505,15 @@ public final class Machine extends AbstractMachine {
     public String genClass(ClassType clazz) {
         cg.classBegin(clazz.toString());
 
+        Iterator<Attributes> it = clazz.attributesIterator();
         if (clazz.getSuper() != null) {
             String superName = cg.typeName(clazz.getSuper());
-            cg.classAddMember(superName, false /* TODO */);
+            cg.classAddMember(superName, it.hasNext());
+        }
+
+        while (it.hasNext()) {
+            String typename = cg.typeName(it.next().type);
+            cg.classAddMember(typename, it.hasNext());
         }
 
         cg.classEnd();
