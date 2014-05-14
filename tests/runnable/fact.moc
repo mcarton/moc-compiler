@@ -1,4 +1,6 @@
-// !return value: 120
+// !return value: 0
+
+include(`puts.hoc')
 
 Int fact(Int n) {
     if (n <= 1) {
@@ -10,6 +12,8 @@ Int fact(Int n) {
 }
 
 Int main() {
-    return fact(5);
+    put_int(fact(5));
+
+    return 0;
 }
 
