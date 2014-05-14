@@ -107,6 +107,7 @@ public class Machine extends AbstractMachine {
         StringBuilder sb = new StringBuilder(50);
 
         sb.append(expr.getCode());
+        sb = getValue(sb, expr, t.visit(sizeVisitor));
         currentAddress = currentAddress + t.visit(sizeVisitor);
         return sb.toString();
     }
@@ -145,7 +146,18 @@ public class Machine extends AbstractMachine {
     }
     @Override
     public String genDelete(Type t, moc.gc.Expr expr) {
-        return ""; // TODO:code
+        StringBuilder sb = new StringBuilder(50);
+        System.out.println("size type"+t.visit(sizeVisitor));
+        System.out.println(expr);
+        sb.append("    ");
+        sb.append(expr.getCode());
+        sb.append('\n');
+        sb = getValue(sb,expr,t.visit(sizeVisitor));
+        sb.append("    ");
+        sb.append("SUBR Mfree");
+        sb.append('\n');
+
+        return sb.toString(); // TODO:check
     }
 
     @Override
@@ -172,7 +184,7 @@ public class Machine extends AbstractMachine {
     @Override
     public Expr genNonAff(Type t, moc.gc.Expr expr) {
         // TODO:code
-        return null;
+        return (moc.gc.tam.Expr)expr;
     }
 
     @Override
@@ -194,16 +206,28 @@ public class Machine extends AbstractMachine {
         return expr;
     }
 
+    private StringBuilder getValue(StringBuilder sb, moc.gc.Expr expr, int size) {
+        if (expr.getLoc()!=null){
+            sb.append("    ");
+            sb.append("LOAD ("+ size +")"+ expr.getLoc().toString());
+            sb.append('\n');
+        }
+        return sb;
+    }
     @Override
     public Expr genIntBinaryOp(String op, moc.gc.Expr lhs, moc.gc.Expr rhs) {
         // TODO:code
         StringBuilder sb = new StringBuilder(50);
         sb.append("    ");
         sb.append(lhs.getCode());
+        // si .code est une location,
         sb.append('\n');
         sb.append("    ");
+        sb = getValue(sb, lhs, 1);
         sb.append(rhs.getCode());
         sb.append('\n');
+        sb = getValue(sb, rhs, 1);
+        sb.append("    ");
         sb.append("SUBR ");
         switch(op){
             case "+":
@@ -219,7 +243,6 @@ public class Machine extends AbstractMachine {
                 sb.append("IDiv");
                 break;
         }
-        sb.append("    ");
         sb.append('\n');
         return new Expr(sb.toString());
     }
