@@ -45,7 +45,7 @@ def error(message):
 def get_cmd(f, machine):
     return 'env SCRIPT_PATH={0}  {0}/{1} -w all -m {3} tests/{2}'.format(MOCC_PATH, MOCC, f, machine)
 
-def run_test(f, machine):
+def compile_test(f, machine):
     print('Testing {}... '.format(f), end='')
 
     with open(os.devnull, 'w') as devnull:
@@ -57,20 +57,20 @@ def run_test(f, machine):
 
     return return_code
 
-def run_tests(files, machine, expected_return_code):
+def run_tests(files, machine, expected_compiler_return_code):
     nb_fail = 0
     nb_success = 0
 
     for f in files:
-        return_code = run_test(f, machine)
+        compiler_return_code = compile_test(f, machine)
 
-        if return_code == expected_return_code:
+        if compiler_return_code == expected_compiler_return_code:
             nb_success += 1
             print(success('OK'))
         else:
             nb_fail += 1
             print(error('FAIL'))
-            print(error('    Expected success, found {}.'.format(RETURN_CODES[return_code])))
+            print(error('    Expected success, found {}.'.format(RETURN_CODES[compiler_return_code])))
 
     return nb_fail, nb_success
 
