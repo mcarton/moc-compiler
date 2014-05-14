@@ -662,19 +662,23 @@ TX -> OPMUL F #gen TX #gen2;
 
 TX -> osbra E csbra #type;
 #type {
-    match (TX^htype) {
-        case Array {
-            if (E^type.isInt()) {
+    if (E^type.isInt()) {
+        match (TX^htype) {
+            case Array {
                 TX^type = TX^htype.getPointee();
                 TX^expr = TX^machine.genArrSub(TX^htype, TX^hexpr, E^expr);
             }
-            else {
-                error(TYPE_unexpected, "int", E^type);
+            case Pointer {
+                TX^type = TX^htype.getPointee();
+                TX^expr = TX^machine.genPtrSub(TX^htype, TX^hexpr, E^expr);
+            }
+            default {
+                error(TYPE_unexpected, "array or pointer", TX^htype);
             }
         }
-        default {
-            error(TYPE_unexpected, "array", TX^htype);
-        }
+    }
+    else {
+        error(TYPE_unexpected, "int", E^type);
     }
 }
 

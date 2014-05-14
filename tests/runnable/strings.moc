@@ -6,12 +6,16 @@ void modify_copy(Char[13] copy) {
     put_string(copy);
     copy[0] = 'h';
     put_string(copy);
+    copy[5] = '_';
+    put_string(copy);
 }
 
-void modify(Char* copy) {
-    put_string(copy);
-    *copy = 'h';
-    put_string(copy);
+void modify(Char* original) {
+    put_string(original);
+    *original = 'h';
+    put_string(original);
+    original[5] = '_';
+    put_string(original);
 }
 
 Int main() {

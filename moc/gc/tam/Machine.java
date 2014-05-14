@@ -192,7 +192,11 @@ public class Machine extends AbstractMachine {
         return expr; // TODO:code
     }
     @Override
-    public moc.gc.Expr genArrSub(Type type, moc.gc.Expr lhs, moc.gc.Expr rhs) {
+    public moc.gc.Expr genArrSub(Array type, moc.gc.Expr lhs, moc.gc.Expr rhs) {
+        return lhs; // TODO:code
+    }
+    @Override
+    public moc.gc.Expr genPtrSub(Pointer type, moc.gc.Expr lhs, moc.gc.Expr rhs) {
         return lhs; // TODO:code
     }
     @Override

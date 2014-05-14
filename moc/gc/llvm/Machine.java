@@ -391,7 +391,7 @@ public final class Machine extends AbstractMachine {
         return new Expr(new Location(tmp), cg.get(), true);
     }
     @Override
-    public moc.gc.Expr genArrSub(Type t, moc.gc.Expr lhs, moc.gc.Expr rhs) {
+    public moc.gc.Expr genArrSub(Array t, moc.gc.Expr lhs, moc.gc.Expr rhs) {
         String type = cg.typeName(t);
         printCode(lhs);
         printCode(rhs);
@@ -400,7 +400,19 @@ public final class Machine extends AbstractMachine {
         String tmp = cg.getelementptr(
             type, lhsCode, new String[]{"i32", "0", "i64", rhsCode}
         );
-        return new Expr(new Location(tmp), cg.get(), !((Array)t).getPointee().isArray());
+        return new Expr(new Location(tmp), cg.get(), !t.getPointee().isArray());
+    }
+    @Override
+    public moc.gc.Expr genPtrSub(Pointer t, moc.gc.Expr lhs, moc.gc.Expr rhs) {
+        String type = cg.typeName(t.getPointee());
+        printCode(lhs);
+        printCode(rhs);
+        String lhsCode = getValue(type + '*', lhs);
+        String rhsCode = getValue("i64", rhs);
+        String tmp = cg.getelementptr(
+            type, lhsCode, new String[]{"i64", rhsCode}
+        );
+        return new Expr(new Location(tmp), cg.get(), !t.getPointee().isArray());
     }
     @Override
     public moc.gc.Expr genCast(Type from, Type to, moc.gc.Expr expr) {

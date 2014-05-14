@@ -105,10 +105,9 @@ public interface IMachine {
 
     /**
      * Generates code for <code>lhs[rhs]</code>.
-     *
-     * @param type The type of the array.
      */
-    Expr genArrSub(Type type, Expr lhs, Expr rhs);
+    Expr genArrSub(Array type, Expr lhs, Expr rhs);
+    Expr genPtrSub(Pointer type, Expr lhs, Expr rhs);
     Expr genParen(Expr expr);
     Expr genCast(Type from, Type to, Expr expr);
 
