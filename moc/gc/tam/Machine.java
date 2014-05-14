@@ -276,6 +276,12 @@ public class Machine extends AbstractMachine {
     public String genComment(String comment) {
         return("; " + comment + '\n');
     }
+
+    @Override
+    public String genClass(ClassType clazz) {
+        // TOCO:class
+        return genComment("Class " + clazz.toString());
+    }
 }
 
 /** A visitor to get the size of types.

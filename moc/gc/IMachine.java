@@ -120,5 +120,7 @@ public interface IMachine {
     Expr genPtrBinaryOp(String op, Type pointer, Expr lhs, Expr rhs);
 
     String genComment(String comment);
+
+    String genClass(ClassType clazz);
 }
 

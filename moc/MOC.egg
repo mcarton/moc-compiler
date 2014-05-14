@@ -375,6 +375,10 @@ global
             error(TYPE_void);
             ok = false;
         }
+        elseif (TYPE^type.isClass()) {
+            error(TYPE_class);
+            ok = false;
+        }
 
         if (INST^machine.hasWarning("shadow")
         && INST^symbolTable.globalSearch(ident^txt) != null) {
@@ -917,6 +921,8 @@ ENTITIES -> IMPLEMENTATION ENTITIES #gen;
 IMPLEMENTATION -> class typeident SUPER
                       occbra ATTRIBUTS ccbra
                       METHODS end_ #symbolTable #gen;
+global
+    ClassType type;
 #symbolTable {
     if (IMPLEMENTATION^symbolTable.localSearch(typeident^txt) != null) {
         error(TYPE_exists, typeident^txt);
@@ -927,11 +933,12 @@ IMPLEMENTATION -> class typeident SUPER
             warning(WARN_shadow, typeident^txt);
         }
 
-        -- TODO:class INST^symbolTable.insert
+        type = new ClassType(typeident^txt);
+        IMPLEMENTATION^symbolTable.insertType(typeident^txt, type);
     }
 }
 #gen {
-    IMPLEMENTATION^code = ""; -- TODO:class
+    IMPLEMENTATION^code = IMPLEMENTATION^machine.genClass(type);
 }
 
 -- superclass

@@ -500,6 +500,16 @@ public final class Machine extends AbstractMachine {
         return cg.get();
     }
 
+    // class stuffs:
+    @Override
+    public String genClass(ClassType clazz) {
+        cg.classBegin(clazz.toString());
+        cg.classEnd();
+        return "";
+    }
+
+    // implementation stuffs:
+
     protected String getTmpName() {
         return "%" + ++lastTmp;
     }

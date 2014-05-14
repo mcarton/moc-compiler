@@ -1,0 +1,8 @@
+@class Hello {
+}
+@end
+
+void main() {
+    Hello* hello;
+}
+

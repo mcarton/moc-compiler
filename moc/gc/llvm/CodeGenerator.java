@@ -163,6 +163,14 @@ final class CodeGenerator {
         append('\n');
     }
 
+    void classBegin(String name) {
+        declAppend("%class." + name + " = type { ");
+    }
+
+    void classEnd() {
+        declAppend("}\n");
+    }
+
     /** {@code ; <comment>} */
     void comment(String comment) {
         append("; ");
