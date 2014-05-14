@@ -504,6 +504,12 @@ public final class Machine extends AbstractMachine {
     @Override
     public String genClass(ClassType clazz) {
         cg.classBegin(clazz.toString());
+
+        if (clazz.getSuper() != null) {
+            String superName = cg.typeName(clazz.getSuper());
+            cg.classAddMember(superName, false /* TODO */);
+        }
+
         cg.classEnd();
         return "";
     }

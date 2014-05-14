@@ -167,8 +167,15 @@ final class CodeGenerator {
         declAppend("%class." + name + " = type { ");
     }
 
+    void classAddMember(String type, boolean hasNext) {
+        declAppend(type);
+        if (hasNext) {
+            declAppend(", ");
+        }
+    }
+
     void classEnd() {
-        declAppend("}\n");
+        declAppend(" }\n");
     }
 
     /** {@code ; <comment>} */
