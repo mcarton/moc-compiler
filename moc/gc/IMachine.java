@@ -86,6 +86,8 @@ public interface IMachine {
     Expr genString(int length, String txt);
     Expr genCharacter(String txt);
     Expr genNull();
+    Expr genYes();
+    Expr genNo();
 
     Expr genNew(Type type);
     String genDelete(Type type, Expr expr);

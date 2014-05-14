@@ -1,26 +1,26 @@
 package moc.type;
 
-public final class IntegerType extends AbstractType<IntegerType> {
-    public IntegerType() {
+public final class BooleanType extends AbstractType<BooleanType> {
+    public BooleanType() {
     }
 
     public String toString() {
-        return "Int";
+        return "Bool";
     }
 
     @Override
     public boolean constructsFrom(Type other) {
-        return equals(other) || other.isBool();
+        return equals(other) || other.isInt();
     }
 
     @Override
     public boolean castsFrom(Type other) {
-        return constructsFrom(other) || other.isChar();
+        return constructsFrom(other) || other.isPointer();
     }
 
     @Override
     public boolean testable() {
-        return true; // ints are testable since they are the boolean type
+        return true;
     }
 
     @Override
@@ -30,11 +30,11 @@ public final class IntegerType extends AbstractType<IntegerType> {
 
     @Override
     public boolean equals(Type autre) {
-        return autre.isInt();
+        return autre.isBool();
     }
 
     @Override
-    public boolean isInt() {
+    public boolean isBool() {
         return true;
     }
 }

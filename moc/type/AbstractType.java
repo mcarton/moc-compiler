@@ -36,6 +36,10 @@ abstract class AbstractType<T extends Type> implements Type {
         return false;
     }
     @Override
+    public boolean isBool() {
+        return false;
+    }
+    @Override
     public boolean isChar() {
         return false;
     }

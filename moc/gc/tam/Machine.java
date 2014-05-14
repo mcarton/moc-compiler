@@ -132,6 +132,14 @@ public class Machine extends AbstractMachine {
         return new Expr("    SUBR MVoid \n");
     }
     @Override
+    public Expr genYes() {
+        return new Expr("    LOADL 1\n    SUBR I2B\n");
+    }
+    @Override
+    public Expr genNo() {
+        return new Expr("    LOADL 0\n    SUBR I2B\n");
+    }
+    @Override
     public Expr genNew(Type t) {
         StringBuilder sb = new StringBuilder(50);
 
@@ -273,15 +281,16 @@ public class Machine extends AbstractMachine {
 /** A visitor to get the size of types.
  */
 class SizeVisitor implements TypeVisitor<Integer> {
-    public Integer visit(IntegerType what)   { return 1; }
     public Integer visit(CharacterType what) { return 1; }
+    public Integer visit(BooleanType what)   { return 1; }
+    public Integer visit(IntegerType what)   { return 1; }
 
     public Integer visit(VoidType what)      { return 0; }
-    public Integer visit(NullType what)      { return 1; }
 
     public Integer visit(Array what) {
         return what.getPointee().visit(this) * what.getNbElements();
     }
+    public Integer visit(NullType what)      { return 1; }
     public Integer visit(Pointer what)       { return 1; }
 }
 

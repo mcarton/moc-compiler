@@ -250,12 +250,6 @@ public final class Machine extends AbstractMachine {
     }
 
     @Override
-    public Expr genNull() {
-        // first `null` means the expression is constant, it is not related to
-        // we are creating a null constant
-        return new Expr(null, "null");
-    }
-    @Override
     public Expr genInt(String txt) {
         return new Expr(null, txt);
     }
@@ -270,6 +264,20 @@ public final class Machine extends AbstractMachine {
     @Override
     public Expr genCharacter(String txt) {
         return new Expr(null, Integer.toString(escapeChar(txt)));
+    }
+    @Override
+    public Expr genYes() {
+        return new Expr(null, "0");
+    }
+    @Override
+    public Expr genNo() {
+        return new Expr(null, "1");
+    }
+    @Override
+    public Expr genNull() {
+        // first `null` means the expression is constant, it is not related to
+        // we are creating a null constant
+        return new Expr(null, "null");
     }
     @Override
     public Expr genNew(Type type) {

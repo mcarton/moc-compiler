@@ -112,10 +112,9 @@ sugar csbra        is "\]";
 --sugar class      is "@class";
 --sugar end        is "@end";
 --sugar self       is "self";
---sugar bool       is "BOOL";
 --sugar super      is "super";
---sugar yes        is "YES";
---sugar no         is "NO";
+sugar yes        is "yes";
+sugar no         is "no";
 
 term integer       is "[0-9]+";
 term character     is "\'([^\'\\]|\\\\|\\n|\\t|\\\"|\\\')\'";
@@ -136,6 +135,7 @@ global
 
     SymbolTable symbolTable = new SymbolTable();
     ENTITIES^symbolTable = symbolTable;
+    symbolTable.insertType("Bool", new BooleanType());
     symbolTable.insertType("Int", new IntegerType());
     symbolTable.insertType("Char", new CharacterType());
     symbolTable.insertType("Null", new NullType());
@@ -456,7 +456,7 @@ global
     Expr casted;
 #returns {
     if (!E^type.testable()) {
-        error(TYPE_unexpected, "int", E^type);
+        error(TYPE_unexpected, "Int, Bool or pointer", E^type);
     }
     elseif (BLOCK^returns == 2 && ELSE^returns != 1) {
         IF^returns = 2;
@@ -678,7 +678,7 @@ TX -> osbra E csbra #type;
         }
     }
     else {
-        error(TYPE_unexpected, "int", E^type);
+        error(TYPE_unexpected, "Int", E^type);
     }
 }
 
@@ -894,7 +894,22 @@ ARGSX -> comma ARGS #ok;
     ARGSX^ok = ARGS^ok;
 }
 
--- TODO:MOC:
+--------------------------------------------------------------------------------
+-- MOC stuffs:
+--------------------------------------------------------------------------------
+-- booleans:
+F -> yes #gen;
+#gen {
+    F^type = new BooleanType();
+    F^expr = F^machine.genYes();
+}
+
+F -> no #gen;
+#gen {
+    F^type = new BooleanType();
+    F^expr = F^machine.genNo();
+}
+
 --ENTITIES -> IMPLEMENTATION ENTITIES;
 ---- class definition
 --IMPLEMENTATION -> class classident SUPER occbra ATTRIBUTS ccbra METHODES end;
@@ -913,8 +928,6 @@ ARGSX -> comma ARGS #ok;
 --QUAL -> minus;
 -- --type class
 --STYPE-> classident;
--- -- type BOOL
---STYPE-> bool;
 -- -- type "any"
 --TYPE -> id;
 ---- method return type between parens
@@ -928,10 +941,6 @@ ARGSX -> comma ARGS #ok;
 --MFUNC_PARAMETER -> ident colon  PTYPE ident;
 ---- object nil
 --F -> nil;
----- 'YES' constant
---F -> yes;
----- 'NO' constant
---F -> no;
 -- -- string MOC (starts with @)
 --F -> stringo;
 --  --self = Java "this"

@@ -26,6 +26,7 @@ public interface Type {
     public abstract <R> R visit(TypeVisitor<R> visitor);
 
     public boolean isArray();
+    public boolean isBool();
     public boolean isChar();
     public boolean isInt();
     public boolean isNull();

@@ -1,0 +1,13 @@
+Int main() {
+    Bool a = yes;
+    Bool b = a;
+    Int c = a;
+    if (b) {
+        a = c;
+    }
+    Int* d;
+    Bool e = *d;
+    e = (Bool)d;
+    return b;
+}
+
