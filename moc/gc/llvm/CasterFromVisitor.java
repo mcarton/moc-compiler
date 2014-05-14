@@ -14,6 +14,10 @@ class CasterFromVisitor implements TypeVisitor<TypeVisitor<Caster>> {
         return new FromIntCaster(from);
     }
 
+    public TypeVisitor<Caster> visit(ClassType from) {
+        return null;
+    }
+
     public TypeVisitor<Caster> visit(VoidType from) {
         return null;
     }
@@ -33,6 +37,8 @@ class DefaultCaster implements TypeVisitor<Caster> {
     public Caster visit(BooleanType to)   { return null; }
     public Caster visit(CharacterType to) { return null; }
     public Caster visit(IntegerType to)   { return null; }
+
+    public Caster visit(ClassType to)     { return null; }
 
     public Caster visit(VoidType to)      { return null; }
 

@@ -27,6 +27,7 @@ public interface Type {
 
     public boolean isArray();
     public boolean isBool();
+    public boolean isClass();
     public boolean isChar();
     public boolean isInt();
     public boolean isNull();

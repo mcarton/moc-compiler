@@ -12,17 +12,17 @@ inh source : MOCSourceFile for PROGRAM;
 inh machine : IMachine for
     ENTITIES, FUNCTION, ASM, INST, BLOCK, INSTS, IF, ELSE,
     FUNC_PARAMETERS, FUNC_PARAMETER, FUNC_PARAMETERSX, ARGS, ARGSX,
+    IMPLEMENTATION, METHODS, ATTRIBUTS,
     E, EX, A, AX, R, RX, T, TX, F,
     REFS, STYPE, TYPE
--- TODO:MOC:
---       ,IMPLEMENTATION, METHODES, METHODE, ATTRIBUTS,
---       MFUNC_PARAMETER, MFUNC_PARAMETERS,MARG, MARGS
+--  MFUNC_PARAMETER, MFUNC_PARAMETERS,MARG, MARGS
 ;
 
 -- the current symbols table
 inh symbolTable : SymbolTable for
     ENTITIES, BLOCK, IF, ELSE, INST, INSTS, ARGS, ARGSX,
     FUNCTION, FUNC_PARAMETER, FUNC_PARAMETERS, FUNC_PARAMETERSX,
+    IMPLEMENTATION, METHODS, ATTRIBUTS, SUPER,
     TYPE, STYPE, REFS,
     F, TX, T, RX, R, AX, A, EX, E
 ;
@@ -52,7 +52,7 @@ syn sym : String for OPREL, OPADD, OPMUL, OPUN;
 
 syn code : String for
     ENTITIES, BLOCK, IF, ELSE, INST, INSTS,
-    FUNCTION, ASM
+    FUNCTION, ASM, IMPLEMENTATION
 ;
 syn expr : Expr for
     F, TX, T, RX, R, AX, A, EX, E
@@ -103,17 +103,16 @@ sugar div          is "\/";
 sugar mod          is "\%";
 sugar not          is "\!";
 
--- TODO:MOC:
---sugar colon      is "\:";
+sugar colon        is "\:";
 sugar osbra        is "\[";
 sugar csbra        is "\]";
---sugar id         is "id";
---sugar class      is "@class";
---sugar end        is "@end";
---sugar self       is "self";
---sugar super      is "super";
-sugar yes        is "yes";
-sugar no         is "no";
+sugar id           is "id";
+sugar class        is "@class";
+sugar end_         is "@end";
+sugar self         is "self";
+sugar super        is "super";
+sugar yes          is "yes";
+sugar no           is "no";
 
 term integer       is "[0-9]+";
 term character     is "\'([^\'\\]|\\\\|\\n|\\t|\\\"|\\\')\'";
@@ -336,7 +335,7 @@ INST -> using typeident affect TYPE semicolon #symbolTable #gen;
     if (INST^symbolTable.localSearch(typeident^txt) != null) {
         error(TYPE_exists, typeident^txt);
     }
-    elseif (TYPE^type.isVoid()) {
+    elseif (TYPE^type.isVoid()) { -- TODO:moc: id
         error(TYPE_void);
     }
     else {
@@ -909,24 +908,50 @@ F -> no #gen;
     F^expr = F^machine.genNo();
 }
 
---ENTITIES -> IMPLEMENTATION ENTITIES;
----- class definition
---IMPLEMENTATION -> class classident SUPER occbra ATTRIBUTS ccbra METHODES end;
----- superclass
---SUPER -> ;
---SUPER -> colon classident;
-----attributes
---ATTRIBUTS -> ;
---ATTRIBUTS -> TYPE ident semicolon ATTRIBUTS;
--- -- methods
---METHODES -> ;
---METHODES -> METHODE  METHODES;
---METHODE -> QUAL PTYPE   MFUNC_PARAMETERS BLOCK;
+ENTITIES -> IMPLEMENTATION ENTITIES #gen;
+#gen {
+    ENTITIES^code = IMPLEMENTATION^code + ENTITIES1^code;
+}
+
+-- class definition
+IMPLEMENTATION -> class typeident SUPER
+                      occbra ATTRIBUTS ccbra
+                      METHODS end_ #symbolTable #gen;
+#symbolTable {
+    if (IMPLEMENTATION^symbolTable.localSearch(typeident^txt) != null) {
+        error(TYPE_exists, typeident^txt);
+    }
+    else {
+        if (IMPLEMENTATION^machine.hasWarning("shadow")
+        && IMPLEMENTATION^symbolTable.globalSearch(typeident^txt) != null) {
+            warning(WARN_shadow, typeident^txt);
+        }
+
+        -- TODO:class INST^symbolTable.insert
+    }
+}
+#gen {
+    IMPLEMENTATION^code = ""; -- TODO:class
+}
+
+-- superclass
+SUPER -> ;
+SUPER -> colon typeident;
+
+--attributes
+ATTRIBUTS -> ;
+-- ATTRIBUTS -> TYPE ident semicolon ATTRIBUTS;
+
+-- methods
+METHODS -> ;
+
+--METHODS -> METHOD  METHODS;
+--METHOD -> QUAL PTYPE   MFUNC_PARAMETERS BLOCK;
 -- --method or attribute qualifier: + = class, - = instance
 --QUAL -> plus;
 --QUAL -> minus;
 -- --type class
---STYPE-> classident;
+--STYPE-> typeident;
 -- -- type "any"
 --TYPE -> id;
 ---- method return type between parens
@@ -946,7 +971,7 @@ F -> no #gen;
 -- -- method call
 --F -> osbra F MARGS csbra;
 ---- for class method call
---F -> osbra classident MARGS csbra;
+--F -> osbra typeident MARGS csbra;
 ---- method call arguments
 --MARGS -> ;
 --MARGS -> MARG MARGS;

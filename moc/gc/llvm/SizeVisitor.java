@@ -9,6 +9,10 @@ final public class SizeVisitor implements TypeVisitor<Integer> {
     public Integer visit(BooleanType what)   { return 1; }
     public Integer visit(IntegerType what)   { return 8; }
 
+    public Integer visit(ClassType what) {
+        return -1; // TODO:class
+    }
+
     public Integer visit(VoidType what)      { return 0; }
 
     public Integer visit(Array what) {
