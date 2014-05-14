@@ -1,12 +1,17 @@
 class Hello {
+    Int a;
+    Int[2] b;
 }
 end
 
 class Beautiful : Hello {
+    Int[2] c;
 }
 end
 
 class World : Beautiful {
+    Int[4] d;
+    Int[5] e;
 }
 end
 

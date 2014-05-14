@@ -1,0 +1,15 @@
+class A {
+    Int a;
+    Char a;
+}
+end
+
+class B {
+    Int a;
+}
+end
+
+class C : B {
+    Char a;
+}
+end

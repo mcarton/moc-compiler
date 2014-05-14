@@ -12,7 +12,7 @@ inh source : MOCSourceFile for PROGRAM;
 inh machine : IMachine for
     ENTITIES, FUNCTION, ASM, INST, BLOCK, INSTS, IF, ELSE,
     FUNC_PARAMETERS, FUNC_PARAMETER, FUNC_PARAMETERSX, ARGS, ARGSX,
-    IMPLEMENTATION, METHODS, ATTRIBUTS,
+    IMPLEMENTATION, METHODS, ATTRIBUTES,
     E, EX, A, AX, R, RX, T, TX, F,
     REFS, STYPE, TYPE
 --  MFUNC_PARAMETER, MFUNC_PARAMETERS,MARG, MARGS
@@ -22,7 +22,7 @@ inh machine : IMachine for
 inh symbolTable : SymbolTable for
     ENTITIES, BLOCK, IF, ELSE, INST, INSTS, ARGS, ARGSX,
     FUNCTION, FUNC_PARAMETER, FUNC_PARAMETERS, FUNC_PARAMETERSX,
-    IMPLEMENTATION, METHODS, ATTRIBUTS, SUPER,
+    IMPLEMENTATION, METHODS, ATTRIBUTES, SUPER,
     TYPE, STYPE, REFS,
     F, TX, T, RX, R, AX, A, EX, E
 ;
@@ -32,6 +32,7 @@ syn returns : int for
     INST, INSTS, BLOCK, IF, ELSE;
 
 -- types:
+inh classType : ClassType for ATTRIBUTES;
 syn superType : ClassType for SUPER;
 syn type : Type for
     TYPE, STYPE, REFS,
@@ -919,11 +920,15 @@ ENTITIES -> IMPLEMENTATION ENTITIES #gen;
 }
 
 -- class definition
-IMPLEMENTATION -> class typeident SUPER
-                      occbra ATTRIBUTS ccbra
+IMPLEMENTATION -> class typeident SUPER #set
+                      occbra ATTRIBUTES ccbra
                       METHODS end_ #symbolTable #gen;
 global
     ClassType type;
+#set {
+    type = new ClassType(typeident^txt, SUPER^superType);
+    ATTRIBUTES^classType = type;
+}
 #symbolTable {
     if (IMPLEMENTATION^symbolTable.localSearch(typeident^txt) != null) {
         error(TYPE_exists, typeident^txt);
@@ -934,7 +939,6 @@ global
             warning(WARN_shadow, typeident^txt);
         }
 
-        type = new ClassType(typeident^txt, SUPER^superType);
         IMPLEMENTATION^symbolTable.insertType(typeident^txt, type);
     }
 }
@@ -975,8 +979,16 @@ SUPER -> colon typeident #type;
 }
 
 --attributes
-ATTRIBUTS -> ;
--- ATTRIBUTS -> TYPE ident semicolon ATTRIBUTS;
+ATTRIBUTES -> ;
+ATTRIBUTES -> TYPE ident semicolon ATTRIBUTES #add;
+#add {
+    if (ATTRIBUTES^classType.getAttributeType(ident^txt) != null) {
+        error(ATTR_exists, ident^txt);
+    }
+    elseif (TYPE^type != null) {
+        ATTRIBUTES^classType.addAttribute(TYPE^type, ident^txt);
+    }
+}
 
 -- methods
 METHODS -> ;
