@@ -2,6 +2,10 @@
 }
 @end
 
+@class World : Hello {
+}
+@end
+
 void main() {
     Hello* hello;
 }

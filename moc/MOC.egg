@@ -32,6 +32,7 @@ syn returns : int for
     INST, INSTS, BLOCK, IF, ELSE;
 
 -- types:
+syn superType : ClassType for SUPER;
 syn type : Type for
     TYPE, STYPE, REFS,
     F, TX, T, RX, R, AX, A, EX, E
@@ -265,7 +266,7 @@ STYPE -> typeident #gen;
                 STYPE^type = info.getType();
             }
             default {
-                error(VAR_notAVariable, typeident^txt);
+                error(TYPE_notAType, typeident^txt);
             }
         }
     }
@@ -933,7 +934,7 @@ global
             warning(WARN_shadow, typeident^txt);
         }
 
-        type = new ClassType(typeident^txt);
+        type = new ClassType(typeident^txt, SUPER^superType);
         IMPLEMENTATION^symbolTable.insertType(typeident^txt, type);
     }
 }
@@ -942,8 +943,36 @@ global
 }
 
 -- superclass
-SUPER -> ;
-SUPER -> colon typeident;
+SUPER -> #type;
+#type {
+    SUPER^superType = null;
+}
+
+SUPER -> colon typeident #type;
+#type {
+    Info info = SUPER^symbolTable.localSearch(typeident^txt);
+    if (info == null) {
+        error(TYPE_unknown, typeident^txt);
+    }
+    else {
+        match (info) {
+            case InfoType {
+                Type superType = info.getType();
+                match (superType) {
+                    case ClassType {
+                        SUPER^superType = superType;
+                    }
+                    default {
+                        error(CLASS_notAClass, superType);
+                    }
+                }
+            }
+            default {
+                error(TYPE_notAType, typeident^txt);
+            }
+        }
+    }
+}
 
 --attributes
 ATTRIBUTS -> ;
