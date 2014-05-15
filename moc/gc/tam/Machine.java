@@ -13,6 +13,7 @@ public class Machine extends AbstractMachine {
 
     int currentAddress = 0;
     Stack<Integer> addressStack = new Stack<>();
+    CodeGenerator cg = new CodeGenerator(this);
 
     public Machine(int verbosity, ArrayList<String> warnings) {
         super(verbosity, warnings);
@@ -93,71 +94,58 @@ public class Machine extends AbstractMachine {
 
     @Override
     public String genVarDecl(Type t, moc.gc.Location loc) {
-        StringBuilder sb = new StringBuilder(50);
-
-        sb.append("    ");
-        sb.append("PUSH ");
-        sb.append(t.visit(sizeVisitor));
-        sb.append('\n');
-        currentAddress = currentAddress + t.visit(sizeVisitor);
-        return sb.toString();
+        int size = t.visit(sizeVisitor);
+        cg.push(size);
+        currentAddress = currentAddress + size;
+        return cg.get();
     }
     @Override
     public String genVarDecl(Type t, moc.gc.Location loc, moc.gc.Expr expr) {
-        StringBuilder sb = new StringBuilder(50);
-
-        sb.append(expr.getCode());
-        sb = getValue(sb, expr, t.visit(sizeVisitor));
+        int size = t.visit(sizeVisitor);
+        cg.append(expr.getCode());
+        getValue(expr, t.visit(sizeVisitor));
         currentAddress = currentAddress + t.visit(sizeVisitor);
-        return sb.toString();
+        return cg.get();
     }
 
     @Override
     public Expr genInt(String txt) {
-        return new Expr("    LOADL " + txt + "\n");
+        cg.loadl(txt);
+        return new Expr(cg.get());
     }
     public Expr genInt(int nb) {
         return genInt(Integer.toString(nb));
     }
     @Override
     public Expr genString(int length, String txt) {
-        return new Expr("    LOADL " + txt + "\n");
+        cg.loadl(txt);
+        return new Expr(cg.get());
     }
     @Override
     public Expr genCharacter(String txt) {
-        return new Expr("    LOADL " + txt + "\n");
+        cg.loadl(txt);
+        return new Expr(cg.get());
     }
     @Override
     public Expr genNull() {
-        return new Expr("    SUBR MVoid \n");
+        cg.subr("MVoid");
+        return new Expr(cg.get());
     }
     @Override
     public Expr genNew(Type t) {
         StringBuilder sb = new StringBuilder(50);
 
-        sb.append("    ");
-        sb.append("LOADL ");
-        sb.append(t.visit(sizeVisitor));
-        sb.append('\n');
-        sb.append("    ");
-        sb.append("SUBR Malloc");
-        sb.append('\n');
-        return new Expr(sb.toString());
+        cg.loadl(t.visit(sizeVisitor));
+        cg.subr("Malloc");
+
+        return new Expr(cg.get());
     }
     @Override
     public String genDelete(Type t, moc.gc.Expr expr) {
-        StringBuilder sb = new StringBuilder(50);
-        System.out.println("size type"+t.visit(sizeVisitor));
-        System.out.println(expr);
-        sb.append("    ");
-        sb.append(expr.getCode());
-        sb.append('\n');
-        sb = getValue(sb,expr,t.visit(sizeVisitor));
-        sb.append("    ");
-        sb.append("SUBR Mfree");
-        sb.append('\n');
-
-        return sb.toString(); // TODO:check
+        cg.append(expr.getCode());
+        getValue(expr, t.visit(sizeVisitor));
+        cg.subr("Mfree");
+        return cg.get();
     }
 
     @Override
@@ -210,45 +198,34 @@ public class Machine extends AbstractMachine {
         return expr;
     }
 
-    private StringBuilder getValue(StringBuilder sb, moc.gc.Expr expr, int size) {
-        if (expr.getLoc()!=null){
-            sb.append("    ");
-            sb.append("LOAD ("+ size +")"+ expr.getLoc().toString());
-            sb.append('\n');
-        }
-        return sb;
-    }
     @Override
     public Expr genIntBinaryOp(String op, moc.gc.Expr lhs, moc.gc.Expr rhs) {
         // TODO:code
-        StringBuilder sb = new StringBuilder(50);
-        sb.append("    ");
-        sb.append(lhs.getCode());
-        // si .code est une location,
-        sb.append('\n');
-        sb.append("    ");
-        sb = getValue(sb, lhs, 1);
-        sb.append(rhs.getCode());
-        sb.append('\n');
-        sb = getValue(sb, rhs, 1);
-        sb.append("    ");
-        sb.append("SUBR ");
+        cg.append(lhs.getCode());
+        getValue(lhs, 1);
+        cg.append(rhs.getCode());
+        getValue(rhs, 1);
+
         switch(op){
             case "+":
-                sb.append("IAdd");
+                cg.subr("IAdd");
                 break;
             case "-":
-                sb.append("ISub");
+                cg.subr("ISub");
                 break;
             case "*":
-                sb.append("IMul");
+                cg.subr("IMul");
                 break;
             case "/":
-                sb.append("IDiv");
+                cg.subr("IDiv");
                 break;
+            case "%":
+                cg.subr("IMod");
+                break;
+            default:
+                cg.append("<<<ERROR>>> genIntBinaryOp " + op + '\n');
         }
-        sb.append('\n');
-        return new Expr(sb.toString());
+        return new Expr(cg.get());
     }
     @Override
     public Expr genCharBinaryOp(String op, moc.gc.Expr lhs, moc.gc.Expr rhs) {
@@ -266,7 +243,14 @@ public class Machine extends AbstractMachine {
 
     @Override
     public String genComment(String comment) {
-        return("; " + comment + '\n');
+        cg.comment(comment);
+        return cg.get();
+    }
+
+    private void getValue(moc.gc.Expr expr, int size) {
+        if (expr.getLoc() != null){
+            cg.load(size, expr.getLoc().toString());
+        }
     }
 }
 
