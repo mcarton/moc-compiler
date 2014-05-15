@@ -88,12 +88,18 @@ public class Machine extends AbstractMachine {
 
     @Override
     public String genAsm(String code) {
-        return code.substring(1, code.length()-1);
+        cg.comment("inline asm:");
+        cg.asm(code.substring(1, code.length()-1));
+        cg.skipLine();
+        return cg.get();
     }
 
     @Override
     public String genGlobalAsm(String code) {
-        return ""; // TODO:code
+        cg.globalComment("inline asm:");
+        cg.globalAsm(code.substring(1, code.length()-1));
+        cg.skipLine();
+        return "";
     }
 
     @Override

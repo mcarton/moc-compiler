@@ -36,6 +36,12 @@ final class CodeGenerator {
 
     // instructions generation in alphabetical order:
 
+    void asm(String code) {
+        indent();
+        append(code);
+        skipLine();
+    }
+
     void comment(String txt) {
         append("; ");
         append(txt);
@@ -62,6 +68,17 @@ final class CodeGenerator {
         append("LOADL ");
         append(what);
         skipLine();
+    }
+
+    void globalAsm(String code) {
+        declAppend(code);
+        declAppend('\n');
+    }
+
+    void globalComment(String comment) {
+        declAppend("; ");
+        declAppend(comment);
+        declAppend('\n');
     }
 
     void ret(int param_size, int return_size) {
