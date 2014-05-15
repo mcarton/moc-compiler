@@ -63,6 +63,13 @@ final class CodeGenerator {
         skipLine();
     }
 
+    void loadi(int size) {
+        indent();
+        append("LOADI ");
+        append(size);
+        skipLine();
+    }
+
     void loadl(Object what) {
         indent();
         append("LOADL ");

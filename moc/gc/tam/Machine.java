@@ -199,8 +199,12 @@ public class Machine extends AbstractMachine {
     }
 
     @Override
-    public moc.gc.Expr genDeref(Type type, moc.gc.Expr expr) {
-        return expr; // TODO:code
+    public Expr genDeref(Type type, moc.gc.Expr expr) {
+        int size = type.visit(sizeVisitor);
+        cg.append(expr.getCode());
+        getValue(expr, size);
+        cg.loadi(size);
+        return new Expr(cg.get());
     }
     @Override
     public moc.gc.Expr genArrSub(Array type, moc.gc.Expr lhs, moc.gc.Expr rhs) {
