@@ -189,8 +189,12 @@ public class Machine extends AbstractMachine {
     }
     @Override
     public Expr genAff(Type t, moc.gc.Expr loc, moc.gc.Expr gcrhs) {
-        // TODO:code
-        return null;
+        // TODO:check
+        cg.append(expr.getCode());
+        cg.append(gcrhs.getCode());
+        getValue(gcrhs,1);
+        cg.subr("STOREI");
+        return ;
     }
     @Override
     public Expr genNonAff(Type t, moc.gc.Expr expr) {
@@ -223,7 +227,7 @@ public class Machine extends AbstractMachine {
 
         switch(op){
             case "!":
-                cg.loadl("1");
+                cg.loadl("0");
                 cg.subr("IEq");
             break;
             case "-":
@@ -324,8 +328,24 @@ public class Machine extends AbstractMachine {
         String op, Type pointer,
         moc.gc.Expr lhs, moc.gc.Expr rhs
     ) {
-        // TODO:code
-        return null;
+        // TODO:check
+        cg.append(lhs.getCode());
+        getValue(lhs, 1);
+        cg.append(rhs.getCode());
+        getValue(rhs, 1);
+
+        switch(op){
+            case "!=":
+                cg.subr("INeq");
+                break;
+            case "==":
+                cg.subr("IEq");
+                break;
+            default:
+                cg.append("<<<ERROR>>> genPtrBinaryOp " + op + '\n');
+        }
+        return new Expr(cg.get());
+
     }
 
     @Override
