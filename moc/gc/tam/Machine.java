@@ -229,7 +229,7 @@ public class Machine extends AbstractMachine {
             case "!":
                 cg.loadl("1");
                 cg.subr("IEq");
-            break;
+                break;
             case "-":
                 cg.subr("INeg");
                 break;
