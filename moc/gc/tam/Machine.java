@@ -283,7 +283,7 @@ public class Machine extends AbstractMachine {
                 cg.subr("IGeq");
                 break;
             case "<":
-                cg.subr("ILess");
+                cg.subr("ILss");
                 break;
             case "<=":
                 cg.subr("ILeq");
@@ -298,10 +298,8 @@ public class Machine extends AbstractMachine {
         // TODO:check
         cg.append(lhs.getCode());
         getValue(lhs, 1);
-        cg.subr("C2I");
         cg.append(rhs.getCode());
         getValue(rhs, 1);
-        cg.subr("C2I");
 
         switch(op){
             case "!=":
