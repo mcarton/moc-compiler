@@ -2,9 +2,11 @@ package moc.gc.tam;
 
 import java.util.ArrayList;
 import java.util.Stack;
+import moc.compiler.MOCException;
 import moc.gc.*;
 import moc.symbols.*;
 import moc.type.*;
+
 /**
  * The TAM machine and its generation functions.
  */
@@ -17,6 +19,11 @@ public class Machine extends AbstractMachine {
 
     public Machine(int verbosity, ArrayList<String> warnings) {
         super(verbosity, warnings);
+    }
+
+    @Override
+    public void writeCode(String fname, String code) throws MOCException {
+        super.writeCode(fname, cg.getDeclaration() + '\n' + code);
     }
 
     @Override
@@ -56,12 +63,22 @@ public class Machine extends AbstractMachine {
         FunctionType f, ArrayList<moc.gc.Location> parameters,
         String name, String block
     ) {
-        return block; // TODO:code
+        cg.function(name);
+        cg.append(block);
+        return cg.get();
     }
 
     @Override
     public String genReturn(FunctionType f, moc.gc.Expr expr) {
-        return ""; // TODO:code
+        int param_size = 0;
+        for (Type t : f.getParameterTypes()) {
+            param_size += t.visit(sizeVisitor);
+        }
+        int return_size = f.getReturnType().visit(sizeVisitor);
+        cg.append(expr.getCode());
+        getValue(expr, return_size);
+        cg.ret(param_size, return_size);
+        return cg.get();
     }
 
     @Override

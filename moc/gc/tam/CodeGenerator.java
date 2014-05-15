@@ -11,7 +11,13 @@ final class CodeGenerator {
     CodeGenerator(Machine machine) {
         this.machine = machine;
         this.sb = new StringBuilder();
-        this.declarationSb = new StringBuilder();
+
+        String declarations =
+            "CALL (SB) function_main\n"
+        +   "HALT\n"
+        ;
+
+        this.declarationSb = new StringBuilder(declarations);
     }
 
     void reset() {
@@ -36,6 +42,12 @@ final class CodeGenerator {
         skipLine();
     }
 
+    void function(String name) {
+        append("\nfunction_");
+        append(name);
+        append(":\n");
+    }
+
     void load(int size, String loc) {
         indent();
         append("LOAD (");
@@ -49,6 +61,15 @@ final class CodeGenerator {
         indent();
         append("LOADL ");
         append(what);
+        skipLine();
+    }
+
+    void ret(int param_size, int return_size) {
+        indent();
+        append("RETURN (");
+        append(param_size);
+        append(") ");
+        append(return_size);
         skipLine();
     }
 
