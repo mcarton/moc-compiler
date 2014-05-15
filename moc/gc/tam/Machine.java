@@ -223,8 +223,9 @@ public class Machine extends AbstractMachine {
 
         switch(op){
             case "!":
-                cg.subr("INeg");
-                break;
+                cg.loadl("1");
+                cg.subr("IEq");
+            break;
             case "-":
                 cg.subr("INeg");
                 break;
@@ -279,7 +280,7 @@ public class Machine extends AbstractMachine {
             case "<=":
                 cg.subr("ILeq");
                 break;
-           default:
+            default:
                 cg.append("<<<ERROR>>> genIntBinaryOp " + op + '\n');
         }
         return new Expr(cg.get());
