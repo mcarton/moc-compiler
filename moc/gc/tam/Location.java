@@ -5,12 +5,12 @@ package moc.gc.tam;
  */
 public class Location implements moc.gc.Location {
     private int dep;
-    private Register reg;
+    private String reg;
 
     /**
      * Location = address = offset / registre.
      */
-    public Location(int dep, Register reg) {
+    public Location(int dep, String reg) {
         this.dep = dep;
         this.reg = reg;
     }
@@ -19,13 +19,13 @@ public class Location implements moc.gc.Location {
         return dep;
     }
 
-    public Register getReg() {
+    public String getReg() {
         return reg;
     }
 
     @Override
     public String toString() {
-        return " "+ dep +"["+reg+"]";
+        return dep + "[" + reg + ']';
     }
 }
 

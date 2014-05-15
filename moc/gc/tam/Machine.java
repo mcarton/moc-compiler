@@ -13,7 +13,9 @@ import moc.type.*;
 public class Machine extends AbstractMachine {
     SizeVisitor sizeVisitor = new SizeVisitor();
 
-    int currentAddress = 0;
+    int currentAddress = 3; // 0 -> ?
+                            // 1 -> LB previous function
+                            // 2 -> return address
     Stack<Integer> addressStack = new Stack<>();
     CodeGenerator cg = new CodeGenerator(this);
 
@@ -52,7 +54,7 @@ public class Machine extends AbstractMachine {
 
     @Override
     public Location getLocationFor(String name, Type type) {
-        Location tempLoc = new Location(currentAddress, null /* TODO:reg */);
+        Location tempLoc = new Location(currentAddress, "LB");
         currentAddress += type.visit(sizeVisitor);
         return tempLoc;
     }
@@ -77,7 +79,7 @@ public class Machine extends AbstractMachine {
         int return_size = f.getReturnType().visit(sizeVisitor);
         cg.append(expr.getCode());
         getValue(expr, return_size);
-        cg.ret(param_size, return_size);
+        cg.ret(return_size, param_size);
         return cg.get();
     }
 
@@ -117,17 +119,15 @@ public class Machine extends AbstractMachine {
 
     @Override
     public String genVarDecl(Type t, moc.gc.Location loc) {
-        int size = t.visit(sizeVisitor);
-        cg.push(size);
-        currentAddress = currentAddress + size;
+        cg.comment("declaration of " + loc + " (" + t + ')');
+        cg.push(t.visit(sizeVisitor));
         return cg.get();
     }
     @Override
     public String genVarDecl(Type t, moc.gc.Location loc, moc.gc.Expr expr) {
-        int size = t.visit(sizeVisitor);
+        cg.comment("declaration of " + loc + " (" + t + ')');
         cg.append(expr.getCode());
         getValue(expr, t.visit(sizeVisitor));
-        currentAddress = currentAddress + t.visit(sizeVisitor);
         return cg.get();
     }
 
