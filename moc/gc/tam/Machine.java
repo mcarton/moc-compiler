@@ -218,12 +218,25 @@ public class Machine extends AbstractMachine {
     @Override
     public moc.gc.Expr genIntUnaryOp(String op, moc.gc.Expr expr) {
         // TODO:code
-        return expr;
+        cg.append(expr.getCode());
+        getValue(expr, 1);
+
+        switch(op){
+            case "-":
+                cg.subr("INeg");
+                break;
+            case "+":
+                // Nothing to do here 
+                break;
+            default:
+                cg.append("<<<ERROR>>> genIntUnaryOp " + op + '\n');
+        }
+        return new Expr(cg.get());
     }
 
     @Override
     public Expr genIntBinaryOp(String op, moc.gc.Expr lhs, moc.gc.Expr rhs) {
-        // TODO:code
+        // TODO:check
         cg.append(lhs.getCode());
         getValue(lhs, 1);
         cg.append(rhs.getCode());
@@ -241,6 +254,24 @@ public class Machine extends AbstractMachine {
                 break;
             case "/":
                 cg.subr("IDiv");
+                break;
+            case "!=":
+                cg.subr("INeq");
+                break;
+            case "==":
+                cg.subr("IEq");
+                break;
+            case ">":
+                cg.subr("IGtr");
+                break;
+            case ">=":
+                cg.subr("IGeq");
+                break;
+            case "<":
+                cg.subr("ILess");
+                break;
+            case "<=":
+                cg.subr("ILeq");
                 break;
             case "%":
                 cg.subr("IMod");
