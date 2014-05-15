@@ -221,16 +221,19 @@ public class Machine extends AbstractMachine {
 
     @Override
     public moc.gc.Expr genIntUnaryOp(String op, moc.gc.Expr expr) {
-        // TODO:code
+        // TODO:check
         cg.append(expr.getCode());
         getValue(expr, 1);
 
         switch(op){
+            case "!":
+                cg.subr("INeg");
+                break;
             case "-":
                 cg.subr("INeg");
                 break;
             case "+":
-                // Nothing to do here 
+                // Nothing to do here
                 break;
             default:
                 cg.append("<<<ERROR>>> genIntUnaryOp " + op + '\n');
@@ -259,6 +262,9 @@ public class Machine extends AbstractMachine {
             case "/":
                 cg.subr("IDiv");
                 break;
+            case "%":
+                cg.subr("IMod");
+                break;
             case "!=":
                 cg.subr("INeq");
                 break;
@@ -277,18 +283,44 @@ public class Machine extends AbstractMachine {
             case "<=":
                 cg.subr("ILeq");
                 break;
-            case "%":
-                cg.subr("IMod");
-                break;
-            default:
+           default:
                 cg.append("<<<ERROR>>> genIntBinaryOp " + op + '\n');
         }
         return new Expr(cg.get());
     }
     @Override
     public Expr genCharBinaryOp(String op, moc.gc.Expr lhs, moc.gc.Expr rhs) {
-        // TODO:code
-        return null;
+        // TODO:check
+        cg.append(lhs.getCode());
+        getValue(lhs, 1);
+        cg.subr("C2I");
+        cg.append(rhs.getCode());
+        getValue(rhs, 1);
+        cg.subr("C2I");
+
+        switch(op){
+            case "!=":
+                cg.subr("INeq");
+                break;
+            case "==":
+                cg.subr("IEq");
+                break;
+            case ">":
+                cg.subr("IGtr");
+                break;
+            case ">=":
+                cg.subr("IGeq");
+                break;
+            case "<":
+                cg.subr("ILess");
+                break;
+            case "<=":
+                cg.subr("ILeq");
+                break;
+           default:
+                cg.append("<<<ERROR>>> genCharBinaryOp " + op + '\n');
+        }
+        return new Expr(cg.get());
     }
     @Override
     public Expr genPtrBinaryOp(
