@@ -290,7 +290,7 @@ global
     }
 }
 #gen {
-    BLOCK^code = BLOCK^machine.genInsts(INSTS^code);
+    BLOCK^code = BLOCK^machine.genBlock(INSTS^code);
     BLOCK^machine.endBlock();
 }
 
@@ -418,7 +418,7 @@ INST -> BLOCK #returns #gen;
     INST^returns = BLOCK^returns;
 }
 #gen {
-    INST^code = INST^machine.genBlock(BLOCK^code);
+    INST^code = INST^machine.genBlockInst(BLOCK^code);
 
 }
 
