@@ -63,6 +63,13 @@ final class CodeGenerator {
         skipLine();
     }
 
+    void loada(String loc) {
+        indent();
+        append("LOADA ");
+        append(loc);
+        skipLine();
+    }
+
     void loadi(int size) {
         indent();
         append("LOADI ");
@@ -110,6 +117,14 @@ final class CodeGenerator {
         append(return_size);
         append(") ");
         append(param_size);
+        skipLine();
+    }
+
+    void storei(int n) {
+        indent();
+        append("STOREI (");
+        append(n);
+        append(")");
         skipLine();
     }
 

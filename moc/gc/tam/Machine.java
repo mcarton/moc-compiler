@@ -220,11 +220,11 @@ public class Machine extends AbstractMachine {
     }
     @Override
     public Expr genAff(Type t, moc.gc.Expr loc, moc.gc.Expr gcrhs) {
-        // TODO:check
         cg.append(loc.getCode());
         cg.append(gcrhs.getCode());
+        cg.loada(loc.getLoc().toString());
         getValue(gcrhs,1);
-        cg.subr("STOREI");
+        cg.storei(t.visit(sizeVisitor));
         return new Expr(cg.get());
     }
     @Override
