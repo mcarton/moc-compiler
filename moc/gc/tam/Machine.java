@@ -22,6 +22,7 @@ public class Machine extends AbstractMachine {
     Stack<Integer> addressStack = new Stack<>();
     CodeGenerator cg = new CodeGenerator(this);
 
+    int labelCount = 0;
     Map<String, String> binaryOperators = new HashMap<>();
 
     public Machine(int verbosity, ArrayList<String> warnings) {
@@ -139,15 +140,34 @@ public class Machine extends AbstractMachine {
 
     @Override
     public String genIf(IExpr cond, String thenCode, String elseCode) {
-        return thenCode; // TODO:code
+        String thenLabel =  "then_" + labelCount;
+        String elseLabel =  "else_" + labelCount;
+        String endLabel  =  "endif_"  + labelCount;
+        ++labelCount;
+
+        cg.append(cond.getCode());
+        getValue(cond, 1);
+        cg.jumpif(0, elseCode != null ? elseLabel : endLabel);
+        cg.label(thenLabel);
+        cg.append(thenCode);
+
+        if (elseCode != null) {
+            cg.jump(endLabel);
+            cg.label(elseLabel);
+            cg.append(elseCode);
+        }
+
+        cg.label(endLabel);
+
+        return cg.get();
     }
     @Override
     public String genElse() {
-        return null; // TODO:code
+        return "";
     }
     @Override
     public String genElse(String code) {
-        return code; // TODO:code
+        return code;
     }
 
     @Override

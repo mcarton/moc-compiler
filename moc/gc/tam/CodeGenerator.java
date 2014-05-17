@@ -54,6 +54,28 @@ final class CodeGenerator {
         append(":\n");
     }
 
+    void jump(String etiq) {
+        indent();
+        append("JUMP ");
+        append(etiq);
+        skipLine();
+    }
+
+    void jumpif(int cmp, String etiq) {
+        indent();
+        append("JUMPIF (");
+        append(cmp);
+        append(") ");
+        append(etiq);
+        skipLine();
+    }
+
+    void label(String name) {
+        append(name);
+        append(':');
+        skipLine();
+    }
+
     void load(int size, String loc) {
         indent();
         append("LOAD (");
