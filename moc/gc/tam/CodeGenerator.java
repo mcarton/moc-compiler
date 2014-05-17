@@ -97,6 +97,13 @@ final class CodeGenerator {
         skipLine();
     }
 
+    void push(int size) {
+        indent();
+        append("PUSH ");
+        append(size);
+        skipLine();
+    }
+
     void ret(int param_size, int return_size) {
         indent();
         append("RETURN (");
@@ -110,13 +117,6 @@ final class CodeGenerator {
         indent();
         append("SUBR ");
         append(op);
-        skipLine();
-    }
-
-    void push(int size) {
-        indent();
-        append("PUSH ");
-        append(size);
         skipLine();
     }
 
