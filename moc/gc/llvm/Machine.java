@@ -16,7 +16,7 @@ import moc.type.*;
 public final class Machine extends AbstractMachine {
     int lastGlobalTmp = -1;
     int lastTmp = 0; // name of the last generated temporary
-    int block = -1; // the block we are in
+    int block = 0; // the block we are in
     int labelCount = 0;
     Map<String, String> binaryOperators = new HashMap<String, String>();
 
@@ -80,7 +80,7 @@ public final class Machine extends AbstractMachine {
 
     @Override
     public Location getLocationFor(String name, Type type) {
-        return new Location('%' + name + block);
+        return new Location('%' + name + '.' + block);
     }
 
     // code generation stuffs:
