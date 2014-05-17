@@ -230,7 +230,7 @@ FUNC_PARAMETER -> TYPE ident #symbolTable;
 
         FUNC_PARAMETER^types.add(TYPE^type);
         Location loc
-            = FUNC_PARAMETER^machine.getLocationFor(ident^txt, TYPE^type);
+            = FUNC_PARAMETER^machine.getLocationForParameter(TYPE^type, ident^txt);
         FUNC_PARAMETER^symbolTable.insertVar(ident^txt, TYPE^type, loc);
         FUNC_PARAMETER^parameters.add(loc);
     }
@@ -385,7 +385,7 @@ global
 
         -- we add the variable in the symbol table even when there is an
         -- error in order to avoid a lot of "unknown variable"
-        loc = INST^machine.getLocationFor(ident^txt, TYPE^type);
+        loc = INST^machine.getLocationForVariable(TYPE^type, ident^txt);
         INST^symbolTable.insertVar(ident^txt, TYPE^type, loc);
     }
 }

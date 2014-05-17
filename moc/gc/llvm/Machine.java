@@ -79,7 +79,14 @@ public final class Machine extends AbstractMachine {
     }
 
     @Override
-    public Location getLocationFor(String name, Type type) {
+    public Location getLocationForParameter(Type type, String name) {
+        return getLocationFor(type, name);
+    }
+    @Override
+    public Location getLocationForVariable(Type type, String name) {
+        return getLocationFor(type, name);
+    }
+    public Location getLocationFor(Type type, String name) {
         return new Location('%' + name + '.' + block);
     }
 

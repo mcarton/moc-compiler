@@ -47,10 +47,15 @@ public interface IMachine {
      */
     void endBlock();
 
-    /** Get the machine-dependant Location for a variable named
-     *  <code>name</code> with type <code>type</code> declared here.
+    /** Get the machine-dependant Location for a parameters named
+     *  <code>name</code> with type <code>type</code>.
      */
-    Location getLocationFor(String name, Type type);
+    Location getLocationForParameter(Type type, String name);
+
+    /** Get the machine-dependant Location for a variable named
+     *  <code>name</code> with type <code>type</code>.
+     */
+    Location getLocationForVariable(Type type, String name);
 
     // string stuffs:
     int stringSize(String unescaped);

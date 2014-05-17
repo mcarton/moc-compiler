@@ -15,6 +15,7 @@ import moc.type.*;
 public class Machine extends AbstractMachine {
     SizeVisitor sizeVisitor = new SizeVisitor();
 
+    int currentParameterAddress;
     int currentAddress = 3; // 0 -> ?
                             // 1 -> LB previous function
                             // 2 -> return address
@@ -55,6 +56,7 @@ public class Machine extends AbstractMachine {
     // location stuffs:
     @Override
     public void beginFunction(FunctionType fun) {
+        currentParameterAddress = 0;
     }
 
     @Override
@@ -72,7 +74,13 @@ public class Machine extends AbstractMachine {
     }
 
     @Override
-    public Location getLocationFor(String name, Type type) {
+    public Location getLocationForParameter(Type type, String name) {
+        currentParameterAddress -= type.visit(sizeVisitor);
+        Location tempLoc = new Location(currentParameterAddress, "LB");
+        return tempLoc;
+    }
+    @Override
+    public Location getLocationForVariable(Type type, String name) {
         Location tempLoc = new Location(currentAddress, "LB");
         currentAddress += type.visit(sizeVisitor);
         return tempLoc;
