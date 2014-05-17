@@ -2,7 +2,8 @@ Int[3] foo(Int[3] a) {
     return a;
 }
 
-void bar(Int* a) {
+Int bar(Int* a) {
+    return a[1];
 }
 
 void main() {
@@ -12,5 +13,6 @@ void main() {
     b[1] = c;
     Int* d = b;
     foo(b);
+    bar(b);
 }
 

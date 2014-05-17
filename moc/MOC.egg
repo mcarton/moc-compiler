@@ -662,19 +662,23 @@ TX -> OPMUL F #gen TX #gen2;
 
 TX -> osbra E csbra #type;
 #type {
-    match (TX^htype) {
-        case Array {
-            if (E^type.isInt()) {
+    if (E^type.isInt()) {
+        match (TX^htype) {
+            case Array {
                 TX^type = TX^htype.getPointee();
                 TX^expr = TX^machine.genArrSub(TX^htype, TX^hexpr, E^expr);
             }
-            else {
-                error(TYPE_unexpected, "int", E^type);
+            case Pointer {
+                TX^type = TX^htype.getPointee();
+                TX^expr = TX^machine.genPtrSub(TX^htype, TX^hexpr, E^expr);
+            }
+            default {
+                error(TYPE_unexpected, "array or pointer", TX^htype);
             }
         }
-        default {
-            error(TYPE_unexpected, "array", TX^htype);
-        }
+    }
+    else {
+        error(TYPE_unexpected, "int", E^type);
     }
 }
 
@@ -847,6 +851,9 @@ ARGS -> #types;
         error(FUN_notEnough);
         ARGS^ok = false;
     }
+    else {
+        ARGS^ok = true;
+    }
 }
 
 ARGS -> E #type ARGSX #ok;
@@ -860,6 +867,7 @@ ARGS -> E #type ARGSX #ok;
             Type type = ARGS^currIndex.next();
             if (type.constructsFrom(E^type)) {
                 ARGS^exprs.add(ARGS^machine.genCast(E^type, type, E^expr));
+                ARGSX^hok = true;
             }
             else {
                 error(
@@ -883,7 +891,7 @@ ARGSX -> #ok;
 
 ARGSX -> comma ARGS #ok;
 #ok {
-    ARGSX^ok = ARGSX^hok && ARGS^ok;
+    ARGSX^ok = ARGS^ok;
 }
 
 -- TODO:MOC:

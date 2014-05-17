@@ -1,0 +1,32 @@
+// !return value: 0
+
+include(`puts.hoc')
+
+void modify_copy(Char[13] copy) {
+    put_string(copy);
+    copy[0] = 'h';
+    put_string(copy);
+    copy[5] = '_';
+    put_string(copy);
+}
+
+void modify(Char* original) {
+    put_string(original);
+    *original = 'h';
+    put_string(original);
+    original[5] = '_';
+    put_string(original);
+}
+
+Int main() {
+    Char[13] hello = "Hello world!";
+
+    put_string(hello);
+    modify_copy(hello);
+    put_string(hello);
+    modify(hello);
+    put_string(hello);
+
+    return 0;
+}
+

@@ -1,0 +1,8 @@
+void put_string(Char* string) {
+    // TODO
+}
+
+void put_char(Char c) {
+    // TODO
+}
+

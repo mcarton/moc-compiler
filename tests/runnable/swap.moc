@@ -1,0 +1,29 @@
+// !return value: 0
+
+include(`puts.hoc')
+
+void dont_swap(Int a, Int b) {
+    Int t = a;
+    a = b;
+    b = t;
+}
+
+void swap(Int* a, Int* b) {
+    Int t = *a;
+    *a = *b;
+    *b = t;
+}
+
+Int main() {
+    Int* a = new(Int); *a = 7;
+    Int* b = new(Int); *b = 42;
+
+    put_int(*a); put_char(' '); put_int(*b); put_char('\n');
+    dont_swap(*a, *b);
+
+    put_int(*a); put_char(' '); put_int(*b); put_char('\n');
+    swap(a, b);
+
+    return 0;
+}
+

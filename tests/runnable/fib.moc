@@ -1,0 +1,22 @@
+// !return value: 0
+
+include(`puts.hoc')
+
+Int fib(Int n) {
+    if (n <= 1) {
+        return n;
+    }
+    else {
+        return fib(n-1) + fib(n-2);
+    }
+}
+
+Int main() {
+    put_int(fib(0)); put_char('\n');
+    put_int(fib(1)); put_char('\n');
+    put_int(fib(10)); put_char('\n');
+    put_int(fib(20)); put_char('\n');
+
+    return 0;
+}
+

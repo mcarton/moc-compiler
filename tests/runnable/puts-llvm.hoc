@@ -1,0 +1,13 @@
+asm("declare i32 @puts(i8* nocapture readonly)");
+asm("declare i32 @putchar(i32)");
+
+void put_string(Char* string) {
+    asm("%1 = call i32 @puts(i8* %__p1)");
+}
+
+void put_char(Char c) {
+    asm("%1 = load i8* %c-1, align 1");
+    asm("%2 = sext i8 %1 to i32");
+    asm("%3 = call i32 @putchar(i32 %2)");
+}
+

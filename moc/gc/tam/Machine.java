@@ -2,20 +2,30 @@ package moc.gc.tam;
 
 import java.util.ArrayList;
 import java.util.Stack;
+import moc.compiler.MOCException;
 import moc.gc.*;
 import moc.symbols.*;
 import moc.type.*;
+
 /**
  * The TAM machine and its generation functions.
  */
 public class Machine extends AbstractMachine {
     SizeVisitor sizeVisitor = new SizeVisitor();
 
-    int currentAddress = 0;
+    int currentAddress = 3; // 0 -> ?
+                            // 1 -> LB previous function
+                            // 2 -> return address
     Stack<Integer> addressStack = new Stack<>();
+    CodeGenerator cg = new CodeGenerator(this);
 
     public Machine(int verbosity, ArrayList<String> warnings) {
         super(verbosity, warnings);
+    }
+
+    @Override
+    public void writeCode(String fname, String code) throws MOCException {
+        super.writeCode(fname, cg.getDeclaration() + '\n' + code);
     }
 
     @Override
@@ -44,7 +54,7 @@ public class Machine extends AbstractMachine {
 
     @Override
     public Location getLocationFor(String name, Type type) {
-        Location tempLoc = new Location(currentAddress, null /* TODO:reg */);
+        Location tempLoc = new Location(currentAddress, "LB");
         currentAddress += type.visit(sizeVisitor);
         return tempLoc;
     }
@@ -55,12 +65,22 @@ public class Machine extends AbstractMachine {
         FunctionType f, ArrayList<moc.gc.Location> parameters,
         String name, String block
     ) {
-        return block; // TODO:code
+        cg.function(name);
+        cg.append(block);
+        return cg.get();
     }
 
     @Override
     public String genReturn(FunctionType f, moc.gc.Expr expr) {
-        return ""; // TODO:code
+        int param_size = 0;
+        for (Type t : f.getParameterTypes()) {
+            param_size += t.visit(sizeVisitor);
+        }
+        int return_size = f.getReturnType().visit(sizeVisitor);
+        cg.append(expr.getCode());
+        getValue(expr, return_size);
+        cg.ret(return_size, param_size);
+        return cg.get();
     }
 
     @Override
@@ -70,12 +90,18 @@ public class Machine extends AbstractMachine {
 
     @Override
     public String genAsm(String code) {
-        return code.substring(1, code.length()-1);
+        cg.comment("inline asm:");
+        cg.asm(code.substring(1, code.length()-1));
+        cg.skipLine();
+        return cg.get();
     }
 
     @Override
     public String genGlobalAsm(String code) {
-        return ""; // TODO:code
+        cg.globalComment("inline asm:");
+        cg.globalAsm(code.substring(1, code.length()-1));
+        cg.skipLine();
+        return "";
     }
 
     @Override
@@ -93,59 +119,56 @@ public class Machine extends AbstractMachine {
 
     @Override
     public String genVarDecl(Type t, moc.gc.Location loc) {
-        StringBuilder sb = new StringBuilder(50);
-
-        sb.append("    ");
-        sb.append("PUSH ");
-        sb.append(t.visit(sizeVisitor));
-        sb.append('\n');
-        currentAddress = currentAddress + t.visit(sizeVisitor);
-        return sb.toString();
+        cg.comment("declaration of " + loc + " (" + t + ')');
+        cg.push(t.visit(sizeVisitor));
+        return cg.get();
     }
     @Override
     public String genVarDecl(Type t, moc.gc.Location loc, moc.gc.Expr expr) {
-        StringBuilder sb = new StringBuilder(50);
-
-        sb.append(expr.getCode());
-        currentAddress = currentAddress + t.visit(sizeVisitor);
-        return sb.toString();
+        cg.comment("declaration of " + loc + " (" + t + ')');
+        cg.append(expr.getCode());
+        getValue(expr, t.visit(sizeVisitor));
+        return cg.get();
     }
 
     @Override
     public Expr genInt(String txt) {
-        return new Expr("    LOADL " + txt + "\n");
+        cg.loadl(txt);
+        return new Expr(cg.get());
     }
     public Expr genInt(int nb) {
         return genInt(Integer.toString(nb));
     }
     @Override
     public Expr genString(int length, String txt) {
-        return new Expr("    LOADL " + txt + "\n");
+        cg.loadl(txt);
+        return new Expr(cg.get());
     }
     @Override
     public Expr genCharacter(String txt) {
-        return new Expr("    LOADL " + txt + "\n");
+        cg.loadl(txt);
+        return new Expr(cg.get());
     }
     @Override
     public Expr genNull() {
-        return new Expr("    SUBR MVoid \n");
+        cg.subr("MVoid");
+        return new Expr(cg.get());
     }
     @Override
     public Expr genNew(Type t) {
         StringBuilder sb = new StringBuilder(50);
 
-        sb.append("    ");
-        sb.append("LOADL ");
-        sb.append(t.visit(sizeVisitor));
-        sb.append('\n');
-        sb.append("    ");
-        sb.append("SUBR Malloc");
-        sb.append('\n');
-        return new Expr(sb.toString());
+        cg.loadl(t.visit(sizeVisitor));
+        cg.subr("Malloc");
+
+        return new Expr(cg.get());
     }
     @Override
     public String genDelete(Type t, moc.gc.Expr expr) {
-        return ""; // TODO:code
+        cg.append(expr.getCode());
+        getValue(expr, t.visit(sizeVisitor));
+        cg.subr("Mfree");
+        return cg.get();
     }
 
     @Override
@@ -166,21 +189,33 @@ public class Machine extends AbstractMachine {
     }
     @Override
     public Expr genAff(Type t, moc.gc.Expr loc, moc.gc.Expr gcrhs) {
-        // TODO:code
-        return null;
+        // TODO:check
+        cg.append(loc.getCode());
+        cg.append(gcrhs.getCode());
+        getValue(gcrhs,1);
+        cg.subr("STOREI");
+        return new Expr(cg.get());
     }
     @Override
     public Expr genNonAff(Type t, moc.gc.Expr expr) {
         // TODO:code
-        return null;
+        return (moc.gc.tam.Expr)expr;
     }
 
     @Override
-    public moc.gc.Expr genDeref(Type type, moc.gc.Expr expr) {
-        return expr; // TODO:code
+    public Expr genDeref(Type type, moc.gc.Expr expr) {
+        int size = type.visit(sizeVisitor);
+        cg.append(expr.getCode());
+        getValue(expr, size);
+        cg.loadi(size);
+        return new Expr(cg.get());
     }
     @Override
-    public moc.gc.Expr genArrSub(Type type, moc.gc.Expr lhs, moc.gc.Expr rhs) {
+    public moc.gc.Expr genArrSub(Array type, moc.gc.Expr lhs, moc.gc.Expr rhs) {
+        return lhs; // TODO:code
+    }
+    @Override
+    public moc.gc.Expr genPtrSub(Pointer type, moc.gc.Expr lhs, moc.gc.Expr rhs) {
         return lhs; // TODO:code
     }
     @Override
@@ -190,56 +225,141 @@ public class Machine extends AbstractMachine {
 
     @Override
     public moc.gc.Expr genIntUnaryOp(String op, moc.gc.Expr expr) {
-        // TODO:code
-        return expr;
+        // TODO:check
+        cg.append(expr.getCode());
+        getValue(expr, 1);
+
+        switch(op){
+            case "!":
+                cg.loadl("0");
+                cg.subr("IEq");
+                break;
+            case "-":
+                cg.subr("INeg");
+                break;
+            case "+":
+                // Nothing to do here
+                break;
+            default:
+                cg.append("<<<ERROR>>> genIntUnaryOp " + op + '\n');
+        }
+        return new Expr(cg.get());
     }
 
     @Override
     public Expr genIntBinaryOp(String op, moc.gc.Expr lhs, moc.gc.Expr rhs) {
-        // TODO:code
-        StringBuilder sb = new StringBuilder(50);
-        sb.append("    ");
-        sb.append(lhs.getCode());
-        sb.append('\n');
-        sb.append("    ");
-        sb.append(rhs.getCode());
-        sb.append('\n');
-        sb.append("SUBR ");
+        // TODO:check
+        cg.append(lhs.getCode());
+        getValue(lhs, 1);
+        cg.append(rhs.getCode());
+        getValue(rhs, 1);
+
         switch(op){
             case "+":
-                sb.append("IAdd");
+                cg.subr("IAdd");
                 break;
             case "-":
-                sb.append("ISub");
+                cg.subr("ISub");
                 break;
             case "*":
-                sb.append("IMul");
+                cg.subr("IMul");
                 break;
             case "/":
-                sb.append("IDiv");
+                cg.subr("IDiv");
                 break;
+            case "%":
+                cg.subr("IMod");
+                break;
+            case "!=":
+                cg.subr("INeq");
+                break;
+            case "==":
+                cg.subr("IEq");
+                break;
+            case ">":
+                cg.subr("IGtr");
+                break;
+            case ">=":
+                cg.subr("IGeq");
+                break;
+            case "<":
+                cg.subr("ILss");
+                break;
+            case "<=":
+                cg.subr("ILeq");
+                break;
+            default:
+                cg.append("<<<ERROR>>> genIntBinaryOp " + op + '\n');
         }
-        sb.append("    ");
-        sb.append('\n');
-        return new Expr(sb.toString());
+        return new Expr(cg.get());
     }
     @Override
     public Expr genCharBinaryOp(String op, moc.gc.Expr lhs, moc.gc.Expr rhs) {
-        // TODO:code
-        return null;
+        // TODO:check
+        cg.append(lhs.getCode());
+        getValue(lhs, 1);
+        cg.append(rhs.getCode());
+        getValue(rhs, 1);
+
+        switch(op){
+            case "!=":
+                cg.subr("INeq");
+                break;
+            case "==":
+                cg.subr("IEq");
+                break;
+            case ">":
+                cg.subr("IGtr");
+                break;
+            case ">=":
+                cg.subr("IGeq");
+                break;
+            case "<":
+                cg.subr("ILess");
+                break;
+            case "<=":
+                cg.subr("ILeq");
+                break;
+           default:
+                cg.append("<<<ERROR>>> genCharBinaryOp " + op + '\n');
+        }
+        return new Expr(cg.get());
     }
     @Override
     public Expr genPtrBinaryOp(
         String op, Type pointer,
         moc.gc.Expr lhs, moc.gc.Expr rhs
     ) {
-        // TODO:code
-        return null;
+        // TODO:check
+        cg.append(lhs.getCode());
+        getValue(lhs, 1);
+        cg.append(rhs.getCode());
+        getValue(rhs, 1);
+
+        switch(op){
+            case "!=":
+                cg.subr("INeq");
+                break;
+            case "==":
+                cg.subr("IEq");
+                break;
+            default:
+                cg.append("<<<ERROR>>> genPtrBinaryOp " + op + '\n');
+        }
+        return new Expr(cg.get());
+
     }
 
     @Override
     public String genComment(String comment) {
-        return("; " + comment + '\n');
+        cg.comment(comment);
+        return cg.get();
+    }
+
+    private void getValue(moc.gc.Expr expr, int size) {
+        if (expr.getLoc() != null){
+            cg.load(size, expr.getLoc().toString());
+        }
     }
 }
 

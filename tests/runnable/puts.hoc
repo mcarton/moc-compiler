@@ -1,0 +1,20 @@
+ifdef(`llvm',`include(`puts-llvm.hoc')')
+ifdef(`tam',`include(`puts-tam.hoc')')
+
+void put_int_impl(Int i) {
+    if (i != 0) {
+        Int r = i%10;
+        put_int_impl(i/10);
+        put_char((Char)(r+48));
+    }
+}
+
+void put_int(Int i) {
+    if (i == 0) {
+        put_char('0');
+    }
+    else {
+        put_int_impl(i);
+    }
+}
+
