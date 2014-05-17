@@ -66,7 +66,7 @@ public final class Machine extends AbstractMachine {
 
     @Override
     public void endFunction() {
-        --block;
+        block = 0;
     }
 
     @Override
@@ -76,7 +76,6 @@ public final class Machine extends AbstractMachine {
 
     @Override
     public void endBlock() {
-        --block;
     }
 
     @Override

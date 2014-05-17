@@ -1,0 +1,21 @@
+// !return value: 0
+
+include(`puts.hoc')
+
+Int main() {
+    Int a = 42;
+
+    if (1) {
+        Int a = 7;
+        put_int(a);
+    }
+    else {
+        Int a = 6;
+        put_int(a);
+    }
+
+    put_int(a);
+
+    return 0;
+}
+
