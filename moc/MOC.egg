@@ -254,7 +254,7 @@ REFS -> osbra integer csbra REFS #gen;
     int nbElements = new Integer(integer^txt);
 
     if (nbElements == 0) {
-        error(ARR_zeroSized);
+        error(TYPE_zeroSizedArray);
     }
 
     REFS^type = new Array(REFS1^type, nbElements);
