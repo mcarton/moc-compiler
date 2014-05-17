@@ -70,6 +70,17 @@ final class CodeGenerator {
         skipLine();
     }
 
+    void globalAsm(String code) {
+        declAppend(code);
+        declAppend('\n');
+    }
+
+    void globalComment(String comment) {
+        declAppend("; ");
+        declAppend(comment);
+        declAppend('\n');
+    }
+
     void label(String name) {
         append(name);
         append(':');
@@ -104,17 +115,6 @@ final class CodeGenerator {
         append("LOADL ");
         append(what);
         skipLine();
-    }
-
-    void globalAsm(String code) {
-        declAppend(code);
-        declAppend('\n');
-    }
-
-    void globalComment(String comment) {
-        declAppend("; ");
-        declAppend(comment);
-        declAppend('\n');
     }
 
     void pop(int d, int n) {
