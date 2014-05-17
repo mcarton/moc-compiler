@@ -28,7 +28,8 @@ att:
 	    moc/gc/*.java \
 	    moc/egg/*.java
 
-test: test-llvm test-tam
+test:
+	@cd tests; ./test.py
 
 save-llvm:
 	(for i in tests/success/*.ll; do cp $$i $$i.old; done)
