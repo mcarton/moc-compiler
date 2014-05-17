@@ -215,6 +215,11 @@ public class Machine extends AbstractMachine {
         return new Expr(cg.get());
     }
     @Override
+    public Expr genNew(IExpr nbElements, Type t) {
+        return null; // TODO:code
+    }
+
+    @Override
     public String genDelete(Type t, IExpr expr) {
         cg.append(expr.getCode());
         getValue(expr, t.visit(sizeVisitor));

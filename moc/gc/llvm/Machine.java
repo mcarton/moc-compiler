@@ -279,7 +279,19 @@ public final class Machine extends AbstractMachine {
     }
     @Override
     public Expr genNew(Type type) {
-        String tmpPtr = cg.malloc(type.visit(sizeVisitor));
+        String tmpPtr = cg.malloc(Integer.toString(type.visit(sizeVisitor)));
+
+        // cast to right pointer type
+        String tmpCastedPtr = cg.cast("bitcast", "i8*", tmpPtr, cg.typeName(type) + '*');
+
+        return new Expr(new Location(tmpCastedPtr), cg.get());
+    }
+    @Override
+    public Expr genNew(IExpr nbElements, Type type) {
+        String tmpSize = Integer.toString(type.visit(sizeVisitor));
+        String tmpNbElements = getValue("i64", nbElements);
+        String size = genBinaryOpImpl("i64", "mul", tmpNbElements, tmpSize);
+        String tmpPtr = cg.malloc(size);
 
         // cast to right pointer type
         String tmpCastedPtr = cg.cast("bitcast", "i8*", tmpPtr, cg.typeName(type) + '*');

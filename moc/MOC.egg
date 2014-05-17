@@ -13,7 +13,7 @@ inh machine : IMachine for
     ENTITIES, FUNCTION, ASM, INST, BLOCK, INSTS, IF, ELSE,
     FUNC_PARAMETERS, FUNC_PARAMETER, FUNC_PARAMETERSX, ARGS, ARGSX,
     E, EX, A, AX, R, RX, T, TX, F,
-    REFS, STYPE, TYPE
+    REFS, STYPE, TYPE, NEW
 -- TODO:MOC:
 --       ,IMPLEMENTATION, METHODES, METHODE, ATTRIBUTS,
 --       MFUNC_PARAMETER, MFUNC_PARAMETERS,MARG, MARGS
@@ -23,7 +23,7 @@ inh machine : IMachine for
 inh symbolTable : SymbolTable for
     ENTITIES, BLOCK, IF, ELSE, INST, INSTS, ARGS, ARGSX,
     FUNCTION, FUNC_PARAMETER, FUNC_PARAMETERS, FUNC_PARAMETERSX,
-    TYPE, STYPE, REFS,
+    TYPE, STYPE, REFS, NEW,
     F, TX, T, RX, R, AX, A, EX, E
 ;
 
@@ -33,7 +33,7 @@ syn returns : int for
 
 -- types:
 syn type : Type for
-    TYPE, STYPE, REFS,
+    TYPE, STYPE, REFS, NEW,
     F, TX, T, RX, R, AX, A, EX, E
 ;
 inh htype : Type for
@@ -55,7 +55,7 @@ syn code : String for
     FUNCTION, ASM
 ;
 syn expr : IExpr for
-    F, TX, T, RX, R, AX, A, EX, E
+    F, TX, T, RX, R, AX, A, EX, E, NEW
 ;
 inh hexpr : IExpr for TX, RX, AX;
 inh exprs : ArrayList<IExpr> for ARGS, ARGSX;
@@ -252,6 +252,11 @@ REFS -> mult REFS #gen;
 REFS -> osbra integer csbra REFS #gen;
 #gen {
     int nbElements = new Integer(integer^txt);
+
+    if (nbElements == 0) {
+        error(ARR_zeroSized);
+    }
+
     REFS^type = new Array(REFS1^type, nbElements);
 }
 
@@ -456,7 +461,7 @@ global
     IExpr casted;
 #returns {
     if (!E^type.testable()) {
-        error(TYPE_unexpected, "int", E^type);
+        error(TYPE_unexpected, "Int", E^type);
     }
     elseif (BLOCK^returns == 2 && ELSE^returns != 1) {
         IF^returns = 2;
@@ -678,7 +683,7 @@ TX -> osbra E csbra #type;
         }
     }
     else {
-        error(TYPE_unexpected, "int", E^type);
+        error(TYPE_unexpected, "Int", E^type);
     }
 }
 
@@ -726,14 +731,36 @@ F -> OPUN F #type;
 }
 
 -- new/delete expressions
-F -> new opar TYPE cpar #type;
-#type {
+F -> new opar NEW cpar #gen;
+#gen {
+    F^type = NEW^type;
+    F^expr = NEW^expr;
+}
+
+NEW -> TYPE #gen;
+#gen {
     if (TYPE^type.isVoid()) {
         error(TYPE_void);
     }
     else {
-        F^type = new Pointer(TYPE^type);
-        F^expr = F^machine.genNew(TYPE^type);
+        NEW^type = new Pointer(TYPE^type);
+        NEW^expr = NEW^machine.genNew(TYPE^type);
+    }
+}
+
+NEW -> E comma TYPE #gen;
+#gen {
+    if (TYPE^type.isVoid()) {
+        error(TYPE_void);
+    }
+    else {
+        if (E^type.isInt()) {
+            NEW^type = new Pointer(TYPE^type);
+            NEW^expr = NEW^machine.genNew(E^expr, TYPE^type);
+        }
+        else {
+            error(TYPE_unexpected, "Int", E^type);
+        }
     }
 }
 

@@ -235,7 +235,7 @@ final class CodeGenerator {
     }
 
     /** {@code <result> = call i8* @malloc(i64 <size>)} */
-    String malloc(int size) {
+    String malloc(String size) {
         String tmpPtr = machine.getTmpName();
         indent();
         append(tmpPtr);

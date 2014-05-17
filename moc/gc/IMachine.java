@@ -93,6 +93,7 @@ public interface IMachine {
     IExpr genNull();
 
     IExpr genNew(Type type);
+    IExpr genNew(IExpr size, Type type);
     String genDelete(Type type, IExpr expr);
     IExpr genCall(String funName, FunctionType fun, ArrayList<IExpr> exprs);
     IExpr genSizeOf(Type type);
