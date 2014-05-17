@@ -101,6 +101,12 @@ public class Machine extends AbstractMachine {
         cg.ret(return_size, param_size);
         return cg.get();
     }
+    @Override
+    public String genBlock(String code) {
+        cg.append(code);
+        cg.pop(0, currentAddress - addressStack.peek());
+        return cg.get();
+    }
 
     @Override
     public String genInst(moc.gc.Expr expr) {
