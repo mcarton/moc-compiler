@@ -12,9 +12,9 @@ inh source : MOCSourceFile for PROGRAM;
 inh machine : IMachine for
     ENTITIES, FUNCTION, ASM, INST, BLOCK, INSTS, IF, ELSE,
     FUNC_PARAMETERS, FUNC_PARAMETER, FUNC_PARAMETERSX, ARGS, ARGSX,
-    IMPLEMENTATION, METHODS, ATTRIBUTES,
+    IMPLEMENTATION, METHOD, METHODS, ATTRIBUTES,
     E, EX, A, AX, R, RX, T, TX, F,
-    REFS, STYPE, TYPE
+    REFS, STYPE, PTYPE, TYPE
 --  MFUNC_PARAMETER, MFUNC_PARAMETERS,MARG, MARGS
 ;
 
@@ -22,8 +22,8 @@ inh machine : IMachine for
 inh symbolTable : SymbolTable for
     ENTITIES, BLOCK, IF, ELSE, INST, INSTS, ARGS, ARGSX,
     FUNCTION, FUNC_PARAMETER, FUNC_PARAMETERS, FUNC_PARAMETERSX,
-    IMPLEMENTATION, METHODS, ATTRIBUTES, SUPER,
-    TYPE, STYPE, REFS,
+    IMPLEMENTATION, METHOD, METHODS, ATTRIBUTES, SUPER,
+    TYPE, STYPE, PTYPE, REFS,
     F, TX, T, RX, R, AX, A, EX, E
 ;
 
@@ -47,10 +47,11 @@ inh parameters : ArrayList<Location> for
 ;
 inh types : TypeList for
     FUNC_PARAMETERS, FUNC_PARAMETERSX, FUNC_PARAMETER,
+    MFUNC_PARAMETER, MFUNC_PARAMETERS,
     ARGS, ARGSX
 ;
 
-syn sym : String for OPREL, OPADD, OPMUL, OPUN;
+syn sym : String for OPREL, OPADD, OPMUL, OPUN, QUAL;
 
 syn code : String for
     ENTITIES, BLOCK, IF, ELSE, INST, INSTS,
@@ -63,6 +64,10 @@ inh hexpr : Expr for TX, RX, AX;
 inh exprs : ArrayList<Expr> for ARGS, ARGSX;
 
 inh currIndex : ListIterator<Type> for ARGS, ARGSX;
+
+inh selectors : Vector<String> for MFUNC_PARAMETERS;
+inh methods : Vector<Method> for METHODS;
+syn method : Method for METHOD;
 
 -- ok is true iff there were no error
 syn  ok : boolean for ARGS, ARGSX;
@@ -928,6 +933,7 @@ global
 #set {
     type = new ClassType(typeident^txt, SUPER^superType);
     ATTRIBUTES^classType = type;
+    METHODS^methods = new Vector<Method>();
 }
 #symbolTable {
     if (IMPLEMENTATION^symbolTable.localSearch(typeident^txt) != null) {
@@ -992,24 +998,44 @@ ATTRIBUTES -> TYPE ident semicolon ATTRIBUTES #add;
 
 -- methods
 METHODS -> ;
+METHODS -> METHOD #add METHODS;
+#add {
+    METHODS^methods.add(METHOD^method);
+}
 
---METHODS -> METHOD  METHODS;
---METHOD -> QUAL PTYPE   MFUNC_PARAMETERS BLOCK;
--- --method or attribute qualifier: + = class, - = instance
---QUAL -> plus;
---QUAL -> minus;
--- --type class
---STYPE-> typeident;
+METHOD -> QUAL PTYPE #init MFUNC_PARAMETERS BLOCK #gen;
+global
+    Vector<String> selectors;
+    TypeList types;
+#init {
+    selectors = new Vector<String>();
+    types = new TypeList();
+
+    MFUNC_PARAMETERS^selectors = selectors;
+    MFUNC_PARAMETERS^types = types;
+}
+#gen {
+    METHOD^method = new Method(selectors, types, QUAL^sym.equals("+"));
+}
+
+--method or attribute qualifier: + = class, - = instance
+QUAL -> plus  #set; #set { QUAL^sym = "+"; }
+QUAL -> minus #set; #set { QUAL^sym = "-"; }
+
 -- -- type "any"
 --TYPE -> id;
----- method return type between parens
---PTYPE-> opar TYPE cpar;
----- method parameters
---MFUNC_PARAMETERS -> ;
+
+-- method return type between parens
+PTYPE-> opar TYPE cpar;
+
+-- method parameters
+MFUNC_PARAMETERS -> ;
 --MFUNC_PARAMETERS -> MFUNC_PARAMETER MFUNC_PARAMETERS;
+
 -- -- selector without parameters
---MFUNC_PARAMETER -> ident;
+MFUNC_PARAMETER -> ident;
 -- -- selector  + parameter type + parameter name
+
 --MFUNC_PARAMETER -> ident colon  PTYPE ident;
 -- -- string MOC (starts with @)
 --F -> stringo;
