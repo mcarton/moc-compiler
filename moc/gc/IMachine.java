@@ -63,7 +63,7 @@ public interface IMachine {
 
     String genBlock(String code);
     String genInst(Expr expr);
-    String genInsts(String code);
+    String genBlockInst(String code);
     String genAsm(String code);
     String genUsing(String name, Type type);
     String genGlobalAsm(String code);

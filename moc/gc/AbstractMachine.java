@@ -79,7 +79,7 @@ public abstract class AbstractMachine implements IMachine {
         return code;
     }
     @Override
-    public String genInsts(String code) {
+    public String genBlockInst(String code) {
         return code;
     }
 

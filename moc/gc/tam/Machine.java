@@ -1,6 +1,8 @@
 package moc.gc.tam;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Stack;
 import moc.compiler.MOCException;
 import moc.gc.*;
@@ -19,8 +21,25 @@ public class Machine extends AbstractMachine {
     Stack<Integer> addressStack = new Stack<>();
     CodeGenerator cg = new CodeGenerator(this);
 
+    Map<String, String> binaryOperators = new HashMap<>();
+
     public Machine(int verbosity, ArrayList<String> warnings) {
         super(verbosity, warnings);
+
+        binaryOperators.put("+" , "IAdd");
+        binaryOperators.put("-" , "ISub");
+        binaryOperators.put("*" , "IMul");
+        binaryOperators.put("/" , "IDiv");
+        binaryOperators.put("%" , "IMod");
+        binaryOperators.put("==", "IEq" );
+        binaryOperators.put("!=", "INeq");
+        binaryOperators.put("<" , "ILss");
+        binaryOperators.put(">" , "IGtr");
+        binaryOperators.put("<=", "ILeq");
+        binaryOperators.put(">=", "IGeq");
+        binaryOperators.put("&&", "BAnd");
+        binaryOperators.put("||", "BOr" );
+        // TODO: integers may require to be converted to 0 or 1 with BAnd/BOr
     }
 
     @Override
@@ -80,6 +99,12 @@ public class Machine extends AbstractMachine {
         cg.append(expr.getCode());
         getValue(expr, return_size);
         cg.ret(return_size, param_size);
+        return cg.get();
+    }
+    @Override
+    public String genBlock(String code) {
+        cg.append(code);
+        cg.pop(0, currentAddress - addressStack.peek());
         return cg.get();
     }
 
@@ -156,8 +181,6 @@ public class Machine extends AbstractMachine {
     }
     @Override
     public Expr genNew(Type t) {
-        StringBuilder sb = new StringBuilder(50);
-
         cg.loadl(t.visit(sizeVisitor));
         cg.subr("Malloc");
 
@@ -225,20 +248,19 @@ public class Machine extends AbstractMachine {
 
     @Override
     public moc.gc.Expr genIntUnaryOp(String op, moc.gc.Expr expr) {
-        // TODO:check
-        cg.append(expr.getCode());
-        getValue(expr, 1);
-
         switch(op){
-            case "!":
-                cg.loadl("0");
-                cg.subr("IEq");
-                break;
+            case "+":
+                return expr;
             case "-":
+                cg.append(expr.getCode());
+                getValue(expr, 1);
                 cg.subr("INeg");
                 break;
-            case "+":
-                // Nothing to do here
+            case "!":
+                cg.append(expr.getCode());
+                getValue(expr, 1);
+                cg.loadl("0");
+                cg.subr("IEq");
                 break;
             default:
                 cg.append("<<<ERROR>>> genIntUnaryOp " + op + '\n');
@@ -248,106 +270,24 @@ public class Machine extends AbstractMachine {
 
     @Override
     public Expr genIntBinaryOp(String op, moc.gc.Expr lhs, moc.gc.Expr rhs) {
-        // TODO:check
         cg.append(lhs.getCode());
         getValue(lhs, 1);
         cg.append(rhs.getCode());
         getValue(rhs, 1);
+        cg.subr(binaryOperators.get(op));
 
-        switch(op){
-            case "+":
-                cg.subr("IAdd");
-                break;
-            case "-":
-                cg.subr("ISub");
-                break;
-            case "*":
-                cg.subr("IMul");
-                break;
-            case "/":
-                cg.subr("IDiv");
-                break;
-            case "%":
-                cg.subr("IMod");
-                break;
-            case "!=":
-                cg.subr("INeq");
-                break;
-            case "==":
-                cg.subr("IEq");
-                break;
-            case ">":
-                cg.subr("IGtr");
-                break;
-            case ">=":
-                cg.subr("IGeq");
-                break;
-            case "<":
-                cg.subr("ILss");
-                break;
-            case "<=":
-                cg.subr("ILeq");
-                break;
-            default:
-                cg.append("<<<ERROR>>> genIntBinaryOp " + op + '\n');
-        }
         return new Expr(cg.get());
     }
     @Override
     public Expr genCharBinaryOp(String op, moc.gc.Expr lhs, moc.gc.Expr rhs) {
-        // TODO:check
-        cg.append(lhs.getCode());
-        getValue(lhs, 1);
-        cg.append(rhs.getCode());
-        getValue(rhs, 1);
-
-        switch(op){
-            case "!=":
-                cg.subr("INeq");
-                break;
-            case "==":
-                cg.subr("IEq");
-                break;
-            case ">":
-                cg.subr("IGtr");
-                break;
-            case ">=":
-                cg.subr("IGeq");
-                break;
-            case "<":
-                cg.subr("ILess");
-                break;
-            case "<=":
-                cg.subr("ILeq");
-                break;
-           default:
-                cg.append("<<<ERROR>>> genCharBinaryOp " + op + '\n');
-        }
-        return new Expr(cg.get());
+        return genIntBinaryOp(op, lhs, rhs);
     }
     @Override
     public Expr genPtrBinaryOp(
         String op, Type pointer,
         moc.gc.Expr lhs, moc.gc.Expr rhs
     ) {
-        // TODO:check
-        cg.append(lhs.getCode());
-        getValue(lhs, 1);
-        cg.append(rhs.getCode());
-        getValue(rhs, 1);
-
-        switch(op){
-            case "!=":
-                cg.subr("INeq");
-                break;
-            case "==":
-                cg.subr("IEq");
-                break;
-            default:
-                cg.append("<<<ERROR>>> genPtrBinaryOp " + op + '\n');
-        }
-        return new Expr(cg.get());
-
+        return genIntBinaryOp(op, lhs, rhs);
     }
 
     @Override

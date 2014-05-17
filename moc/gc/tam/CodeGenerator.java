@@ -88,6 +88,15 @@ final class CodeGenerator {
         declAppend('\n');
     }
 
+    void pop(int d, int n) {
+        indent();
+        append("POP (");
+        append(d);
+        append(") ");
+        append(n);
+        skipLine();
+    }
+
     void ret(int param_size, int return_size) {
         indent();
         append("RETURN (");
