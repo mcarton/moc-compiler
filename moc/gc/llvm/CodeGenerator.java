@@ -1,6 +1,7 @@
 package moc.gc.llvm;
 
 import java.lang.StringBuilder;
+import moc.gc.IExpr;
 import moc.type.Type;
 
 final class CodeGenerator {
@@ -37,7 +38,7 @@ final class CodeGenerator {
         return declarationSb.toString();
     }
 
-    String getValue(String type, moc.gc.Expr expr) {
+    String getValue(String type, IExpr expr) {
         return machine.getValue(type, expr);
     }
 

@@ -40,7 +40,7 @@ inh htype : Type for
     REFS,
     TX, RX, AX
 ;
-inh parameters : ArrayList<Location> for
+inh parameters : ArrayList<ILocation> for
     FUNC_PARAMETERS, FUNC_PARAMETERSX, FUNC_PARAMETER
 ;
 inh types : TypeList for
@@ -54,11 +54,11 @@ syn code : String for
     ENTITIES, BLOCK, IF, ELSE, INST, INSTS,
     FUNCTION, ASM
 ;
-syn expr : Expr for
+syn expr : IExpr for
     F, TX, T, RX, R, AX, A, EX, E
 ;
-inh hexpr : Expr for TX, RX, AX;
-inh exprs : ArrayList<Expr> for ARGS, ARGSX;
+inh hexpr : IExpr for TX, RX, AX;
+inh exprs : ArrayList<IExpr> for ARGS, ARGSX;
 
 inh currIndex : ListIterator<Type> for ARGS, ARGSX;
 
@@ -169,7 +169,7 @@ FUNCTION -> TYPE ident #csymbols opar FUNC_PARAMETERS #usymbols cpar BLOCK #gen;
 global
     SymbolTable blockTds;
     TypeList types;
-    ArrayList<Location> parameters;
+    ArrayList<ILocation> parameters;
     FunctionType fun;
 #csymbols {
     blockTds = new SymbolTable(FUNCTION^symbolTable);
@@ -179,7 +179,7 @@ global
     types = new TypeList();
     FUNC_PARAMETERS^types = types;
 
-    parameters = new ArrayList<Location>();
+    parameters = new ArrayList<ILocation>();
     FUNC_PARAMETERS^parameters = parameters;
 }
 #usymbols {
@@ -229,7 +229,7 @@ FUNC_PARAMETER -> TYPE ident #symbolTable;
         }
 
         FUNC_PARAMETER^types.add(TYPE^type);
-        Location loc
+        ILocation loc
             = FUNC_PARAMETER^machine.getLocationForParameter(TYPE^type, ident^txt);
         FUNC_PARAMETER^symbolTable.insertVar(ident^txt, TYPE^type, loc);
         FUNC_PARAMETER^parameters.add(loc);
@@ -356,7 +356,7 @@ INST -> using typeident affect TYPE semicolon #symbolTable #gen;
 -- local variable declaration with or without initialisation
 INST -> TYPE ident EX semicolon #symbolTable #gen;
 global
-    Location loc;
+    ILocation loc;
     boolean ok;
 #symbolTable {
     INST^returns = 1;
@@ -395,7 +395,7 @@ global
             INST^code = INST^machine.genVarDecl(TYPE^type, loc);
         }
         else {
-            Expr tmp = INST^machine.genCast(EX^type, TYPE^type, EX^expr);
+            IExpr tmp = INST^machine.genCast(EX^type, TYPE^type, EX^expr);
             INST^code = INST^machine.genVarDecl(TYPE^type, loc, tmp);
         }
     }
@@ -453,7 +453,7 @@ ELSE -> #returns #gen;
 
 IF -> if opar E cpar #cast BLOCK ELSE #returns #gen;
 global
-    Expr casted;
+    IExpr casted;
 #returns {
     if (!E^type.testable()) {
         error(TYPE_unexpected, "int", E^type);
@@ -480,7 +480,7 @@ INST -> return E semicolon #gen;
     if (E^type != null) {
         if (type.constructsFrom(E^type)) {
             FunctionType function = INST^symbolTable.getCurrentFunction();
-            Expr tmp = INST^machine.genCast(E^type, function.getReturnType(), E^expr);
+            IExpr tmp = INST^machine.genCast(E^type, function.getReturnType(), E^expr);
             INST^code = INST^machine.genReturn(function, tmp);
         }
         else {
@@ -516,7 +516,7 @@ E -> A EX #type;
     }
     else {
         -- TODO: A must be an lvalue
-        Expr tmp = E^machine.genCast(EX^type, A^type, EX^expr);
+        IExpr tmp = E^machine.genCast(EX^type, A^type, EX^expr);
         E^expr = E^machine.genAff(A^type, A^expr, tmp);
     }
 }
@@ -570,11 +570,11 @@ AX -> OPREL R #type;
             AX^expr = AX^machine.genInt("1");
         }
         elseif (AX^htype.isPointer() && (R^type.isNull() || R^type.isPointer())) {
-            Expr tmp = AX^machine.genCast(R^type, AX^htype, R^expr);
+            IExpr tmp = AX^machine.genCast(R^type, AX^htype, R^expr);
             AX^expr = AX^machine.genPtrBinaryOp(OPREL^sym, AX^htype, AX^hexpr, tmp);
         }
         elseif (R^type.isPointer() && (AX^htype.isNull() || AX^htype.isPointer())) {
-            Expr tmp = AX^machine.genCast(AX^htype, R^type, AX^hexpr);
+            IExpr tmp = AX^machine.genCast(AX^htype, R^type, AX^hexpr);
             AX^expr = AX^machine.genPtrBinaryOp(OPREL^sym, R^type, tmp, R^expr);
         }
     }
@@ -778,7 +778,7 @@ F -> opar TYPE cpar F #type;
 F -> ident opar #types ARGS cpar #gen;
 global
     FunctionType fun;
-    ArrayList<Expr> exprs;
+    ArrayList<IExpr> exprs;
     boolean ok;
 #types {
     Info info = F^symbolTable.globalSearch(ident^txt);
@@ -794,7 +794,7 @@ global
                 F^type = fun.getReturnType();
 
                 ARGS^types = fun.getParameterTypes();
-                exprs = new ArrayList<Expr>();
+                exprs = new ArrayList<IExpr>();
                 ARGS^exprs = exprs;
                 ARGS^hok = ok;
                 ARGS^currIndex = fun.getParameterTypes().iterator();

@@ -1,8 +1,8 @@
 package moc.gc.tam;
 
-import moc.gc.*;
+import moc.gc.IExpr;
 
-public class Expr implements moc.gc.Expr {
+public class Expr implements IExpr {
     Location loc;
     String code;
     boolean isAddress;

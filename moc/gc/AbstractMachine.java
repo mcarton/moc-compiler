@@ -102,7 +102,7 @@ public abstract class AbstractMachine implements IMachine {
 
     /** Default implementation that returns the given expression. */
     @Override
-    public Expr genParen(Expr expr) {
+    public IExpr genParen(IExpr expr) {
         return expr;
     }
 }

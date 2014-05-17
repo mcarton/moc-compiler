@@ -4,8 +4,8 @@ package moc.gc;
  *
  *  Concrete classes are machine-dependant.
  */
-public interface Expr {
+public interface IExpr {
     String getCode();
-    Location getLoc();
+    ILocation getLoc();
 }
 
