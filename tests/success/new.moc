@@ -1,4 +1,8 @@
 void main() {
     Int* a = new(Int);
+    *a = 10;
     delete(a);
+
+    Int* b = new(*a, Int);
+    delete(b);
 }

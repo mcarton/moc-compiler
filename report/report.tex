@@ -5,19 +5,116 @@
 \usepackage{lmodern}
 \usepackage[T1]{fontenc}
 \usepackage{hyperref}
+\usepackage{minted}
 
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \renewcommand{\headrulewidth}{1pt}
 \renewcommand{\footrulewidth}{\headrulewidth}
 
-\newcommand{\brokencell}[2][c]{\begin{tabular}[#1]{@{}c@{}}#2\end{tabular}}
-
 \title{Rapport projet de TDL}
-\author{Maxence Ahlouche \and Martin Carton \and Clément Hubin--Andrieu}
+\author{Maxence Ahlouche \and Martin Carton \and Clément Hubin-Andrieu}
 \date{mai 2014}
+
+\newcommand{\mocc}{\textit{mocc}}
+\newminted[moccode]{cpp}{%
+  tabsize=4, fontsize=\footnotesize,
+  frame=lines, framesep=\fboxsep,
+  rulecolor=\color{gray!40}
+}
 
 \begin{document}
   \maketitle
   \tableofcontents
+  \newpage
+
+\section{Design decisions}
+  \subsection{Typage}
+    Le typage est plus fort qu'en C.  Ça empêche notamment d'écrire une
+    fonction comme \verb+malloc+, mais on a un opérateur \verb+new+ (voir
+    section~\ref{new}) qui fait ça très bien.
+
+  \subsection{Noms de types}
+    Les noms de type commencent tous par une majuscule.
+    Ceci afin de permettre d'avoir des alias de type (voir
+    section~\ref{alias}).
+
+  \section{NULL et nil, YES et NO}
+    Il n'y a pas de \verb+nil+ (qui serait inutile vu qu'il n'y aurait pas de
+    différence avec \verb+NULL+) et \verb+NULL+ s'écrit \verb+null+ par
+    consistance avec les autres variables.
+
+    De même \verb+YES+ et \verb+NO+ s'écrivent \verb+yes+ et \verb+no+.
+
+  \section{Classes}
+    Nous avons supprimé les \verb+@+ devant \verb+@class+ et \verb+@end+.
+
+\section{Extension du langage}
+  \subsection{Alias de type}\label{alias}
+    Il est possible de définir des alias de type:
+    \begin{moccode}
+using NouveauNom = NomExistant;
+    \end{moccode}
+
+    La syntaxe évite volontairement le \verb+typedef+ bizarre du C.
+
+  \subsection{Tableaux}
+    On peut créer des tableaux:
+    \begin{moccode}
+Char[5] s = "net7";
+    \end{moccode}
+
+    La taille se met après le type, et non le nom comme en C.
+
+    Ils sont convertibles en pointeurs vers le type correspondant, mais le font
+    dans moins de cas qu'en C (notamment les tableaux sont copiables et
+    passables comme paramètre de fonction et peuvent être retournés). Le type
+    tableau est un vrai type.
+
+  \subsection{Opérateurs new et delete}\label{new}
+    Ces opérateurs sont équivalents à \verb+malloc+ et \verb+free+, mais sont
+    typés (le langage ne possède pas de type \verb+void*+).
+
+    \begin{moccode}
+Int* taille = new(Int);
+*taille = 10;
+
+Char* test = new(*taille, Char);
+delete(taille);
+delete(test);
+    \end{moccode}
+
+  \subsection{Opérateur sizeof}
+    Cet opérateur retourne la taille d'un type:
+
+    \begin{moccode}
+Int a = sizeof(Int);
+    \end{moccode}
+
+\section{Warnings}
+  Nous avons ajoutés des warnings au compilateur.
+
+  Il suffit d'appeler \mocc{} avec \verb+-w nom_du_warning+.
+  Il y a aussi un warning \verb+all+.
+
+  \subsection{unreachable}
+    \verb"unreachable" vérifie la présence d'instructions inutiles.
+
+    Par exemple:
+    \begin{moccode}
+Int test() {
+    if(a) {
+        return 123;
+    }
+    else {
+        return 456;
+    }
+    f(); // unreachable
+}
+    \end{moccode}
+
+  \subsection{shadow}
+    \verb"shadow" vérifie qu'une déclaration ne masque pas une déclaration
+    précédente.
 \end{document}
+

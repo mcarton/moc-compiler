@@ -6,7 +6,7 @@ void put_string(Char* string) {
 }
 
 void put_char(Char c) {
-    asm("%1 = load i8* %c-1, align 1");
+    asm("%1 = load i8* %c.0, align 1");
     asm("%2 = sext i8 %1 to i32");
     asm("%3 = call i32 @putchar(i32 %2)");
 }

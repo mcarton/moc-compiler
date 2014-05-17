@@ -51,7 +51,7 @@ public class SymbolTable {
     /**
      * Add a variable to the SymbolTable.
      */
-    public void insertVar(String n, Type t, Location location) {
+    public void insertVar(String n, Type t, ILocation location) {
         map.put(n, new InfoVar(t, location));
     }
 

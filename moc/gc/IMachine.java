@@ -47,77 +47,83 @@ public interface IMachine {
      */
     void endBlock();
 
-    /** Get the machine-dependant Location for a variable named
-     *  <code>name</code> with type <code>type</code> declared here.
+    /** Get the machine-dependant ILocation for a parameters named
+     *  <code>name</code> with type <code>type</code>.
      */
-    Location getLocationFor(String name, Type type);
+    ILocation getLocationForParameter(Type type, String name);
+
+    /** Get the machine-dependant ILocation for a variable named
+     *  <code>name</code> with type <code>type</code>.
+     */
+    ILocation getLocationForVariable(Type type, String name);
 
     // string stuffs:
     int stringSize(String unescaped);
 
     // code generation stuffs:
     String genFunction(
-        FunctionType f, ArrayList<Location> parameters, String name, String bloc
+        FunctionType f, ArrayList<ILocation> parameters, String name, String bloc
     );
-    String genReturn(FunctionType f, Expr expr);
+    String genReturn(FunctionType f, IExpr expr);
 
     String genBlock(String code);
-    String genInst(Expr expr);
-    String genInsts(String code);
+    String genInst(IExpr expr);
+    String genBlockInst(String code);
     String genAsm(String code);
     String genUsing(String name, Type type);
     String genGlobalAsm(String code);
 
     String genIfInst(String code);
-    String genIf(Expr cond, String thenCode, String elseCode);
+    String genIf(IExpr cond, String thenCode, String elseCode);
     String genElseIf(String code);
     String genElse();
     String genElse(String code);
 
     /** Generates code for variable declaration without definition.
      */
-    String genVarDecl(Type t, Location location);
+    String genVarDecl(Type t, ILocation location);
 
     /** Generates code for variable declaration with definition.
      */
-    String genVarDecl(Type t, Location location, Expr expr);
+    String genVarDecl(Type t, ILocation location, IExpr expr);
 
-    Expr genInt(String txt);
-    Expr genString(int length, String txt);
-    Expr genCharacter(String txt);
-    Expr genNull();
-    Expr genYes();
-    Expr genNo();
+    IExpr genInt(String txt);
+    IExpr genString(int length, String txt);
+    IExpr genCharacter(String txt);
+    IExpr genNull();
+    IExpr genYes();
+    IExpr genNo();
 
-    Expr genNew(Type type);
-    String genDelete(Type type, Expr expr);
-    Expr genCall(String funName, FunctionType fun, ArrayList<Expr> exprs);
-    Expr genSizeOf(Type type);
+    IExpr genNew(Type type);
+    IExpr genNew(IExpr size, Type type);
+    String genDelete(Type type, IExpr expr);
+    IExpr genCall(String funName, FunctionType fun, ArrayList<IExpr> exprs);
+    IExpr genSizeOf(Type type);
 
-    Expr genIdent(InfoVar info);
-    Expr genAff(Type type, Expr lhs, Expr rhs);
-    Expr genNonAff(Type type, Expr expr);
+    IExpr genIdent(InfoVar info);
+    IExpr genAff(Type type, IExpr lhs, IExpr rhs);
+    IExpr genNonAff(Type type, IExpr expr);
 
     /**
      * Dereference a pointer.
      *
      * @param type The type of the pointer.
      */
-    Expr genDeref(Type type, Expr expr);
+    IExpr genDeref(Type type, IExpr expr);
 
     /**
      * Generates code for <code>lhs[rhs]</code>.
      */
-    Expr genArrSub(Array type, Expr lhs, Expr rhs);
-    Expr genPtrSub(Pointer type, Expr lhs, Expr rhs);
-    Expr genParen(Expr expr);
-    Expr genCast(Type from, Type to, Expr expr);
+    IExpr genArrSub(Array type, IExpr lhs, IExpr rhs);
+    IExpr genPtrSub(Pointer type, IExpr lhs, IExpr rhs);
+    IExpr genParen(IExpr expr);
+    IExpr genCast(Type from, Type to, IExpr expr);
 
-    Expr genIntUnaryOp(String op, Expr expr);
+    IExpr genIntUnaryOp(String op, IExpr expr);
 
-    Expr genIntBinaryOp(String op, Expr lhs, Expr rhs);
-    Expr genCharBinaryOp(String op, Expr lhs, Expr rhs);
-    Expr genPtrBinaryOp(String op, Type pointer, Expr lhs, Expr rhs);
+    IExpr genIntBinaryOp(String op, IExpr lhs, IExpr rhs);
+    IExpr genCharBinaryOp(String op, IExpr lhs, IExpr rhs);
+    IExpr genPtrBinaryOp(String op, Type pointer, IExpr lhs, IExpr rhs);
 
     String genComment(String comment);
 

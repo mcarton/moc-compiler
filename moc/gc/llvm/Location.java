@@ -1,6 +1,8 @@
 package moc.gc.llvm;
 
-final class Location implements moc.gc.Location {
+import moc.gc.ILocation;
+
+final class Location implements ILocation {
     String name;
 
     Location(String name) {

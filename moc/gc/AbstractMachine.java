@@ -79,7 +79,7 @@ public abstract class AbstractMachine implements IMachine {
         return code;
     }
     @Override
-    public String genInsts(String code) {
+    public String genBlockInst(String code) {
         return code;
     }
 
@@ -102,7 +102,7 @@ public abstract class AbstractMachine implements IMachine {
 
     /** Default implementation that returns the given expression. */
     @Override
-    public Expr genParen(Expr expr) {
+    public IExpr genParen(IExpr expr) {
         return expr;
     }
 }

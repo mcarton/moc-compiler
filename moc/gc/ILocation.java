@@ -4,6 +4,6 @@ package moc.gc;
  *
  *  Concrete classes are machine-dependant.
  */
-public interface Location {
+public interface ILocation {
 }
 

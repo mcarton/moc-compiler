@@ -1,6 +1,6 @@
 package moc.symbols;
 
-import moc.gc.Location;
+import moc.gc.ILocation;
 import moc.type.Type;
 
 /**
@@ -8,12 +8,12 @@ import moc.type.Type;
  */
 public class InfoVar implements Info {
     private Type type;
-    private Location loc;
+    private ILocation loc;
 
     /**
      * An InfoVar has a type and a location for its value.
      */
-    public InfoVar(Type type, Location location) {
+    public InfoVar(Type type, ILocation location) {
         this.type = type;
         this.loc = location;
     }
@@ -22,7 +22,7 @@ public class InfoVar implements Info {
         return type;
     }
 
-    public Location getLoc() {
+    public ILocation getLoc() {
         return loc;
     }
 
