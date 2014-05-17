@@ -76,7 +76,11 @@ Char[5] s = "net7";
     typés (le langage ne possède pas de type \verb+void*+).
 
     \begin{moccode}
-Char* test = new(Char);
+Int* taille = new(Int);
+*taille = 10;
+
+Char* test = new(*taille, Char);
+delete(taille);
 delete(test);
     \end{moccode}
 
