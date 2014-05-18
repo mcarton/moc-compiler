@@ -129,7 +129,9 @@ term typeident     is "[A-Z][_0-9A-Za-z]*";
 -- TODO:MOC:
 --term stringo     is "@\"[^\"]*\"";
 
+--------------------------------------------------------------------------------
 --production rules
+--------------------------------------------------------------------------------
 PROGRAM -> #init ENTITIES #gen;
 global
    IMachine machine;
@@ -239,7 +241,9 @@ FUNC_PARAMETER -> TYPE ident #symbolTable;
     }
 }
 
--- base types and pointers
+--------------------------------------------------------------------------------
+-- base types, pointers and arrays
+--------------------------------------------------------------------------------
 TYPE -> void #gen; #gen { TYPE^type = new VoidType(); }
 
 TYPE -> STYPE #get REFS #gen;
@@ -247,11 +251,14 @@ TYPE -> STYPE #get REFS #gen;
 #gen { TYPE^type = REFS^type; }
 
 REFS -> #gen; #gen { REFS^type = REFS^htype; }
+
+-- pointers
 REFS -> mult REFS #gen;
 #gen {
     REFS^type = new Pointer(REFS1^type);
 }
 
+-- arrays
 REFS -> osbra integer csbra REFS #gen;
 #gen {
     int nbElements = new Integer(integer^txt);
@@ -281,7 +288,7 @@ STYPE -> typeident #gen;
     }
 }
 
--- method body and instructions blocks
+-- function body and instructions blocks
 BLOCK -> #symbolTable occbra INSTS ccbra #message #gen;
 global
     SymbolTable symbolTable;
@@ -302,7 +309,9 @@ global
     BLOCK^machine.endBlock();
 }
 
+--------------------------------------------------------------------------------
 -- instructions
+--------------------------------------------------------------------------------
 INSTS -> #returns #gen;
 #returns {
     INSTS^returns = 0;
@@ -409,7 +418,7 @@ global
     }
 }
 
--- expression instruction (affectation and procedure call)
+-- expression instruction (affectation and function call)
 INST -> E semicolon #returns #gen;
 #returns {
     INST^returns = 1;
@@ -420,7 +429,7 @@ INST -> E semicolon #returns #gen;
     }
 }
 
--- instruction blockk
+-- instruction block
 INST -> BLOCK #returns #gen;
 #returns {
     INST^returns = BLOCK^returns;
@@ -497,8 +506,8 @@ INST -> return E semicolon #gen;
     }
 }
 
--- expressions
 -----------------------------------------------------------------------
+-- expressions
 -- E = expression (including affectation)
 -- A = expression figuring in an affectation
 -- R = expression figuring in a relational expression
@@ -803,6 +812,7 @@ NEW -> TYPE #gen;
     }
 }
 
+-- dynamic arrays
 NEW -> E comma TYPE #gen;
 #gen {
     if (TYPE^type.isVoid()) {
@@ -830,6 +840,7 @@ INST -> delete opar E cpar semicolon #gen;
     INST^returns = 1;
 }
 
+-- sizeof expression
 F -> sizeof opar TYPE cpar #type #affectable;
 #type {
     F^type = new IntegerType();
@@ -851,6 +862,7 @@ F -> opar E cpar #type #affectable;
     F^affectable = false;
 }
 
+-- cast
 F -> opar TYPE cpar F #type #affectable;
 #type {
     if (F1^type != null && !TYPE^type.castsFrom(F1^type)) {
@@ -865,7 +877,7 @@ F -> opar TYPE cpar F #type #affectable;
     F^affectable = false;
 }
 
--- subprogram call
+-- function call
 F -> ident opar #types ARGS cpar #gen #affectable;
 global
     FunctionType fun;
@@ -905,6 +917,7 @@ global
     F^affectable = false;
 }
 
+-- ident
 F -> ident #type #affectable;
 #type {
     Info info = F^symbolTable.globalSearch(ident^txt);
