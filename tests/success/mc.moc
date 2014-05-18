@@ -2,11 +2,11 @@
 
 // inline assembly in a function
 Int* malloc(Int size){
-    return NULL;
+    return null;
 }
 
 // inline assembly in a function
-void log(Char* message, Int value){
+void log(Char const* message, Int value){
     Int x = 12;
 }
 

@@ -2,6 +2,7 @@ package moc.gc.tam;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Stack;
 import moc.compiler.MOCException;
@@ -95,19 +96,28 @@ public class Machine extends AbstractMachine {
     ) {
         cg.function(name);
         cg.append(block);
+
+        if (f.getReturnType().isVoid()) {
+            cg.ret(0, paramSize(f));
+        }
+
         return cg.get();
+    }
+
+    private int paramSize(FunctionType fun) {
+        int paramSize = 0;
+        for (Type t : fun.getParameterTypes()) {
+            paramSize += t.visit(sizeVisitor);
+        }
+        return paramSize;
     }
 
     @Override
     public String genReturn(FunctionType f, IExpr expr) {
-        int param_size = 0;
-        for (Type t : f.getParameterTypes()) {
-            param_size += t.visit(sizeVisitor);
-        }
-        int return_size = f.getReturnType().visit(sizeVisitor);
+        int returnSize = f.getReturnType().visit(sizeVisitor);
         cg.append(expr.getCode());
-        getValue(expr, return_size);
-        cg.ret(return_size, param_size);
+        getValue(expr, returnSize);
+        cg.ret(returnSize, paramSize(f));
         return cg.get();
     }
     @Override
@@ -230,7 +240,12 @@ public class Machine extends AbstractMachine {
     }
     @Override
     public Expr genNew(IExpr nbElements, Type t) {
-        return null; // TODO:code
+        cg.loadl(t.visit(sizeVisitor));
+        cg.append(nbElements.getCode());
+        getValue(nbElements, 1);
+        cg.subr("IMul");
+        cg.subr("Malloc");
+        return new Expr(cg.get());
     }
 
     @Override
@@ -246,7 +261,17 @@ public class Machine extends AbstractMachine {
         String funName, FunctionType fun,
         ArrayList<IExpr> exprs
     ) {
-        return null; // TODO:code
+        ListIterator<IExpr> it = exprs.listIterator(exprs.size());
+        ListIterator<Type> typeIt
+            = fun.getParameterTypes().iterator(exprs.size());
+        while (it.hasPrevious()) {
+            IExpr expr = it.previous();
+            Type type = typeIt.previous();
+            cg.append(expr.getCode());
+            getValue(expr, type.visit(sizeVisitor));
+        }
+        cg.call("SB", "function_" + funName);
+        return new Expr(cg.get());
     }
     @Override
     public Expr genSizeOf(Type type) {
@@ -262,7 +287,7 @@ public class Machine extends AbstractMachine {
         cg.append(loc.getCode());
         cg.append(gcrhs.getCode());
         cg.loada(loc.getLoc().toString());
-        getValue(gcrhs,1);
+        getValue(gcrhs, 1);
         cg.storei(t.visit(sizeVisitor));
         return new Expr(cg.get());
     }

@@ -41,6 +41,15 @@ final class CodeGenerator {
         append(code);
         skipLine();
     }
+    
+    void call(String reg, String fun) {
+        indent();
+        append("CALL (");
+        append(reg);
+        append(") ");
+        append(fun);
+        skipLine();
+    }
 
     void comment(String txt) {
         append("; ");
@@ -68,6 +77,17 @@ final class CodeGenerator {
         append(") ");
         append(etiq);
         skipLine();
+    }
+
+    void globalAsm(String code) {
+        declAppend(code);
+        declAppend('\n');
+    }
+
+    void globalComment(String comment) {
+        declAppend("; ");
+        declAppend(comment);
+        declAppend('\n');
     }
 
     void label(String name) {
@@ -106,17 +126,6 @@ final class CodeGenerator {
         skipLine();
     }
 
-    void globalAsm(String code) {
-        declAppend(code);
-        declAppend('\n');
-    }
-
-    void globalComment(String comment) {
-        declAppend("; ");
-        declAppend(comment);
-        declAppend('\n');
-    }
-
     void pop(int d, int n) {
         indent();
         append("POP (");
@@ -133,12 +142,12 @@ final class CodeGenerator {
         skipLine();
     }
 
-    void ret(int param_size, int return_size) {
+    void ret(int returnSize, int paramSize) {
         indent();
         append("RETURN (");
-        append(return_size);
+        append(paramSize);
         append(") ");
-        append(param_size);
+        append(returnSize);
         skipLine();
     }
 

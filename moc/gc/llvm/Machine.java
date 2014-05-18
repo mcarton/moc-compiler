@@ -96,6 +96,11 @@ public final class Machine extends AbstractMachine {
         FunctionType f, ArrayList<ILocation> params,
         String name, String block
     ) {
+        /* - When the return type is an array, it is passed as a pointer
+         *   allocated by the callee.
+         * - When a parameter is an array, it is passed as a pointer and must
+         *   be copied in the function.
+         */
         Type returnType = f.getReturnType();
         boolean returnsArray = returnType.isArray();
         boolean returnsVoid = returnType.isVoid() || returnsArray;
@@ -152,6 +157,7 @@ public final class Machine extends AbstractMachine {
 
         cg.body(block);
 
+        // return instruction
         cg.br("End");
         cg.label("End");
 
@@ -169,6 +175,10 @@ public final class Machine extends AbstractMachine {
         return cg.get();
     }
 
+    /**
+     * Code for a return expression. It does not actually return be jump to the
+     * end of the function where it returns.
+     */
     @Override
     public String genReturn(FunctionType f, IExpr expr) {
         Type returnType = f.getReturnType();
@@ -182,6 +192,7 @@ public final class Machine extends AbstractMachine {
 
     @Override
     public String genInst(IExpr expr) {
+        // if expr.getLoc() is null, the expression is an llvm constant
         return expr.getLoc() == null ? "" : expr.getCode();
     }
 
@@ -314,11 +325,7 @@ public final class Machine extends AbstractMachine {
     @Override
     public Expr genNew(Type type) {
         String tmpPtr = cg.malloc(Integer.toString(type.visit(sizeVisitor)));
-
-        // cast to right pointer type
-        String tmpCastedPtr = cg.cast("bitcast", "i8*", tmpPtr, cg.typeName(type) + '*');
-
-        return new Expr(new Location(tmpCastedPtr), cg.get());
+        return genNewImpl(tmpPtr, type);
     }
     @Override
     public Expr genNew(IExpr nbElements, Type type) {
@@ -326,9 +333,12 @@ public final class Machine extends AbstractMachine {
         String tmpNbElements = getValue("i64", nbElements);
         String size = genBinaryOpImpl("i64", "mul", tmpNbElements, tmpSize);
         String tmpPtr = cg.malloc(size);
-
+        return genNewImpl(tmpPtr, type);
+    }
+    private Expr genNewImpl(String allocated, Type type) {
         // cast to right pointer type
-        String tmpCastedPtr = cg.cast("bitcast", "i8*", tmpPtr, cg.typeName(type) + '*');
+        String tmpCastedPtr =
+            cg.cast("bitcast", "i8*", allocated, cg.typeName(type) + '*');
 
         return new Expr(new Location(tmpCastedPtr), cg.get());
     }
@@ -373,6 +383,9 @@ public final class Machine extends AbstractMachine {
             tmpValueName = cg.callNonVoid(returnTypeName, funName);
         }
         else {
+            /* When the return type is an arrays it is passed as the first
+             * parameter.
+             */
             if (returnsArray) {
                 returnTypeName = cg.typeName(returnType);
                 tmpValueName = getTmpName();
@@ -614,6 +627,7 @@ public final class Machine extends AbstractMachine {
         }
     }
 
+    /** Copy a variable using `malloc` for arrays. */
     private void copy(Type type, String what, String where) {
         if (type.isArray()) {
             String typename = cg.typeName(type) + '*';
@@ -626,6 +640,9 @@ public final class Machine extends AbstractMachine {
         }
     }
 
+    /** Escape the string: remove the quotes, apart from '\\' and '\hexa' llvm
+     * does not have any escape sequence.
+     */
     private String escape(String unescaped) {
         StringBuffer sb = new StringBuffer(unescaped.length());
 
@@ -659,6 +676,9 @@ public final class Machine extends AbstractMachine {
         return sb.toString();
     }
 
+    /** Escape the character: llvm does not have characters, the function
+     * returns the ascii value.
+     */
     private int escapeChar(String unescaped) {
         if (unescaped.charAt(1) == '\\') {
             switch (unescaped.charAt(2)) {

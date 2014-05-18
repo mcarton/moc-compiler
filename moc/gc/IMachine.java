@@ -66,26 +66,59 @@ public interface IMachine {
     );
     String genReturn(FunctionType f, IExpr expr);
 
+    /** Code for a block of code.
+     */
     String genBlock(String code);
+
+    /** Code for an expression.
+     */
     String genInst(IExpr expr);
+
+    /** Code for a instruction that is a block.
+     */
     String genBlockInst(String code);
+
+    /** Code for inline assembly (quotes are included in `code`).
+     */
     String genAsm(String code);
+
+    /** Code for a `using` instruction.
+     */
     String genUsing(String name, Type type);
+
+    /** Code for inline assembly that is outside a function.
+     */
     String genGlobalAsm(String code);
 
+    /** Code for an `if/else if/else` instruction.
+     */
     String genIfInst(String code);
+
+    /** Code for an `if/else` instruction.
+     *
+     * @param elseCode null if there is no `else` block.
+     */
     String genIf(IExpr cond, String thenCode, String elseCode);
+
+    /** Code for an `else if` in an `if` instruction.
+     */
     String genElseIf(String code);
+
+    /** Code for a missing `else` in an `if` instruction.
+     */
     String genElse();
+
+    /** Code for an `else` in an `if` instruction.
+     */
     String genElse(String code);
 
     String genWhile(IExpr cond, String block);
 
-    /** Generates code for variable declaration without definition.
+    /** Generate code for variable declaration without definition.
      */
     String genVarDecl(Type t, ILocation location);
 
-    /** Generates code for variable declaration with definition.
+    /** Generate code for variable declaration with definition.
      */
     String genVarDecl(Type t, ILocation location, IExpr expr);
 
@@ -96,29 +129,61 @@ public interface IMachine {
     IExpr genYes();
     IExpr genNo();
 
+    /** Allocate space for a variable of type `type`.
+     */
     IExpr genNew(Type type);
+
+    /** Allocate space for a dynamic array.
+     */
     IExpr genNew(IExpr size, Type type);
+
+    /** Free space allocated by a call to either for of the `new` operator.
+     */
     String genDelete(Type type, IExpr expr);
+
+    /** Call a function.
+     */
     IExpr genCall(String funName, FunctionType fun, ArrayList<IExpr> exprs);
+
+    /** Return the size of the given type.
+     */
     IExpr genSizeOf(Type type);
 
     IExpr genIdent(InfoVar info);
+
+    /** Code for an affectation.
+     */
     IExpr genAff(Type type, IExpr lhs, IExpr rhs);
+
+    /** Code for an expression that is not an affectation.
+     */
     IExpr genNonAff(Type type, IExpr expr);
 
     /**
      * Dereference a pointer.
      *
-     * @param type The type of the pointer.
+     * @param type The type of the pointer to dereference.
      */
     IExpr genDeref(Type type, IExpr expr);
 
     /**
-     * Generates code for <code>lhs[rhs]</code>.
+     * Generates code for <code>lhs[rhs]</code> where `lhs` is an array.
      */
     IExpr genArrSub(Array type, IExpr lhs, IExpr rhs);
+
+    /**
+     * Generates code for <code>lhs[rhs]</code> where `lhs` is a pointer.
+     */
     IExpr genPtrSub(Pointer type, IExpr lhs, IExpr rhs);
+
+    /** Code for a parenthesised expression.
+     */
     IExpr genParen(IExpr expr);
+
+    /**
+     * Code for a implicit or explicit cast. The function is called only if the
+     * cast is possible.
+     */
     IExpr genCast(Type from, Type to, IExpr expr);
 
     IExpr genIntUnaryOp(String op, IExpr expr);
