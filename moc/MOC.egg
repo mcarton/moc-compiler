@@ -73,8 +73,8 @@ syn method : Method for METHOD;
 syn  ok : boolean for ARGS, ARGSX;
 inh hok : boolean for ARGS, ARGSX;
 
--- affectable is true if the expression is affectable (i.e. is a variable, in fat)
-syn affectable : boolean for A, AX, R, RX, T, TX, F;
+-- lvalue is true if the expression is lvalue (i.e. is a variable, in fat)
+syn lvalue : boolean for A, AX, R, RX, T, TX, F;
 
 syn const : boolean for CONST;
 
@@ -579,12 +579,12 @@ E -> A EX #type;
         E^expr = E^machine.genNonAff(A^type, A^expr);
     }
     else {
-        if (A^affectable) {
+        if (A^lvalue) {
             IExpr tmp = E^machine.genCast(EX^type, A^type, EX^expr);
             E^expr = E^machine.genAff(A^type, A^expr, tmp);
         }
         else {
-            error(TYPE_notAffectable);
+            error(TYPE_notLvalue);
         }
     }
 }
@@ -609,7 +609,7 @@ OPREL -> supeq #get; #get { OPREL^sym = ">="; }
 OPREL -> eq    #get; #get { OPREL^sym = "=="; }
 OPREL -> neq   #get; #get { OPREL^sym = "!="; }
 
-A -> R #init AX #gen #affectable;
+A -> R #init AX #gen #lvalue;
 #init {
     AX^htype = R^type;
     AX^hexpr = R^expr;
@@ -618,20 +618,20 @@ A -> R #init AX #gen #affectable;
     A^type = AX^type;
     A^expr = AX^expr;
 }
-#affectable {
-    A^affectable = R^affectable && AX^affectable;
+#lvalue {
+    A^lvalue = R^lvalue && AX^lvalue;
 }
 
-AX -> #gen #affectable;
+AX -> #gen #lvalue;
 #gen {
     AX^type = AX^htype;
     AX^expr = AX^hexpr;
 }
-#affectable {
-    AX^affectable = true;
+#lvalue {
+    AX^lvalue = true;
 }
 
-AX -> OPREL R #type #affectable;
+AX -> OPREL R #type #lvalue;
 #type {
     if (AX^htype.isInt() && R^type.isInt()) {
         AX^expr = AX^machine.genIntBinaryOp(OPREL^sym, AX^hexpr, R^expr);
@@ -658,8 +658,8 @@ AX -> OPREL R #type #affectable;
 
     AX^type = new IntegerType();
 }
-#affectable {
-    AX^affectable = false;
+#lvalue {
+    AX^lvalue = false;
 }
 
 -- additions
@@ -667,7 +667,7 @@ OPADD -> plus  #get; #get { OPADD^sym = "+"; }
 OPADD -> minus #get; #get { OPADD^sym = "-"; }
 OPADD -> or    #get; #get { OPADD^sym = "||"; }
 
-R -> T #init RX #gen #affectable;
+R -> T #init RX #gen #lvalue;
 #init {
     RX^htype = T^type;
     RX^hexpr = T^expr;
@@ -676,20 +676,20 @@ R -> T #init RX #gen #affectable;
     R^type = RX^type;
     R^expr = RX^expr;
 }
-#affectable {
-    R^affectable = T^affectable && RX^affectable;
+#lvalue {
+    R^lvalue = T^lvalue && RX^lvalue;
 }
 
-RX -> #type #affectable;
+RX -> #type #lvalue;
 #type {
     RX^type = RX^htype;
     RX^expr = RX^hexpr;
 }
-#affectable {
-    RX^affectable = true;
+#lvalue {
+    RX^lvalue = true;
 }
 
-RX -> OPADD T #gen RX #gen2 #affectable;
+RX -> OPADD T #gen RX #gen2 #lvalue;
 #gen {
     -- TODO:moc: || with booleans
     if (RX^htype.isInt() && T^type.isInt()) {
@@ -704,8 +704,8 @@ RX -> OPADD T #gen RX #gen2 #affectable;
     RX^expr = RX1^expr;
     RX^type = RX1^type;
 }
-#affectable {
-    RX^affectable = false;
+#lvalue {
+    RX^lvalue = false;
 }
 
 -- multiplication
@@ -714,7 +714,7 @@ OPMUL -> div  #gen; #gen { OPMUL^sym = "/"; }
 OPMUL -> mod  #gen; #gen { OPMUL^sym = "%"; }
 OPMUL -> and  #gen; #gen { OPMUL^sym = "&&"; }
 
-T -> F #init TX #gen #affectable;
+T -> F #init TX #gen #lvalue;
 #init {
     TX^htype = F^type;
     TX^hexpr = F^expr;
@@ -723,20 +723,20 @@ T -> F #init TX #gen #affectable;
     T^type = TX^type;
     T^expr = TX^expr;
 }
-#affectable {
-    T^affectable = F^affectable && TX^affectable;
+#lvalue {
+    T^lvalue = F^lvalue && TX^lvalue;
 }
 
-TX -> #type #affectable;
+TX -> #type #lvalue;
 #type {
     TX^type = TX^htype;
     TX^expr = TX^hexpr;
 }
-#affectable {
-    TX^affectable = true;
+#lvalue {
+    TX^lvalue = true;
 }
 
-TX -> OPMUL F #gen TX #gen2 #affectable;
+TX -> OPMUL F #gen TX #gen2 #lvalue;
 #gen {
     -- TODO:moc: && with booleans
     if (TX^htype.isInt() && F^type.isInt()) {
@@ -751,11 +751,11 @@ TX -> OPMUL F #gen TX #gen2 #affectable;
     TX^expr = TX1^expr;
     TX^type = TX1^type;
 }
-#affectable {
-    TX^affectable = false;
+#lvalue {
+    TX^lvalue = false;
 }
 
-TX -> osbra E csbra #type #affectable;
+TX -> osbra E csbra #type #lvalue;
 #type {
     if (E^type.isInt()) {
         match (TX^htype) {
@@ -776,54 +776,54 @@ TX -> osbra E csbra #type #affectable;
         error(TYPE_unexpected, "Int", E^type);
     }
 }
-#affectable {
-    TX^affectable = true;
+#lvalue {
+    TX^lvalue = true;
 }
 
 -- base expressions
-F -> integer #type #affectable;
+F -> integer #type #lvalue;
 #type {
     F^type = new IntegerType();
     F^expr = F^machine.genInt(integer^txt);
 }
-#affectable {
-    F^affectable = false;
+#lvalue {
+    F^lvalue = false;
 }
 
-F -> string #type #affectable;
+F -> string #type #lvalue;
 #type {
     int length = F^machine.stringSize(string^txt);
 
     F^type = new Array(new CharacterType(), length);
     F^expr = F^machine.genString(length, string^txt);
 }
-#affectable {
-    F^affectable = false;
+#lvalue {
+    F^lvalue = false;
 }
 
-F -> character #type #affectable;
+F -> character #type #lvalue;
 #type {
     F^type = new CharacterType();
     F^expr = F^machine.genCharacter(character^txt);
 }
-#affectable {
-    F^affectable = false;
+#lvalue {
+    F^lvalue = false;
 }
 
-F -> null #type #affectable;
+F -> null #type #lvalue;
 #type {
     F^type = new NullType();
     F^expr = F^machine.genNull();
 }
-#affectable {
-    F^affectable = false;
+#lvalue {
+    F^lvalue = false;
 }
 
 -- unary expression
 OPUN -> plus  #get; #get { OPUN^sym = "+"; }
 OPUN -> minus #get; #get { OPUN^sym = "-"; }
 OPUN -> not   #get; #get { OPUN^sym = "!"; }
-F -> OPUN F #type #affectable;
+F -> OPUN F #type #lvalue;
 #type {
     -- TODO:moc: ! with booleans
     if (F1^type.isInt()) {
@@ -834,12 +834,12 @@ F -> OPUN F #type #affectable;
         error(OP_un_type, F1^type, OPUN^sym);
     }
 }
-#affectable {
-    F^affectable = false;
+#lvalue {
+    F^lvalue = false;
 }
 
 -- new/delete expressions
-F -> new opar TYPE NEW_VALUE cpar #gen #affectable;
+F -> new opar TYPE NEW_VALUE cpar #gen #lvalue;
 #gen {
     if (TYPE^type.isVoid()) {
         error(TYPE_void);
@@ -857,8 +857,8 @@ F -> new opar TYPE NEW_VALUE cpar #gen #affectable;
         }
     }
 }
-#affectable {
-    F^affectable = false;
+#lvalue {
+    F^lvalue = false;
 }
 
 NEW_VALUE -> #gen;
@@ -874,7 +874,7 @@ NEW_VALUE -> comma E #gen;
 }
 
 -- dynamic arrays
-F -> new osbra E csbra opar TYPE cpar #gen #affectable;
+F -> new osbra E csbra opar TYPE cpar #gen #lvalue;
 #gen {
     if (TYPE^type.isVoid()) {
         error(TYPE_void);
@@ -889,8 +889,8 @@ F -> new osbra E csbra opar TYPE cpar #gen #affectable;
         }
     }
 }
-#affectable {
-    F^affectable = false;
+#lvalue {
+    F^lvalue = false;
 }
 
 INST -> delete opar E cpar semicolon #gen;
@@ -905,29 +905,29 @@ INST -> delete opar E cpar semicolon #gen;
 }
 
 -- sizeof expression
-F -> sizeof opar TYPE cpar #type #affectable;
+F -> sizeof opar TYPE cpar #type #lvalue;
 #type {
     F^type = new IntegerType();
     if (TYPE^type != null) {
         F^expr = F^machine.genSizeOf(TYPE^type);
     }
 }
-#affectable {
-    F^affectable = false;
+#lvalue {
+    F^lvalue = false;
 }
 
 -- parenthesised expression
-F -> opar E cpar #type #affectable;
+F -> opar E cpar #type #lvalue;
 #type {
     F^type = E^type;
     F^expr = F^machine.genParen(E^expr);
 }
-#affectable {
-    F^affectable = false;
+#lvalue {
+    F^lvalue = false;
 }
 
 -- cast
-F -> opar TYPE cpar F #type #affectable;
+F -> opar TYPE cpar F #type #lvalue;
 #type {
     if (F1^type != null && !TYPE^type.castsFrom(F1^type)) {
         error(TYPE_unexpected, TYPE^type, F1^type);
@@ -937,12 +937,12 @@ F -> opar TYPE cpar F #type #affectable;
     }
     F^type = TYPE^type;
 }
-#affectable {
-    F^affectable = false;
+#lvalue {
+    F^lvalue = false;
 }
 
 -- function call
-F -> ident opar #types ARGS cpar #gen #affectable;
+F -> ident opar #types ARGS cpar #gen #lvalue;
 global
     FunctionType fun;
     ArrayList<IExpr> exprs;
@@ -977,12 +977,12 @@ global
         F^expr = F^machine.genCall(ident^txt, fun, exprs);
     }
 }
-#affectable {
-    F^affectable = false;
+#lvalue {
+    F^lvalue = false;
 }
 
 -- ident
-F -> ident #type #affectable;
+F -> ident #type #lvalue;
 global
     Type type;
 #type {
@@ -1003,12 +1003,12 @@ global
         }
     }
 }
-#affectable {
-    F^affectable = !type.isConstant();
+#lvalue {
+    F^lvalue = !type.isConstant();
 }
 
 -- pointed-to memory access
-F -> mult F #type #affectable;
+F -> mult F #type #lvalue;
 global
     Type type;
 #type {
@@ -1023,8 +1023,8 @@ global
         }
     }
 }
-#affectable {
-    F^affectable = !type.isConstant();
+#lvalue {
+    F^lvalue = !type.isConstant();
 }
 
 -- subprogram call arguments
@@ -1081,22 +1081,22 @@ ARGSX -> comma ARGS #ok;
 -- MOC stuffs:
 --------------------------------------------------------------------------------
 -- booleans:
-F -> yes #gen #affectable;
+F -> yes #gen #lvalue;
 #gen {
     F^type = new BooleanType();
     F^expr = F^machine.genYes();
 }
-#affectable {
-    F^affectable = false;
+#lvalue {
+    F^lvalue = false;
 }
 
-F -> no #gen #affectable;
+F -> no #gen #lvalue;
 #gen {
     F^type = new BooleanType();
     F^expr = F^machine.genNo();
 }
-#affectable {
-    F^affectable = false;
+#lvalue {
+    F^lvalue = false;
 }
 
 ENTITIES -> IMPLEMENTATION ENTITIES #gen;
