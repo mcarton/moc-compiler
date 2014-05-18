@@ -171,6 +171,12 @@ public class Machine extends AbstractMachine {
     }
 
     @Override
+    public String genWhile(IExpr cond, String block) {
+        // TODO:code
+        return null;
+    }
+
+    @Override
     public String genVarDecl(Type t, ILocation loc) {
         cg.comment("declaration of " + loc + " (" + t + ')');
         cg.push(t.visit(sizeVisitor));
