@@ -1,6 +1,9 @@
 package moc.type;
 
 abstract class AbstractType<T extends Type> implements Type {
+
+    private boolean constant;
+
     /**
      * Default implementation where type constructs from the other if they are
      * equal.
@@ -63,5 +66,12 @@ abstract class AbstractType<T extends Type> implements Type {
     public boolean isVoid() {
         return false;
     }
+    @Override
+    public boolean isConstant() {
+        return this.constant;
+    }
+    @Override
+    public void setConstant(boolean constant) {
+        this.constant = constant;
+    }
 }
-

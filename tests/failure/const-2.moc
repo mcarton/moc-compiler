@@ -1,0 +1,6 @@
+void main() {
+    Int * const a = new(Int);
+    Int * const b = new(Int);
+
+    a = b;
+}
