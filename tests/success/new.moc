@@ -3,6 +3,6 @@ void main() {
     *a = 10;
     delete(a);
 
-    Int* b = new(*a, Int);
+    Int* b = new[*a](Int);
     delete(b);
 }
