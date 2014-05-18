@@ -17,6 +17,10 @@ public final class TypeList implements Iterable<Type> {
         return list.listIterator();
     }
 
+    public ListIterator<Type> iterator(int index) {
+        return list.listIterator(index);
+    }
+
     public void add(Type c) {
         list.add(c);
     }

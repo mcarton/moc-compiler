@@ -41,6 +41,15 @@ final class CodeGenerator {
         append(code);
         skipLine();
     }
+    
+    void call(String reg, String fun) {
+        indent();
+        append("CALL (");
+        append(reg);
+        append(") ");
+        append(fun);
+        skipLine();
+    }
 
     void comment(String txt) {
         append("; ");

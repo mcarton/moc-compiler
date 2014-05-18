@@ -2,6 +2,7 @@ package moc.gc.tam;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Stack;
 import moc.compiler.MOCException;
@@ -237,7 +238,17 @@ public class Machine extends AbstractMachine {
         String funName, FunctionType fun,
         ArrayList<IExpr> exprs
     ) {
-        return null; // TODO:code
+        ListIterator<IExpr> it = exprs.listIterator(exprs.size());
+        ListIterator<Type> typeIt
+            = fun.getParameterTypes().iterator(exprs.size());
+        while (it.hasPrevious()) {
+            IExpr expr = it.previous();
+            Type type = typeIt.previous();
+            cg.append(expr.getCode());
+            getValue(expr, type.visit(sizeVisitor));
+        }
+        cg.call("SB", "function_" + funName);
+        return new Expr(cg.get());
     }
     @Override
     public Expr genSizeOf(Type type) {
@@ -253,7 +264,7 @@ public class Machine extends AbstractMachine {
         cg.append(loc.getCode());
         cg.append(gcrhs.getCode());
         cg.loada(loc.getLoc().toString());
-        getValue(gcrhs,1);
+        getValue(gcrhs, 1);
         cg.storei(t.visit(sizeVisitor));
         return new Expr(cg.get());
     }
