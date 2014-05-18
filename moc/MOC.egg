@@ -73,7 +73,7 @@ syn method : Method for METHOD;
 syn  ok : boolean for ARGS, ARGSX;
 inh hok : boolean for ARGS, ARGSX;
 
--- lvalue is true if the expression is lvalue (i.e. is a variable, in fat)
+-- lvalue is true if the expression is lvalue (i.e. is a variable, roughly)
 syn lvalue : boolean for A, AX, R, RX, T, TX, F;
 
 syn const : boolean for CONST;
@@ -467,7 +467,6 @@ INST -> BLOCK #returns #gen;
 }
 #gen {
     INST^code = INST^machine.genBlockInst(BLOCK^code);
-
 }
 
 -- conditional
