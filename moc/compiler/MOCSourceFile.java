@@ -42,7 +42,6 @@ public class MOCSourceFile extends SourceUnit {
             if (i+1 < argc) {
                 if (args[i].equals("-m")) {
                     machName = args[++i];
-                    System.out.println(machName);
                 }
                 else if (args[i].equals("-v")) {
                     verbosity = Integer.parseInt(args[++i]);
