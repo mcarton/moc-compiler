@@ -96,19 +96,28 @@ public class Machine extends AbstractMachine {
     ) {
         cg.function(name);
         cg.append(block);
+
+        if (f.getReturnType().isVoid()) {
+            cg.ret(0, paramSize(f));
+        }
+
         return cg.get();
+    }
+
+    private int paramSize(FunctionType fun) {
+        int paramSize = 0;
+        for (Type t : fun.getParameterTypes()) {
+            paramSize += t.visit(sizeVisitor);
+        }
+        return paramSize;
     }
 
     @Override
     public String genReturn(FunctionType f, IExpr expr) {
-        int paramSize = 0;
-        for (Type t : f.getParameterTypes()) {
-            paramSize += t.visit(sizeVisitor);
-        }
         int returnSize = f.getReturnType().visit(sizeVisitor);
         cg.append(expr.getCode());
         getValue(expr, returnSize);
-        cg.ret(returnSize, paramSize);
+        cg.ret(returnSize, paramSize(f));
         return cg.get();
     }
     @Override
