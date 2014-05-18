@@ -142,12 +142,12 @@ final class CodeGenerator {
         skipLine();
     }
 
-    void ret(int param_size, int return_size) {
+    void ret(int returnSize, int paramSize) {
         indent();
         append("RETURN (");
-        append(return_size);
+        append(paramSize);
         append(") ");
-        append(param_size);
+        append(returnSize);
         skipLine();
     }
 

@@ -101,14 +101,14 @@ public class Machine extends AbstractMachine {
 
     @Override
     public String genReturn(FunctionType f, IExpr expr) {
-        int param_size = 0;
+        int paramSize = 0;
         for (Type t : f.getParameterTypes()) {
-            param_size += t.visit(sizeVisitor);
+            paramSize += t.visit(sizeVisitor);
         }
-        int return_size = f.getReturnType().visit(sizeVisitor);
+        int returnSize = f.getReturnType().visit(sizeVisitor);
         cg.append(expr.getCode());
-        getValue(expr, return_size);
-        cg.ret(return_size, param_size);
+        getValue(expr, returnSize);
+        cg.ret(returnSize, paramSize);
         return cg.get();
     }
     @Override
