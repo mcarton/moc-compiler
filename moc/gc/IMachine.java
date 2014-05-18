@@ -79,6 +79,8 @@ public interface IMachine {
     String genElse();
     String genElse(String code);
 
+    String genWhile(IExpr cond, String block);
+
     /** Generates code for variable declaration without definition.
      */
     String genVarDecl(Type t, ILocation location);

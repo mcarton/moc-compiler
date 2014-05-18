@@ -256,6 +256,32 @@ public final class Machine extends AbstractMachine {
     }
 
     @Override
+    public String genWhile(IExpr cond, String block) {
+        String whileLabel = "While." + labelCount;
+        String condLabel  = "%Cond." + labelCount;
+        String thenLabel  =  "Then." + labelCount;
+        String endLabel   =  "End."  + labelCount;
+        ++labelCount;
+
+        cg.br(whileLabel);
+        cg.label(whileLabel);
+
+        // TODO: here we cast from i64 to i1 but the condition was probably
+        //       casted from i1 to i64 just before
+        String tmp = getValue("i64", cond);
+        cg.cast(condLabel, "trunc", "i64", tmp, "i1");
+
+        cg.br(condLabel, thenLabel, endLabel);
+        cg.label(thenLabel);
+        cg.append(block);
+
+        cg.br(whileLabel);
+        cg.label(endLabel);
+
+        return cg.get();
+    }
+
+    @Override
     public Expr genInt(String txt) {
         return new Expr(null, txt);
     }

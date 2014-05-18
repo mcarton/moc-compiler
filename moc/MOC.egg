@@ -91,6 +91,7 @@ sugar semicolon    is "\;";
 sugar affect       is "=";
 sugar if           is "if";
 sugar else         is "else";
+sugar while        is "while";
 sugar void         is "void";
 sugar new          is "new";
 sugar delete       is "delete";
@@ -505,6 +506,23 @@ global
 }
 #gen {
     IF^code = IF^machine.genIf(casted, BLOCK^code, ELSE^code);
+}
+
+-- loop
+INST -> while opar E cpar #cast BLOCK #returns #gen;
+global
+    IExpr casted;
+#returns {
+    if (!E^type.testable()) {
+        error(TYPE_unexpected, "Int, Bool or pointer", E^type);
+    }
+}
+#cast {
+    casted = INST^machine.genCast(E^type, new IntegerType(), E^expr);
+}
+#gen {
+    INST^code = INST^machine.genWhile(casted, BLOCK^code);
+    INST^returns = BLOCK^returns;
 }
 
 -- function return

@@ -1,0 +1,10 @@
+void main() {
+    Int a;
+
+    while ((a > 0) || (a == -42)) {
+        if (a == 5) {
+            Int b = a;
+        }
+    }
+}
+
