@@ -33,5 +33,6 @@ public interface Type {
     public boolean isNull();
     public boolean isPointer();
     public boolean isVoid();
+    public boolean isConstant();
+    public void setConstant(boolean constant);
 }
-

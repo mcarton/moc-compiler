@@ -76,6 +76,8 @@ inh hok : boolean for ARGS, ARGSX;
 -- affectable is true if the expression is affectable (i.e. is a variable, in fat)
 syn affectable : boolean for A, AX, R, RX, T, TX, F;
 
+syn const : boolean for CONST;
+
 --terminals
 space separator    is "[\r\n\t ]+";
 comment comm       is "\/\/[^\n]*\n";
@@ -123,6 +125,7 @@ sugar self         is "self";
 sugar super        is "super";
 sugar yes          is "yes";
 sugar no           is "no";
+sugar const        is "const";
 
 term integer       is "[0-9]+";
 term character     is "\'([^\'\\]|\\\\|\\n|\\t|\\\"|\\\')\'";
@@ -252,9 +255,12 @@ TYPE -> STYPE #get REFS #gen;
 #gen { TYPE^type = REFS^type; }
 
 REFS -> #gen; #gen { REFS^type = REFS^htype; }
-REFS -> mult REFS #gen;
+REFS -> mult CONST REFS #gen;
 #gen {
     REFS^type = new Pointer(REFS1^type);
+    if (CONST^const) {
+        REFS^type.setConstant(true);
+    }
 }
 
 REFS -> osbra integer csbra REFS #gen;
@@ -268,7 +274,7 @@ REFS -> osbra integer csbra REFS #gen;
     REFS^type = new Array(REFS1^type, nbElements);
 }
 
-STYPE -> typeident #gen;
+STYPE -> typeident CONST #gen;
 #gen {
     Info info = STYPE^symbolTable.globalSearch(typeident^txt);
     if (info == null) {
@@ -278,12 +284,24 @@ STYPE -> typeident #gen;
         match (info) {
             case InfoType {
                 STYPE^type = info.getType();
+                if (CONST^const) {
+                    info.getType().setConstant(true);
+                }
             }
             default {
                 error(TYPE_notAType, typeident^txt);
             }
         }
     }
+}
+
+CONST -> #const;
+#const {
+    CONST^const = false;
+}
+CONST -> const #const;
+#const {
+    CONST^const = true;
 }
 
 -- method body and instructions blocks
@@ -526,7 +544,6 @@ E -> A EX #type;
     else {
         error(TYPE_unexpected, A^type, EX^type);
     }
-
     -- `EX -> ;` => EX^expr == null
     if (EX^expr == null) {
         E^expr = E^machine.genNonAff(A^type, A^expr);
@@ -915,6 +932,8 @@ global
 }
 
 F -> ident #type #affectable;
+global
+    Type type;
 #type {
     Info info = F^symbolTable.globalSearch(ident^txt);
     if (info == null) {
@@ -923,7 +942,8 @@ F -> ident #type #affectable;
     else {
         match (info) {
             case InfoVar {
-                F^type = info.getType();
+                type = info.getType();
+                F^type = type;
                 F^expr = F^machine.genIdent(info);
             }
             default {
@@ -933,15 +953,18 @@ F -> ident #type #affectable;
     }
 }
 #affectable {
-    F^affectable = true;
+    F^affectable = !type.isConstant();
 }
 
 -- pointed-to memory access
 F -> mult F #type #affectable;
+global
+    Type type;
 #type {
     match (F1^type) {
         case Pointer {
-            F^type = F1^type.getPointee();
+            type = F1^type.getPointee();
+            F^type = type;
             F^expr = F^machine.genDeref(F1^type, F1^expr);
         }
         default {
@@ -950,7 +973,7 @@ F -> mult F #type #affectable;
     }
 }
 #affectable {
-    F^affectable = true;
+    F^affectable = !type.isConstant();
 }
 
 -- subprogram call arguments
