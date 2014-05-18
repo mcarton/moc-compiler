@@ -1,0 +1,6 @@
+void main() {
+    Int const you;
+    Int const * must;
+    Int * const be;
+    Int const * const dumb;
+}
