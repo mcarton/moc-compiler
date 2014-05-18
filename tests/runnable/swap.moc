@@ -20,9 +20,9 @@ Int main() {
 
     put_int(*a); put_char(' '); put_int(*b); put_char('\n');
     dont_swap(*a, *b);
-
     put_int(*a); put_char(' '); put_int(*b); put_char('\n');
     swap(a, b);
+    put_int(*a); put_char(' '); put_int(*b); put_char('\n');
 
     return 0;
 }
