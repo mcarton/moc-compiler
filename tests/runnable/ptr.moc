@@ -1,0 +1,38 @@
+// !return value: 0
+
+include(`puts.hoc')
+
+void set(Int* c) {
+    c[4] = 4;
+}
+
+Int main() {
+    Int* a = new(Int);
+    *a = 42;
+    put_int(*a); put_char('\n');
+
+    delete(a);
+
+    Int* b = new(Int, 108);
+    put_int(*b); put_char('\n');
+
+    Int* c = new[10](Int);
+    c[0] = 1;
+    c[1] = 2;
+    c[2] = 3;
+    put_int(c[0]); put_char('\n');
+    put_int(c[1]); put_char('\n');
+    put_int(c[2]); put_char('\n');
+
+    c[3] = c[0];
+    put_int(c[3]); put_char('\n');
+
+    set(c);
+    put_int(c[4]); put_char('\n');
+
+    delete(b);
+    delete(c);
+
+    return 0;
+}
+
