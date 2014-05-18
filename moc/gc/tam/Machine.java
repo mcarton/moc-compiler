@@ -239,7 +239,16 @@ public class Machine extends AbstractMachine {
         return new Expr(cg.get());
     }
     @Override
-    public Expr genNew(IExpr nbElements, Type t) {
+    public Expr genNew(Type t, IExpr expr) {
+        cg.loadl(t.visit(sizeVisitor));
+        cg.subr("Malloc");
+
+        // TODO: aff
+
+        return new Expr(cg.get());
+    }
+    @Override
+    public Expr genNewArray(IExpr nbElements, Type t) {
         cg.loadl(t.visit(sizeVisitor));
         cg.append(nbElements.getCode());
         getValue(nbElements, 1);
