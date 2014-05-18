@@ -5,4 +5,7 @@ void main() {
 
     Int* b = new[*a](Int);
     delete(b);
+
+    Int* c = new(Int, *a);
+    delete(c);
 }

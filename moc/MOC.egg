@@ -13,7 +13,7 @@ inh machine : IMachine for
     ENTITIES, FUNCTION, ASM, INST, BLOCK, INSTS, IF, ELSE,
     FUNC_PARAMETERS, FUNC_PARAMETER, FUNC_PARAMETERSX, ARGS, ARGSX,
     IMPLEMENTATION, METHOD, METHODS, ATTRIBUTES,
-    E, EX, A, AX, R, RX, T, TX, F,
+    E, EX, A, AX, R, RX, T, TX, F, NEW_VALUE,
     REFS, STYPE, PTYPE, TYPE
 --  MFUNC_PARAMETER, MFUNC_PARAMETERS,MARG, MARGS
 ;
@@ -24,7 +24,7 @@ inh symbolTable : SymbolTable for
     FUNCTION, FUNC_PARAMETER, FUNC_PARAMETERS, FUNC_PARAMETERSX,
     IMPLEMENTATION, METHOD, METHODS, ATTRIBUTES, SUPER,
     TYPE, STYPE, PTYPE, REFS,
-    F, TX, T, RX, R, AX, A, EX, E
+    F, TX, T, RX, R, AX, A, EX, E, NEW_VALUE
 ;
 
 -- 0 => empty statement, 1 => non-empty but does not return, 2 => returns
@@ -36,7 +36,7 @@ inh classType : ClassType for ATTRIBUTES;
 syn superType : ClassType for SUPER;
 syn type : Type for
     TYPE, STYPE, REFS,
-    F, TX, T, RX, R, AX, A, EX, E
+    F, TX, T, RX, R, AX, A, EX, E, NEW_VALUE
 ;
 inh htype : Type for
     REFS,
@@ -58,7 +58,7 @@ syn code : String for
     FUNCTION, ASM, IMPLEMENTATION
 ;
 syn expr : IExpr for
-    F, TX, T, RX, R, AX, A, EX, E
+    F, TX, T, RX, R, AX, A, EX, E, NEW_VALUE
 ;
 inh hexpr : IExpr for TX, RX, AX;
 inh exprs : ArrayList<IExpr> for ARGS, ARGSX;
@@ -839,18 +839,38 @@ F -> OPUN F #type #affectable;
 }
 
 -- new/delete expressions
-F -> new opar TYPE cpar #gen #affectable;
+F -> new opar TYPE NEW_VALUE cpar #gen #affectable;
 #gen {
     if (TYPE^type.isVoid()) {
         error(TYPE_void);
     }
     else {
         F^type = new Pointer(TYPE^type);
-        F^expr = F^machine.genNew(TYPE^type);
+
+        if (NEW_VALUE^type == null) {
+            F^expr = F^machine.genNew(TYPE^type);
+        }
+        else {
+            IExpr tmp
+                = F^machine.genCast(NEW_VALUE^type, TYPE^type, NEW_VALUE^expr);
+            F^expr = F^machine.genNew(TYPE^type, tmp);
+        }
     }
 }
 #affectable {
     F^affectable = false;
+}
+
+NEW_VALUE -> #gen;
+#gen {
+    NEW_VALUE^expr = null;
+    NEW_VALUE^type = null;
+}
+
+NEW_VALUE -> comma E #gen;
+#gen {
+    NEW_VALUE^expr = E^expr;
+    NEW_VALUE^type = E^type;
 }
 
 -- dynamic arrays
@@ -862,7 +882,7 @@ F -> new osbra E csbra opar TYPE cpar #gen #affectable;
     else {
         if (E^type.isInt()) {
             F^type = new Pointer(TYPE^type);
-            F^expr = F^machine.genNew(E^expr, TYPE^type);
+            F^expr = F^machine.genNewArray(E^expr, TYPE^type);
         }
         else {
             error(TYPE_unexpected, "Int", E^type);

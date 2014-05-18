@@ -133,9 +133,13 @@ public interface IMachine {
      */
     IExpr genNew(Type type);
 
+    /** Allocate space for an initialized variable of type `type`.
+     */
+    IExpr genNew(Type type, IExpr expr);
+
     /** Allocate space for a dynamic array.
      */
-    IExpr genNew(IExpr size, Type type);
+    IExpr genNewArray(IExpr size, Type type);
 
     /** Free space allocated by a call to either for of the `new` operator.
      */
