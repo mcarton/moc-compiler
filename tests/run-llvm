@@ -1,0 +1,5 @@
+m4 -Dllvm -I tests/runnable tests/runnable/$1.moc > /tmp/$1.moc
+./mocc -m llvm /tmp/$1.moc
+llc /tmp/$1.ll
+gcc -o /tmp/$1 /tmp/$1.s
+/tmp/$1
