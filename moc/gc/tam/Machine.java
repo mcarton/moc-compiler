@@ -26,6 +26,8 @@ public class Machine extends AbstractMachine {
     int labelCount = 0;
     Map<String, String> binaryOperators = new HashMap<>();
 
+    private int parametersSize;
+
     public Machine(int verbosity, ArrayList<String> warnings) {
         super(verbosity, warnings);
 
@@ -59,10 +61,21 @@ public class Machine extends AbstractMachine {
     @Override
     public void beginFunction(FunctionType fun) {
         currentParameterAddress = 0;
+        parametersSize = paramSize(fun);
     }
 
     @Override
     public void endFunction() {
+    }
+
+    @Override
+    public void beginMethod(Method meth) {
+        // TODO
+    }
+
+    @Override
+    public void endMethod() {
+        // TODO
     }
 
     @Override
@@ -104,6 +117,13 @@ public class Machine extends AbstractMachine {
         return cg.get();
     }
 
+    @Override
+    public String genMethod(
+        Method method, ArrayList<ILocation> parameters, String bloc
+    ) {
+        return "TODO:method";
+    }
+
     private int paramSize(FunctionType fun) {
         int paramSize = 0;
         for (Type t : fun.getParameterTypes()) {
@@ -113,11 +133,11 @@ public class Machine extends AbstractMachine {
     }
 
     @Override
-    public String genReturn(FunctionType f, IExpr expr) {
-        int returnSize = f.getReturnType().visit(sizeVisitor);
+    public String genReturn(Type returnType, IExpr expr) {
+        int returnSize = returnType.visit(sizeVisitor);
         cg.append(expr.getCode());
         getValue(expr, returnSize);
-        cg.ret(returnSize, paramSize(f));
+        cg.ret(returnSize, parametersSize);
         return cg.get();
     }
     @Override
@@ -384,8 +404,8 @@ public class Machine extends AbstractMachine {
     }
 
     @Override
-    public String genClass(ClassType clazz) {
-        // TOCO:class
+    public String genClass(ClassType clazz, String methodsCode) {
+        // TODO:class
         return genComment("Class " + clazz.toString());
     }
 }

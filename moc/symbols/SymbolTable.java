@@ -13,7 +13,7 @@ public class SymbolTable {
     private static final long serialVersionUID = 0x5a7a79a;
     private HashMap<String, Info> map = new HashMap<String, Info>();
     private SymbolTable mother;
-    private FunctionType currentFunction;
+    private Type returnType;
 
     /**
      * Constructor for a symbols table without mother.
@@ -27,7 +27,7 @@ public class SymbolTable {
      */
     public SymbolTable(SymbolTable mother) {
         this.mother = mother;
-        currentFunction = mother == null ? null : mother.currentFunction;
+        returnType = mother == null ? null : mother.getReturnType();
     }
 
     /**
@@ -73,12 +73,12 @@ public class SymbolTable {
      * Set the current function.
      */
     public void setCurrentFunction(String n, FunctionType fun) {
-        currentFunction = fun;
+        returnType = fun.getReturnType();
         mother.insertFun(n, fun);
     }
 
-    public FunctionType getCurrentFunction() {
-        return currentFunction;
+    public Type getReturnType() {
+        return returnType;
     }
 
     public String toString() {
@@ -88,7 +88,7 @@ public class SymbolTable {
     public String toString(boolean printTSD) {
         return (mother != null
             ? map.toString() + " with mother=" + mother.toString(false)
-            : map.toString()) + " and currentFunction=" + currentFunction;
+            : map.toString()) + " and returnType=" + returnType;
     }
 }
 

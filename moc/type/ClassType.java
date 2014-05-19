@@ -8,6 +8,7 @@ public final class ClassType extends AbstractType<ClassType> {
     ClassType superClass;
     String name;
     Vector<Attributes> attributes = new Vector<>();
+    Vector<Method> methods = new Vector<>();
 
     public ClassType(String name, ClassType superClass) {
         this.name = name;
@@ -24,6 +25,10 @@ public final class ClassType extends AbstractType<ClassType> {
 
     public void addAttribute(Type type, String name) {
         attributes.add(new Attributes(type, name));
+    }
+
+    public void addMethod(Method method) {
+        methods.add(method);
     }
 
     public Type getAttributeType(String name) {

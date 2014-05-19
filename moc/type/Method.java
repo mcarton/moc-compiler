@@ -3,13 +3,11 @@ package moc.type;
 import java.util.Vector;
 
 public class Method {
-    Vector<String> selectors = new Vector<>();
-    TypeList types = new TypeList();
+    Vector<Selector> selectors = new Vector<>();
     boolean isStatic;
 
-    public Method(Vector<String> selectors, TypeList types, boolean isStatic) {
+    public Method(Vector<Selector> selectors, boolean isStatic) {
         this.selectors = selectors;
-        this.types = types;
         this.isStatic = isStatic;
     }
 }

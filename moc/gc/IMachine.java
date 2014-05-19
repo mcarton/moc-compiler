@@ -39,6 +39,14 @@ public interface IMachine {
      */
     void endFunction();
 
+    /** Indicates the machine we enter a method definition.
+     */
+    void beginMethod(Method meth);
+
+    /** Indicates the machine we exit a method definition.
+     */
+    void endMethod();
+
     /** Indicates the machine we enter a new block.
      */
     void beginBlock();
@@ -64,7 +72,8 @@ public interface IMachine {
     String genFunction(
         FunctionType f, ArrayList<ILocation> parameters, String name, String bloc
     );
-    String genReturn(FunctionType f, IExpr expr);
+    String genMethod(Method method, ArrayList<ILocation> parameters, String bloc);
+    String genReturn(Type returnType, IExpr expr);
 
     /** Code for a block of code.
      */
@@ -198,6 +207,6 @@ public interface IMachine {
 
     String genComment(String comment);
 
-    String genClass(ClassType clazz);
+    String genClass(ClassType clazz, String methods);
 }
 

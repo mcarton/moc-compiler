@@ -14,8 +14,8 @@ inh machine : IMachine for
     FUNC_PARAMETERS, FUNC_PARAMETER, FUNC_PARAMETERSX, ARGS, ARGSX,
     IMPLEMENTATION, METHOD, METHODS, ATTRIBUTES,
     E, EX, A, AX, R, RX, T, TX, F, NEW_VALUE,
-    REFS, STYPE, PTYPE, TYPE
---  MFUNC_PARAMETER, MFUNC_PARAMETERS,MARG, MARGS
+    REFS, STYPE, PTYPE, TYPE,
+    MFUNC_PARAMETER, MFUNC_PARAMETERS --, MARG, MARGS
 ;
 
 -- the current symbols table
@@ -24,7 +24,8 @@ inh symbolTable : SymbolTable for
     FUNCTION, FUNC_PARAMETER, FUNC_PARAMETERS, FUNC_PARAMETERSX,
     IMPLEMENTATION, METHOD, METHODS, ATTRIBUTES, SUPER,
     TYPE, STYPE, PTYPE, REFS,
-    F, TX, T, RX, R, AX, A, EX, E, NEW_VALUE
+    F, TX, T, RX, R, AX, A, EX, E, NEW_VALUE,
+    MFUNC_PARAMETER, MFUNC_PARAMETERS --, MARG, MARGS
 ;
 
 -- 0 => empty statement, 1 => non-empty but does not return, 2 => returns
@@ -32,10 +33,10 @@ syn returns : int for
     INST, INSTS, BLOCK, IF, ELSE;
 
 -- types:
-inh classType : ClassType for ATTRIBUTES;
+inh classType : ClassType for ATTRIBUTES, METHODS, METHOD;
 syn superType : ClassType for SUPER;
 syn type : Type for
-    TYPE, STYPE, REFS,
+    TYPE, STYPE, PTYPE, REFS,
     F, TX, T, RX, R, AX, A, EX, E, NEW_VALUE
 ;
 inh htype : Type for
@@ -47,15 +48,15 @@ inh parameters : ArrayList<ILocation> for
 ;
 inh types : TypeList for
     FUNC_PARAMETERS, FUNC_PARAMETERSX, FUNC_PARAMETER,
-    MFUNC_PARAMETER, MFUNC_PARAMETERS,
     ARGS, ARGSX
 ;
+inh selectors : Vector<Selector> for MFUNC_PARAMETER, MFUNC_PARAMETERS;
 
 syn sym : String for OPREL, OPADD, OPMUL, OPUN, QUAL;
 
 syn code : String for
     ENTITIES, BLOCK, IF, ELSE, INST, INSTS,
-    FUNCTION, ASM, IMPLEMENTATION
+    FUNCTION, ASM, IMPLEMENTATION, METHOD, METHODS
 ;
 syn expr : IExpr for
     F, TX, T, RX, R, AX, A, EX, E, NEW_VALUE
@@ -65,9 +66,7 @@ inh exprs : ArrayList<IExpr> for ARGS, ARGSX;
 
 inh currIndex : ListIterator<Type> for ARGS, ARGSX;
 
-inh selectors : Vector<String> for MFUNC_PARAMETERS;
-inh methods : Vector<Method> for METHODS;
-syn method : Method for METHOD;
+inh methods : Vector<Method> for METHOD, METHODS;
 
 -- ok is true iff there were no error
 syn  ok : boolean for ARGS, ARGSX;
@@ -179,13 +178,13 @@ ASM -> asm opar string cpar semicolon #gen;
 }
 
 -- functions
-FUNCTION -> TYPE ident #csymbols opar FUNC_PARAMETERS #usymbols cpar BLOCK #gen;
+FUNCTION -> TYPE ident #init opar FUNC_PARAMETERS cpar #begin BLOCK #gen;
 global
     SymbolTable blockTds;
     TypeList types;
     ArrayList<ILocation> parameters;
     FunctionType fun;
-#csymbols {
+#init {
     blockTds = new SymbolTable(FUNCTION^symbolTable);
     FUNC_PARAMETERS^symbolTable = blockTds;
     BLOCK^symbolTable = blockTds;
@@ -196,15 +195,13 @@ global
     parameters = new ArrayList<ILocation>();
     FUNC_PARAMETERS^parameters = parameters;
 }
-#usymbols {
+#begin {
     if (FUNCTION^symbolTable.localSearch(ident^txt) != null) {
         error(FUN_exists, ident^txt);
     }
     else {
         fun = new FunctionType(TYPE^type, types);
-
         FUNCTION^machine.beginFunction(fun);
-
         blockTds.setCurrentFunction(ident^txt, fun);
     }
 }
@@ -540,15 +537,14 @@ global
 INST -> return E semicolon #gen;
 #gen {
     INST^returns = 2;
-    Type type = INST^symbolTable.getCurrentFunction().getReturnType();
+    Type returnType = INST^symbolTable.getReturnType();
     if (E^type != null) {
-        if (type.constructsFrom(E^type)) {
-            FunctionType function = INST^symbolTable.getCurrentFunction();
-            IExpr tmp = INST^machine.genCast(E^type, function.getReturnType(), E^expr);
-            INST^code = INST^machine.genReturn(function, tmp);
+        if (returnType.constructsFrom(E^type)) {
+            IExpr tmp = INST^machine.genCast(E^type, returnType, E^expr);
+            INST^code = INST^machine.genReturn(returnType, tmp);
         }
         else {
-            error(TYPE_unexpected, type, E^type);
+            error(TYPE_unexpected, returnType, E^type);
         }
     }
 }
@@ -1100,6 +1096,7 @@ F -> no #gen #lvalue;
 
 ENTITIES -> IMPLEMENTATION ENTITIES #gen;
 #gen {
+    -- TODO: do not concatenate here but in machine
     ENTITIES^code = IMPLEMENTATION^code + ENTITIES1^code;
 }
 
@@ -1112,6 +1109,7 @@ global
 #set {
     type = new ClassType(typeident^txt, SUPER^superType);
     ATTRIBUTES^classType = type;
+    METHODS^classType = type;
     METHODS^methods = new Vector<Method>();
 }
 #symbolTable {
@@ -1128,7 +1126,7 @@ global
     }
 }
 #gen {
-    IMPLEMENTATION^code = IMPLEMENTATION^machine.genClass(type);
+    IMPLEMENTATION^code = IMPLEMENTATION^machine.genClass(type, METHODS^code);
 }
 
 -- superclass
@@ -1163,7 +1161,7 @@ SUPER -> colon typeident #type;
     }
 }
 
---attributes
+-- attributes
 ATTRIBUTES -> ;
 ATTRIBUTES -> TYPE ident semicolon ATTRIBUTES #add;
 #add {
@@ -1176,46 +1174,77 @@ ATTRIBUTES -> TYPE ident semicolon ATTRIBUTES #add;
 }
 
 -- methods
-METHODS -> ;
-METHODS -> METHOD #add METHODS;
-#add {
-    METHODS^methods.add(METHOD^method);
+METHODS -> #gen;
+#gen {
+    METHODS^code = "";
 }
 
-METHOD -> QUAL PTYPE #init MFUNC_PARAMETERS BLOCK #gen;
-global
-    Vector<String> selectors;
-    TypeList types;
-#init {
-    selectors = new Vector<String>();
-    types = new TypeList();
+METHODS -> METHOD METHODS #gen;
+#gen {
+    -- TODO: do not concatenate here but in machine
+    METHODS^code = METHOD^code + METHODS1^code;
+}
 
+METHOD -> QUAL PTYPE #init MFUNC_PARAMETERS #begin BLOCK #gen;
+global
+    SymbolTable blockTds;
+    Vector<Selector> selectors;
+    Method method;
+#init {
+    blockTds = new SymbolTable(METHOD^symbolTable);
+    MFUNC_PARAMETERS^symbolTable = blockTds;
+    BLOCK^symbolTable = blockTds;
+
+    selectors = new Vector<Selector>();
     MFUNC_PARAMETERS^selectors = selectors;
-    MFUNC_PARAMETERS^types = types;
+}
+#begin {
+    -- TODO: all the checks
+    method = new Method(selectors, QUAL^sym.equals("+"));
+    METHOD^machine.beginMethod(method);
+    METHOD^methods.add(method);
 }
 #gen {
-    METHOD^method = new Method(selectors, types, QUAL^sym.equals("+"));
+    if (BLOCK^returns != 2 && !PTYPE^type.isVoid()) {
+        error(FUN_missingReturn);
+    }
+    elseif (method != null) {
+        METHOD^code = METHOD^machine.genMethod(method, null -* todo *-, BLOCK^code);
+    }
+
+    METHOD^machine.endMethod();
 }
 
---method or attribute qualifier: + = class, - = instance
+-- method or attribute qualifier: + = class, - = instance
 QUAL -> plus  #set; #set { QUAL^sym = "+"; }
 QUAL -> minus #set; #set { QUAL^sym = "-"; }
 
--- -- type "any"
+-- type "any"
 --TYPE -> id;
 
--- method return type between parens
-PTYPE-> opar TYPE cpar;
+-- method return type between parenthesis
+PTYPE-> opar TYPE cpar #type;
+#type {
+    PTYPE^type = TYPE^type;
+}
 
 -- method parameters
 MFUNC_PARAMETERS -> ;
---MFUNC_PARAMETERS -> MFUNC_PARAMETER MFUNC_PARAMETERS;
+MFUNC_PARAMETERS -> MFUNC_PARAMETER MFUNC_PARAMETERS;
 
--- -- selector without parameters
-MFUNC_PARAMETER -> ident;
--- -- selector  + parameter type + parameter name
+-- selector without parameters
+MFUNC_PARAMETER -> ident #set;
+#set {
+    MFUNC_PARAMETER^selectors.add(new Selector(ident^txt));
+}
 
---MFUNC_PARAMETER -> ident colon  PTYPE ident;
+-- selector + parameter type + parameter name
+MFUNC_PARAMETER -> ident colon PTYPE ident #set;
+#set {
+    MFUNC_PARAMETER^selectors.add(new Selector(ident^txt, PTYPE^type, ident1^txt));
+    -- TODO: all the checks (type, existence, etc)
+}
+
 -- -- string MOC (starts with @)
 --F -> stringo;
 --  --self = Java "this"

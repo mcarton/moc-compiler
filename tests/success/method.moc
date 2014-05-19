@@ -1,0 +1,8 @@
+class Hello {
+    Int a;
+}
+
++(void) init {
+}
+end
+

@@ -70,6 +70,16 @@ public final class Machine extends AbstractMachine {
     }
 
     @Override
+    public void beginMethod(Method meth) {
+        // TODO
+    }
+
+    @Override
+    public void endMethod() {
+        // TODO
+    }
+
+    @Override
     public void beginBlock() {
         ++block;
     }
@@ -175,13 +185,19 @@ public final class Machine extends AbstractMachine {
         return cg.get();
     }
 
+    @Override
+    public String genMethod(
+        Method method, ArrayList<ILocation> parameters, String bloc
+    ) {
+        return "TODO:method";
+    }
+
     /**
      * Code for a return expression. It does not actually return be jump to the
      * end of the function where it returns.
      */
     @Override
-    public String genReturn(FunctionType f, IExpr expr) {
-        Type returnType = f.getReturnType();
+    public String genReturn(Type returnType, IExpr expr) {
         String typename = cg.typeName(returnType);
         String tmp = cg.getValue(typename, expr);
         copy(returnType, tmp, "%__return");
@@ -570,7 +586,7 @@ public final class Machine extends AbstractMachine {
 
     // class stuffs:
     @Override
-    public String genClass(ClassType clazz) {
+    public String genClass(ClassType clazz, String methods) {
         cg.classBegin(clazz.toString());
 
         Iterator<Attributes> it = clazz.attributesIterator();
@@ -585,7 +601,10 @@ public final class Machine extends AbstractMachine {
         }
 
         cg.classEnd();
-        return "";
+
+        cg.append(methods);
+
+        return cg.get();
     }
 
     // implementation stuffs:
