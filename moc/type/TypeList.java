@@ -25,6 +25,10 @@ public final class TypeList implements Iterable<Type> {
         list.add(c);
     }
 
+    public boolean isEmpty() {
+        return list.isEmpty();
+    }
+
     public Type get(int i) {
         return list.get(i);
     }

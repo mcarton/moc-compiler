@@ -1,6 +1,5 @@
 package moc.gc.llvm;
 
-import java.lang.UnsupportedOperationException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.HashMap;
@@ -22,6 +21,7 @@ public final class Machine extends AbstractMachine {
 
     SizeVisitor sizeVisitor = new SizeVisitor();
     CodeGenerator cg = new CodeGenerator(this);
+    FunctionCodeGenerator fcg = new FunctionCodeGenerator(this);
 
     public Machine(int verbosity, ArrayList<String> warnings) {
         super(verbosity, warnings);
@@ -113,78 +113,7 @@ public final class Machine extends AbstractMachine {
         FunctionType f, ArrayList<ILocation> params,
         String name, String block
     ) {
-        Type returnType = f.getReturnType();
-        boolean returnsArray = returnType.isArray();
-        boolean returnsVoid = returnType.isVoid() || returnsArray;
-        String returnTypeName = returnsVoid ? "void" : cg.typeName(returnType);
-
-        int returnTmp = lastTmp;
-        lastTmp = 0;
-        cg.beginDefine(returnTypeName, name);
-
-        // return type if array
-        if (returnsArray) {
-            cg.parameter(
-                cg.typeName(returnType) + "* noalias sret", "%__return",
-                !f.getParameterTypes().isEmpty()
-            );
-        }
-
-        // parameter names of the form "__p0", "__p1"
-        int paramIt = 0;
-        Iterator<Type> it = f.getParameterTypes().iterator();
-        while (it.hasNext()) {
-            Type type = it.next();
-            String typename = cg.typeName(type);
-
-            if (type.isArray()) {
-                typename += '*';
-            }
-
-            cg.parameter(typename, "%__p" + ++paramIt, it.hasNext());
-        }
-
-        cg.endDefine();
-
-        // allocate space for return value
-        if (!returnsVoid) {
-            cg.alloca("%__return", returnTypeName);
-        }
-
-        // allocate space for parameters
-        Iterator<ILocation> locIt = params.iterator();
-        it = f.getParameterTypes().iterator();
-        paramIt = 0;
-        while (it.hasNext()) {
-            Type paramType = it.next();
-            String paramName = locIt.next().toString();
-            cg.alloca(paramName, cg.typeName(paramType));
-            copy(paramType, "%__p"+ ++paramIt, paramName);
-        }
-
-        if (!params.isEmpty() || !returnsVoid) {
-            cg.comment("end of generated code for return value and parameters");
-            cg.skipLine();
-        }
-
-        cg.body(block);
-
-        // return instruction
-        cg.br("End");
-        cg.label("End");
-
-        if (returnsVoid) {
-            cg.ret();
-        }
-        else {
-            lastTmp = returnTmp;
-            String tmp = cg.load(returnTypeName, "%__return");
-            cg.ret(returnTypeName, tmp);
-        }
-
-        cg.endFunction();
-
-        return cg.get();
+        return fcg.genFunction(f, params, name, block);
     }
 
     @Override
@@ -386,65 +315,11 @@ public final class Machine extends AbstractMachine {
 
     @Override
     public Expr genCall(
-        String funName, FunctionType fun,
-        ArrayList<IExpr> exprs
+        String funName, FunctionType fun, ArrayList<IExpr> exprs
     ) {
-        Type returnType = fun.getReturnType();
-        boolean returnsArray = returnType.isArray();
-        boolean returnsVoid = returnType.isVoid() || returnsArray;
-        String returnTypeName = returnsVoid ? "void" : cg.typeName(returnType);
-
-        ArrayList<String> names = new ArrayList<String>();
-        Iterator<IExpr> exprIt = exprs.iterator();
-        while (exprIt.hasNext()) {
-            printCode(exprIt.next());
-        }
-
-        Iterator<Type> it = fun.getParameterTypes().iterator();
-        exprIt = exprs.iterator();
-        while (exprIt.hasNext()) {
-            names.add(getValue(cg.typeName(it.next()), exprIt.next(), false));
-        }
-
-        String tmpValueName = null;
-
-        if (!returnsVoid) {
-            tmpValueName = cg.callNonVoid(returnTypeName, funName);
-        }
-        else {
-            /* When the return type is an arrays it is passed as the first
-             * parameter.
-             */
-            if (returnsArray) {
-                returnTypeName = cg.typeName(returnType);
-                tmpValueName = getTmpName();
-                cg.alloca(tmpValueName, returnTypeName);
-            }
-            cg.callVoid(funName);
-        }
-
-        it = fun.getParameterTypes().iterator();
-
-        if (returnsArray) {
-            cg.parameter(returnTypeName + '*', tmpValueName, it.hasNext());
-        }
-
-        Iterator<String> nameIt = names.iterator();
-        while (it.hasNext()) {
-            Type type = it.next();
-            String typename = cg.typeName(type);
-
-            if (type.isArray()) {
-                typename += '*';
-            }
-
-            cg.parameter(typename, nameIt.next(), it.hasNext());
-        }
-
-        cg.callEnd();
-
-        return new Expr(new Location(tmpValueName), cg.get());
+        return fcg.genCall(funName, fun, exprs);
     }
+
     @Override
     public Expr genSizeOf(Type type) {
         return genInt(type.visit(sizeVisitor));
@@ -660,7 +535,7 @@ public final class Machine extends AbstractMachine {
     }
 
     /** Copy a variable using `malloc` for arrays. */
-    private void copy(Type type, String what, String where) {
+    void copy(Type type, String what, String where) {
         if (type.isArray()) {
             String typename = cg.typeName(type) + '*';
             String castedWhat  = cg.cast("bitcast", typename, what,  "i8*");
