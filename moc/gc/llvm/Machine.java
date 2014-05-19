@@ -101,16 +101,18 @@ public final class Machine extends AbstractMachine {
     }
 
     // code generation stuffs:
+    /**
+     * Generate code for a function definition.
+     * - When the return type is an array, it is passed as a pointer
+     *   allocated by the callee.
+     * - When a parameter is an array, it is passed as a pointer and must
+     *   be copied in the function.
+     */
     @Override
     public String genFunction(
         FunctionType f, ArrayList<ILocation> params,
         String name, String block
     ) {
-        /* - When the return type is an array, it is passed as a pointer
-         *   allocated by the callee.
-         * - When a parameter is an array, it is passed as a pointer and must
-         *   be copied in the function.
-         */
         Type returnType = f.getReturnType();
         boolean returnsArray = returnType.isArray();
         boolean returnsVoid = returnType.isVoid() || returnsArray;
@@ -121,16 +123,16 @@ public final class Machine extends AbstractMachine {
         cg.beginDefine(returnTypeName, name);
 
         // return type if array
-        Iterator<Type> it = f.getParameterTypes().iterator();
         if (returnsArray) {
             cg.parameter(
                 cg.typeName(returnType) + "* noalias sret", "%__return",
-                it.hasNext()
+                !f.getParameterTypes().isEmpty()
             );
         }
 
         // parameter names of the form "__p0", "__p1"
         int paramIt = 0;
+        Iterator<Type> it = f.getParameterTypes().iterator();
         while (it.hasNext()) {
             Type type = it.next();
             String typename = cg.typeName(type);
@@ -193,8 +195,8 @@ public final class Machine extends AbstractMachine {
     }
 
     /**
-     * Code for a return expression. It does not actually return be jump to the
-     * end of the function where it returns.
+     * Code for a return expression. It does not actually return but jumps to
+     * the end of the function where it returns.
      */
     @Override
     public String genReturn(Type returnType, IExpr expr) {
@@ -670,7 +672,8 @@ public final class Machine extends AbstractMachine {
         }
     }
 
-    /** Escape the string: remove the quotes, apart from '\\' and '\hexa' llvm
+    /**
+     * Escape the string: remove the quotes, apart from '\\' and '\hexa' llvm
      * does not have any escape sequence.
      */
     private String escape(String unescaped) {
