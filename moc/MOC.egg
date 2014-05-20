@@ -44,7 +44,8 @@ inh htype : Type for
     TX, RX, AX
 ;
 inh parameters : ArrayList<ILocation> for
-    FUNC_PARAMETERS, FUNC_PARAMETERSX, FUNC_PARAMETER
+    FUNC_PARAMETERS, FUNC_PARAMETERSX, FUNC_PARAMETER,
+    MFUNC_PARAMETERS, MFUNC_PARAMETER
 ;
 inh types : TypeList for
     FUNC_PARAMETERS, FUNC_PARAMETERSX, FUNC_PARAMETER,
@@ -1189,6 +1190,7 @@ METHOD -> QUAL PTYPE #init MFUNC_PARAMETERS #begin BLOCK #gen;
 global
     SymbolTable blockTds;
     Vector<Selector> selectors;
+    ArrayList<ILocation> parameters;
     Method method;
 #init {
     blockTds = new SymbolTable(METHOD^symbolTable);
@@ -1197,19 +1199,23 @@ global
 
     selectors = new Vector<Selector>();
     MFUNC_PARAMETERS^selectors = selectors;
+
+    parameters = new ArrayList<ILocation>();
+    MFUNC_PARAMETERS^parameters = parameters;
 }
 #begin {
     -- TODO: all the checks
     method = new Method(PTYPE^type, selectors, QUAL^sym.equals("+"));
     METHOD^machine.beginMethod(method);
     METHOD^methods.add(method);
+    blockTds.setCurrentMethod(method);
 }
 #gen {
     if (BLOCK^returns != 2 && !PTYPE^type.isVoid()) {
         error(FUN_missingReturn);
     }
     elseif (method != null) {
-        METHOD^code = METHOD^machine.genMethod(method, null -* todo *-, BLOCK^code);
+        METHOD^code = METHOD^machine.genMethod(method, parameters, BLOCK^code);
     }
 
     METHOD^machine.endMethod();
@@ -1243,6 +1249,11 @@ MFUNC_PARAMETER -> ident colon PTYPE ident #set;
 #set {
     MFUNC_PARAMETER^selectors.add(new Selector(ident^txt, PTYPE^type, ident1^txt));
     -- TODO: all the checks (type, existence, etc)
+
+    ILocation loc
+        = MFUNC_PARAMETER^machine.getLocationForParameter(PTYPE^type, ident1^txt);
+    MFUNC_PARAMETER^symbolTable.insertVar(ident1^txt, PTYPE^type, loc);
+    MFUNC_PARAMETER^parameters.add(loc);
 }
 
 -- -- string MOC (starts with @)

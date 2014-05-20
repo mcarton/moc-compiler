@@ -1,8 +1,20 @@
-class Hello {
-    Int a;
+class Point {
+    Int x;
+    Int y;
 }
 
 +(void) init {
+}
+
+-(Int) x {
+    return 0;
+}
+
+-(Int) y {
+    return 0;
+}
+
+-(void) x:(Int) a y:(Int) b {
 }
 end
 

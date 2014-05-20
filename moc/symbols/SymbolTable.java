@@ -69,12 +69,20 @@ public class SymbolTable {
         map.put(n, new InfoType(t));
     }
 
+    // TODO: the following two functions do not really make sense here
     /**
      * Set the current function.
      */
-    public void setCurrentFunction(String n, FunctionType fun) {
-        returnType = fun.getReturnType();
-        mother.insertFun(n, fun);
+    public void setCurrentFunction(String name, FunctionType function) {
+        returnType = function.getReturnType();
+        mother.insertFun(name, function);
+    }
+
+    /**
+     * Set the current method.
+     */
+    public void setCurrentMethod(Method method) {
+        returnType = method.getReturnType();
     }
 
     public Type getReturnType() {
