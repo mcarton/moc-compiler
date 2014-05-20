@@ -1205,7 +1205,7 @@ global
 }
 #begin {
     -- TODO: all the checks
-    method = new Method(PTYPE^type, selectors, QUAL^sym.equals("+"));
+    method = new Method(METHOD^classType, PTYPE^type, selectors, QUAL^sym.equals("+"));
     METHOD^machine.beginMethod(method);
     METHOD^methods.add(method);
     blockTds.setCurrentMethod(method);
