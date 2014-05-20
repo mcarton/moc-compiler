@@ -22,19 +22,22 @@ final class FunctionCodeGenerator {
     boolean returnsArray;
     boolean returnsVoid;
     String returnTypeName;
+    int returnTmp;
 
-    void prepare(FunctionType function) {
-        returnType = function.getReturnType();
+    void prepare(Type returnType) {
+        this.returnType = returnType;
         returnsArray = returnType.isArray();
         returnsVoid = returnType.isVoid() || returnsArray;
         returnTypeName = returnsVoid ? "void" : cg().typeName(returnType);
+        returnTmp = machine.lastTmp;
+        machine.lastTmp = 0; // reseted for parameters
     }
 
     /**
      * Generate code for a function call.
      */
     Expr genCall(String funName, FunctionType fun, ArrayList<IExpr> exprs) {
-        prepare(fun);
+        prepare(fun.getReturnType());
 
         printParametersCode(exprs.iterator());
         ArrayList<String> names = loadParameters(
@@ -70,28 +73,47 @@ final class FunctionCodeGenerator {
      *   be copied in the function.
      */
     String genFunction(
-        FunctionType fun, ArrayList<ILocation> params,
+        FunctionType fun, ArrayList<ILocation> parameters,
         String name, String block
     ) {
-        prepare(fun);
-        int returnTmp = machine.lastTmp;
-        machine.lastTmp = 0; // reseted for parameters
+        prepare(fun.getReturnType());
 
         cg().beginDefine(returnTypeName, name);
-        returnArray(returnsArray, !fun.getParameterTypes().isEmpty());
+        returnArray(!parameters.isEmpty());
         parameters(fun.getParameterTypes().iterator());
         cg().endDefine();
 
         allocateReturn(returnsVoid);
-        allocateParameters(params.iterator(), fun.getParameterTypes().iterator());
-
-        if (!params.isEmpty() || !returnsVoid) {
-            cg().comment("end of generated code for return value and parameters");
-            cg().skipLine();
-        }
+        allocateParameters(
+            parameters.iterator(), fun.getParameterTypes().iterator(),
+            !parameters.isEmpty()
+        );
 
         cg().body(block);
-        endFunction(returnTmp);
+        endFunction();
+
+        return cg().get();
+    }
+
+    /**
+     * Generate code for a method definition. The same rules as for functions
+     * apply to the return type.
+     */
+    String genMethod(
+        Method method, ArrayList<ILocation> parameters, String block
+    ) {
+        prepare(method.getReturnType());
+
+        cg().beginDefine(returnTypeName, mangledName(method));
+        returnArray(!parameters.isEmpty());
+        // TODO:methods: add parameters
+        cg().endDefine();
+
+        allocateReturn(returnsVoid);
+        // TODO:methods: allocates parameters
+
+        cg().body(block);
+        endFunction();
 
         return cg().get();
     }
@@ -99,13 +121,20 @@ final class FunctionCodeGenerator {
     // implementation stuffs for function definition:
 
     /** Allocate space for the return value. */
-    void allocateParameters(Iterator<ILocation> locIt, Iterator<Type> it) {
+    void allocateParameters(
+        Iterator<ILocation> locIt, Iterator<Type> it, boolean hasParameters
+    ) {
         int paramIt = 0;
         while (it.hasNext()) {
             Type paramType = it.next();
             String paramName = locIt.next().toString();
             cg().alloca(paramName, cg().typeName(paramType));
             machine.copy(paramType, "%__p"+ ++paramIt, paramName);
+        }
+
+        if (hasParameters || !returnsVoid) {
+            cg().comment("end of generated code for return value and parameters");
+            cg().skipLine();
         }
     }
 
@@ -132,7 +161,7 @@ final class FunctionCodeGenerator {
     }
 
     /** Add the `return` parameter if the return type if an array. */
-    void returnArray(boolean returnsArray, boolean onlyParameter) {
+    void returnArray(boolean onlyParameter) {
         if (returnsArray) {
             cg().parameter(
                 cg().typeName(returnType) + "* noalias sret",
@@ -142,7 +171,7 @@ final class FunctionCodeGenerator {
     }
 
     /** Terminates the function and returns. */
-    void endFunction(int returnTmp) {
+    void endFunction() {
         cg().br("End");
         cg().label("End");
 
@@ -201,6 +230,19 @@ final class FunctionCodeGenerator {
         while (exprIt.hasNext()) {
             machine.printCode(exprIt.next());
         }
+    }
+
+    String mangledName(Method method) {
+        StringBuilder sb = new StringBuilder("method");
+
+        sb.append('.');
+        sb.append(method.getClassType());
+
+        for (Selector selector : method.getSelectors()) {
+            sb.append('.' + selector.getName());
+        }
+
+        return sb.toString();
     }
 }
 

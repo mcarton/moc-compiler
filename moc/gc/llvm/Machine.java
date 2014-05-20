@@ -71,12 +71,15 @@ public final class Machine extends AbstractMachine {
 
     @Override
     public void beginMethod(Method meth) {
+        lastTmp = 0;
+        ++block;
+
         // TODO
     }
 
     @Override
     public void endMethod() {
-        // TODO
+        block = 0;
     }
 
     @Override
@@ -118,9 +121,9 @@ public final class Machine extends AbstractMachine {
 
     @Override
     public String genMethod(
-        Method method, ArrayList<ILocation> parameters, String bloc
+        Method method, ArrayList<ILocation> parameters, String block
     ) {
-        return "TODO:method";
+        return fcg.genMethod(method, parameters, block);
     }
 
     /**
