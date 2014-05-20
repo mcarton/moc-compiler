@@ -14,5 +14,17 @@ public class Selector {
         this.paramType = paramType;
         this.paramName= paramName;
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public Type getParamType() {
+        return paramType;
+    }
+
+    public String getParamName() {
+        return paramName;
+    }
 }
 
