@@ -49,6 +49,10 @@ public final class ClassType extends AbstractType<ClassType> {
         return Collections.unmodifiableCollection(attributes).iterator();
     }
 
+    public Iterator<Method> methodsIterator() {
+        return Collections.unmodifiableCollection(methods).iterator();
+    }
+
     public boolean inheritsFrom(Type other) {
         return superClass != null
            && (superClass.equals(other) || superClass.inheritsFrom(other));
