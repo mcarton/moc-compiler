@@ -67,8 +67,6 @@ inh exprs : ArrayList<IExpr> for ARGS, ARGSX;
 
 inh currIndex : ListIterator<Type> for ARGS, ARGSX;
 
-inh methods : Vector<Method> for METHOD, METHODS;
-
 -- ok is true iff there were no error
 syn  ok : boolean for ARGS, ARGSX;
 inh hok : boolean for ARGS, ARGSX;
@@ -1110,7 +1108,6 @@ global
     type = new ClassType(typeident^txt, SUPER^superType);
     ATTRIBUTES^classType = type;
     METHODS^classType = type;
-    METHODS^methods = new Vector<Method>();
 }
 #symbolTable {
     if (IMPLEMENTATION^symbolTable.localSearch(typeident^txt) != null) {
@@ -1206,7 +1203,7 @@ global
     -- TODO: all the checks
     method = new Method(METHOD^classType, PTYPE^type, selectors, QUAL^sym.equals("+"));
     METHOD^machine.beginMethod(method);
-    METHOD^methods.add(method);
+    METHOD^classType.addMethod(method);
     blockTds.setCurrentMethod(method);
 }
 #gen {
