@@ -1,0 +1,4 @@
+m4 -Dtam -I tests/runnable tests/runnable/$1.moc > /tmp/$1.moc
+./mocc -m tam /tmp/$1.moc
+java -jar TAM/aspartam.jar /tmp/$1.tam
+java -jar TAM/tammachine.jar /tmp/$1.tamo
