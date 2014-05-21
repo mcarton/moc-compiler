@@ -150,11 +150,13 @@ final class CodeGenerator {
         return tmpCastedName;
     }
 
+    /** {@code <where> = <op> <from> <what> to <to>} */
     void cast(String where, String op, String from, String what, String to) {
         indent();
         castImpl(where, op, from, what, to);
     }
 
+    /** {@code <where> = <op> <from> <what> to <to>} */
     private void castImpl(String where, String op, String from, String what, String to) {
         append(where);
         append(" = ");
@@ -168,10 +170,13 @@ final class CodeGenerator {
         append('\n');
     }
 
+    /** {@code <name> = type } and an opening bracket. */
     void classBegin(String name) {
-        declAppend(name + " = type { ");
+        declAppend(name);
+        declAppend(" = type { ");
     }
 
+    /** {@code <type> } optionally followed by an comma. */
     void classAddMember(String type, boolean hasNext) {
         declAppend(type);
         if (hasNext) {
@@ -179,6 +184,7 @@ final class CodeGenerator {
         }
     }
 
+    /** Closing bracket. */
     void classEnd() {
         declAppend(" }\n");
     }
@@ -228,12 +234,14 @@ final class CodeGenerator {
         declAppend('\n');
     }
 
+    /** {@code ; <label>: <name> } */
     void implicitLabel(String name) {
         append("\n; <label>:");
         append(name);
         append(":\n");
     }
 
+    /** {@code <name>: } */
     void label(String name) {
         append('\n');
         append(name);
@@ -341,6 +349,7 @@ final class CodeGenerator {
         return name;
     }
 
+    /** {@code <where> = internal constant [<length> x i8] c"<value>\00" } */
     void stringCstDeclaration(String where, int length, String value) {
         declAppend(where);
         declAppend(" = internal constant [");
@@ -364,12 +373,9 @@ final class CodeGenerator {
         append('\n');
     }
 
-    void unreachable() {
-        indent();
-        append("unreachable\n");
-    }
-
     // function declaration
+
+    /** {@code define <returnType> @<name> (} */
     void beginDefine(String returnType, String name) {
         append("define ");
         append(returnType);
@@ -378,6 +384,7 @@ final class CodeGenerator {
         append('(');
     }
 
+    /** {@code <type> <name>} optionally followed by a comma */
     void parameter(String type, String name, boolean hasNext) {
         append(type);
         append(' ');
@@ -391,6 +398,7 @@ final class CodeGenerator {
         append(block);
     }
 
+    /** {@code ) nounwind } followed by an opening bracket */
     void endDefine() {
         append(") nounwind {\n"); // nounwind = no exceptions
     }

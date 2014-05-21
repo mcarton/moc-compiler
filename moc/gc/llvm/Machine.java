@@ -514,7 +514,7 @@ public final class Machine extends AbstractMachine {
         }
     }
 
-    /** {@ getValue(type, expr, false) } */
+    /** {@code getValue(type, expr, false) } */
     protected String getValue(String type, IExpr expr) {
         return getValue(type, expr, true);
     }
