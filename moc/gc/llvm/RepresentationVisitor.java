@@ -10,7 +10,7 @@ final class RepresentationVisitor implements TypeVisitor<String> {
     public String visit(IntegerType what)   { return "i64"; }
 
     public String visit(ClassType what) {
-        return "%class." + what.toString();
+        return "%class." + what.getName();
     }
 
     public String visit(VoidType what)      { return "void"; }

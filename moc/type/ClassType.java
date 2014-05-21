@@ -19,6 +19,10 @@ public final class ClassType extends AbstractType<ClassType> {
         return name;
     }
 
+    public String getName() {
+        return name;
+    }
+
     public ClassType getSuper() {
         return superClass;
     }
