@@ -121,7 +121,6 @@ sugar osbra        is "\[";
 sugar csbra        is "\]";
 sugar id           is "id";
 sugar class        is "class";
-sugar end_         is "end";
 sugar self         is "self";
 sugar super        is "super";
 sugar yes          is "yes";
@@ -1103,8 +1102,8 @@ ENTITIES -> IMPLEMENTATION ENTITIES #gen;
 
 -- class definition
 IMPLEMENTATION -> class typeident SUPER #set
-                      occbra ATTRIBUTES ccbra
-                      METHODS end_ #symbolTable #gen;
+                      occbra ATTRIBUTES
+                      METHODS ccbra #symbolTable #gen;
 global
     ClassType type;
 #set {
