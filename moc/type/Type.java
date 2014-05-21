@@ -23,6 +23,8 @@ public interface Type {
      */
     public boolean equals(Type other);
 
+    public Type clone();
+
     public abstract <R> R visit(TypeVisitor<R> visitor);
 
     public boolean isArray();

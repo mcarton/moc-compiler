@@ -1,4 +1,7 @@
 void main() {
     Int const a = 2;
+    Int b = a;
     a = 3;
+    Int const c = b;
+    b = 2;
 }

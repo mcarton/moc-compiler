@@ -5,7 +5,7 @@ public final class IntegerType extends AbstractType<IntegerType> {
     }
 
     public String toString() {
-        return "Int";
+        return "Int" + this.constant;
     }
 
     @Override
@@ -38,4 +38,3 @@ public final class IntegerType extends AbstractType<IntegerType> {
         return true;
     }
 }
-
