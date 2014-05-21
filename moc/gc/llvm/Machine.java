@@ -467,12 +467,17 @@ public final class Machine extends AbstractMachine {
     // class stuffs:
     @Override
     public String genClass(ClassType clazz, String methods) {
-        cg.classBegin(clazz.toString());
+        cg.classBegin(cg.typeName(clazz));
 
         Iterator<Attributes> it = clazz.attributesIterator();
+
+        // add ptr to parent or vtable
         if (clazz.getSuper() != null) {
             String superName = cg.typeName(clazz.getSuper());
             cg.classAddMember(superName, it.hasNext());
+        }
+        else {
+            cg.classAddMember("%mocc.vtable*", it.hasNext());
         }
 
         while (it.hasNext()) {
@@ -481,6 +486,8 @@ public final class Machine extends AbstractMachine {
         }
 
         cg.classEnd();
+
+        fcg.genVirtualTable(clazz.methodsIterator());
 
         cg.append(methods);
 

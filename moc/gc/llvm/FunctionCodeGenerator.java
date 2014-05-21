@@ -2,6 +2,7 @@ package moc.gc.llvm;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Vector;
 import moc.gc.*;
 import moc.symbols.*;
 import moc.type.*;
@@ -116,6 +117,29 @@ final class FunctionCodeGenerator {
         endFunction();
 
         return cg().get();
+    }
+
+    void genVirtualTable(Iterator<Method> methIt) {
+        StringBuilder methodNamesString = new StringBuilder();
+
+        while (methIt.hasNext()) {
+            Method current = methIt.next();
+            int methodNameLenght = 0;
+            for (Selector selector : current.getSelectors()) {
+                methodNamesString.append(selector.getName());
+                methodNamesString.append("\\00");
+                methodNameLenght += selector.getName().length() + 1;
+            }
+
+            String name = methodNamesString.toString();
+            methodNamesString.setLength(0);
+
+            String mangledName = mangledName(current);
+            String constantName = "@names." + mangledName;
+            cg().stringCstDeclaration(constantName, methodNameLenght+1, name);
+
+            cg().methodCstDeclaration(mangledName, methodNameLenght+1);
+        }
     }
 
     // implementation stuffs for function definition:

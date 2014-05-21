@@ -19,6 +19,10 @@ final class CodeGenerator {
               "declare i8* @malloc(i64)\n"
             + "declare void @free(i8*)\n"
             + "declare void @llvm.memcpy.p0i8.p0i8.i64(i8* nocapture, i8* nocapture readonly, i64, i32, i1)\n"
+            + "\n"
+            + "%mocc.method = type { i8*, void (...)* }\n"
+            + "%mocc.vtable = type { %mocc.method* }\n"
+            + "\n"
         ;
 
         this.declarationSb = new StringBuilder(declarations);
@@ -165,7 +169,7 @@ final class CodeGenerator {
     }
 
     void classBegin(String name) {
-        declAppend("%class." + name + " = type { ");
+        declAppend(name + " = type { ");
     }
 
     void classAddMember(String type, boolean hasNext) {
@@ -273,6 +277,25 @@ final class CodeGenerator {
         append(", i32 0, i1 false)\n"); // 0 alignment means not aligned
     }
 
+    void methodCstDeclaration(String name, int size) {
+        // @ptr.method.Point.init
+        // = internal constant %mocc.method {
+        // i8* bitcast ([6 x i8]* @names.method.Point.init to i8*),
+        // void(...)* null }
+        //
+        declAppend("@ptr.");
+        declAppend(name);
+        declAppend(" = internal constant %mocc.method {\n");
+        declAppend("    i8* bitcast ([");
+        declAppend(size);
+        declAppend(" x i8]* @names.");
+        declAppend(name);
+        declAppend(" to i8*),\n");
+        declAppend("    void (...)* ");
+        declAppend("null"); // TODO: bitcast method
+        declAppend("\n}\n");
+    }
+
     /**
      * {@code <tmp> = bitcast i8 0 to i8 }
      *
@@ -314,15 +337,17 @@ final class CodeGenerator {
     /** {@code <name> = internal constant [<lenght> x i8] c"<value>\00" } */
     String stringCstDeclaration(int length, String value) {
         String name = machine.getGlobalTmpName();
+        stringCstDeclaration(name, length, value);
+        return name;
+    }
 
-        declAppend(name);
+    void stringCstDeclaration(String where, int length, String value) {
+        declAppend(where);
         declAppend(" = internal constant [");
         declAppend(length);
         declAppend(" x i8] c\"");
         declAppend(value);
         declAppend("\\00\"\n");
-
-        return name;
     }
 
     /** {@code store <type> <what>, <type>* <where> } */
