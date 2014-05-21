@@ -487,7 +487,7 @@ public final class Machine extends AbstractMachine {
 
         cg.classEnd();
 
-        fcg.genVirtualTable(clazz.methodsIterator());
+        fcg.genVirtualTable(clazz.getName(), clazz.methodsIterator());
 
         cg.append(methods);
 

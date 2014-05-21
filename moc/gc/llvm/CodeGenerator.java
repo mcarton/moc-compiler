@@ -373,6 +373,19 @@ final class CodeGenerator {
         append('\n');
     }
 
+    /** @vtable.class.<name> = internal constant [<size> x %mocc.method*] [ */
+    void vtableBegin(String name, int size) {
+        declAppend("@vtable.");
+        declAppend(name);
+        declAppend(" = internal constant [");
+        declAppend(size);
+        declAppend(" x %mocc.method*] [\n");
+    }
+
+    void vtableEnd() {
+        declAppend("\n]\n");
+    }
+
     // function declaration
 
     /** {@code define <returnType> @<name> (} */

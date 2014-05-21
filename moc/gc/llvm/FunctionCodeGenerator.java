@@ -119,10 +119,13 @@ final class FunctionCodeGenerator {
         return cg().get();
     }
 
-    void genVirtualTable(Iterator<Method> methIt) {
+    void genVirtualTable(String className, Iterator<Method> methIt) {
+        StringBuilder vtable = new StringBuilder();
         StringBuilder methodNamesString = new StringBuilder();
+        int count = 0;
 
         while (methIt.hasNext()) {
+            ++count;
             Method current = methIt.next();
             int methodNameLenght = 0;
             for (Selector selector : current.getSelectors()) {
@@ -137,9 +140,18 @@ final class FunctionCodeGenerator {
             String mangledName = mangledName(current);
             String constantName = "@names." + mangledName;
             cg().stringCstDeclaration(constantName, methodNameLenght+1, name);
-
             cg().methodCstDeclaration(mangledName, methodNameLenght+1);
+
+            vtable.append("    %mocc.method* @ptr.");
+            vtable.append(mangledName);
+            if (methIt.hasNext()) {
+                vtable.append(",\n");
+            }
         }
+
+        cg().vtableBegin(className, count);
+        cg().declAppend(vtable);
+        cg().vtableEnd();
     }
 
     // implementation stuffs for function definition:
