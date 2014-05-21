@@ -31,7 +31,6 @@ final class FunctionCodeGenerator {
         returnsVoid = returnType.isVoid() || returnsArray;
         returnTypeName = returnsVoid ? "void" : cg().typeName(returnType);
         returnTmp = machine.lastTmp;
-        machine.lastTmp = 0; // reseted for parameters
     }
 
     /**
@@ -78,6 +77,7 @@ final class FunctionCodeGenerator {
         String name, String block
     ) {
         prepare(fun.getReturnType());
+        machine.lastTmp = 0; // reseted for parameters
 
         cg().beginDefine(returnTypeName, name);
         returnArray(!parameters.isEmpty());
@@ -104,6 +104,7 @@ final class FunctionCodeGenerator {
         Method method, ArrayList<ILocation> parameters, String block
     ) {
         prepare(method.getReturnType());
+        machine.lastTmp = 0; // reseted for parameters
 
         cg().beginDefine(returnTypeName, mangledName(method));
         returnArray(!parameters.isEmpty());
