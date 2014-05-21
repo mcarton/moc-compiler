@@ -193,11 +193,11 @@ public class Machine extends AbstractMachine {
     }
     @Override
     public String genElse() {
-        return "";
+        return null; // intentional
     }
     @Override
     public String genElse(String code) {
-        return code;
+        return code; // intentional
     }
 
     @Override
