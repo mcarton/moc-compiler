@@ -114,8 +114,9 @@ final class CodeGenerator {
 
     void loadi(int size) {
         indent();
-        append("LOADI ");
+        append("LOADI (");
         append(size);
+        append(")");
         skipLine();
     }
 
