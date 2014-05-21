@@ -4,3 +4,4 @@ void main() {
     Int const c = b;
     b = 2;
 }
+

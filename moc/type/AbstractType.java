@@ -2,7 +2,7 @@ package moc.type;
 
 abstract class AbstractType<T extends Type> implements Type {
 
-    protected boolean constant;
+    private boolean constant;
 
     /**
      * Default implementation where type constructs from the other if they are
@@ -25,18 +25,6 @@ abstract class AbstractType<T extends Type> implements Type {
      */
     public boolean testable() {
         return false;
-    }
-
-    /**
-     * Return a new instance of the same type
-     */
-    public Type clone() {
-        try {
-            return this.getClass().newInstance();
-        }
-        catch (Exception e) {
-            return null;
-        }
     }
 
     /* Common C++, does not seem to work in Java

@@ -266,7 +266,6 @@ REFS -> mult CONST REFS #gen;
 #gen {
     REFS^type = new Pointer(REFS1^type);
     if (CONST^const) {
-        REFS^type = REFS^type.clone();
         REFS^type.setConstant(true);
     }
 }
@@ -294,7 +293,6 @@ STYPE -> typeident CONST #gen;
             case InfoType {
                 STYPE^type = info.getType();
                 if (CONST^const) {
-                    info.setType(info.getType().clone());
                     info.getType().setConstant(true);
                 }
             }

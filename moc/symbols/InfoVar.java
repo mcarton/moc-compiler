@@ -22,10 +22,6 @@ public class InfoVar implements Info {
         return type;
     }
 
-    public void setType(Type type) {
-        this.type = type;
-    }
-
     public ILocation getLoc() {
         return loc;
     }
