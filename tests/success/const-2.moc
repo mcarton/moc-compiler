@@ -1,4 +1,0 @@
-void main() {
-    Int * const a = new(Int);
-    *a = 3;
-}

@@ -1,5 +1,0 @@
-void main() {
-    Int const * const a;
-    Int * b;
-    a = b;
-}
