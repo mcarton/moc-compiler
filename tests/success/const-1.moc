@@ -1,7 +1,0 @@
-void main() {
-    Int const a = 2;
-    Int b = a;
-    Int const c = b;
-    b = 2;
-}
-

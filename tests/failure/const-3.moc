@@ -1,4 +1,0 @@
-void main() {
-    Int const * const a;
-    *a = 2;
-}

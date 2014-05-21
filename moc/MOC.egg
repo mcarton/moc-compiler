@@ -404,9 +404,6 @@ global
         ok = false;
     }
     else {
-        if (EX^type == null && TYPE^type.isConstant()) {
-            warning(WARN_uselessConst, ident^txt);
-        }
         if (EX^type != null && !TYPE^type.constructsFrom(EX^type)) {
             error(TYPE_unexpected, TYPE^type, EX^type);
             ok = false;
