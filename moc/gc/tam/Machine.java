@@ -209,14 +209,29 @@ public class Machine extends AbstractMachine {
     }
     @Override
     public Expr genNew(Type t) {
+        
+        cg.comment("start genNew");
         cg.loadl(t.visit(sizeVisitor));
         cg.subr("Malloc");
 
+        cg.comment("end gennew");
         return new Expr(cg.get());
     }
     @Override
     public Expr genNew(IExpr nbElements, Type t) {
-        return null; // TODO:code
+        int size = t.visit(sizeVisitor);
+        // Reservation memoire
+        cg.loadl(size);
+        cg.subr("Malloc");
+
+        // Deref 
+        cg.append(nbElements.getCode());
+        getValue(nbElements, size);
+        cg.loadi(size);
+        
+        //
+        return new Expr(cg.get());
+        // TODO:check
     }
 
     @Override
@@ -254,7 +269,7 @@ public class Machine extends AbstractMachine {
     }
     @Override
     public Expr genNonAff(Type t, IExpr expr) {
-        // TODO:code
+        // TODO:check
         return (moc.gc.tam.Expr)expr;
     }
 
@@ -262,9 +277,7 @@ public class Machine extends AbstractMachine {
     public Expr genDeref(Type type, IExpr expr) {
         int size = type.visit(sizeVisitor);
         cg.append(expr.getCode());
-        getValue(expr, size);
-        cg.loadi(size);
-        return new Expr(cg.get());
+       return new Expr(cg.get(),(Location)expr.getLoc());
     }
     @Override
     public IExpr genArrSub(Array type, IExpr lhs, IExpr rhs) {
