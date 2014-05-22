@@ -1,7 +1,7 @@
 package moc.type;
 
 import java.util.Collections;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 
 public final class ClassType extends AbstractType<ClassType> {
@@ -49,12 +49,12 @@ public final class ClassType extends AbstractType<ClassType> {
         return null;
     }
 
-    public Iterator<Attributes> attributesIterator() {
-        return Collections.unmodifiableCollection(attributes).iterator();
+    public List<Attributes> getAttributes() {
+        return Collections.unmodifiableList(attributes);
     }
 
-    public Iterator<Method> methodsIterator() {
-        return Collections.unmodifiableCollection(methods).iterator();
+    public List<Method> getMethods() {
+        return Collections.unmodifiableList(methods);
     }
 
     public boolean inheritsFrom(Type other) {

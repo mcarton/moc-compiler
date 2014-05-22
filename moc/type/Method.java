@@ -1,5 +1,7 @@
 package moc.type;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Vector;
 
 public class Method {
@@ -26,8 +28,8 @@ public class Method {
         return returnType;
     }
 
-    public Vector<Selector> getSelectors() {
-        return selectors;
+    public List<Selector> getSelectors() {
+        return Collections.unmodifiableList(selectors);
     }
 }
 

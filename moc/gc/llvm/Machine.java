@@ -469,7 +469,7 @@ public final class Machine extends AbstractMachine {
     public String genClass(ClassType clazz, String methods) {
         cg.classBegin(cg.typeName(clazz));
 
-        Iterator<Attributes> it = clazz.attributesIterator();
+        Iterator<Attributes> it = clazz.getAttributes().iterator();
 
         // add ptr to parent or vtable
         if (clazz.getSuper() != null) {
@@ -487,7 +487,7 @@ public final class Machine extends AbstractMachine {
 
         cg.classEnd();
 
-        fcg.genVirtualTable(clazz.getName(), clazz.methodsIterator());
+        fcg.genVirtualTable(clazz.getName(), clazz.getMethods());
 
         cg.append(methods);
 

@@ -2,6 +2,7 @@ package moc.gc.llvm;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 import moc.gc.*;
 import moc.symbols.*;
@@ -120,13 +121,12 @@ final class FunctionCodeGenerator {
         return cg().get();
     }
 
-    void genVirtualTable(String className, Iterator<Method> methIt) {
+    void genVirtualTable(String className, List<Method> methods) {
         StringBuilder vtable = new StringBuilder();
         StringBuilder methodNamesString = new StringBuilder();
-        int count = 0;
 
+        Iterator<Method> methIt = methods.iterator();
         while (methIt.hasNext()) {
-            ++count;
             Method current = methIt.next();
             int methodNameLenght = 0;
             for (Selector selector : current.getSelectors()) {
@@ -150,7 +150,7 @@ final class FunctionCodeGenerator {
             }
         }
 
-        cg().vtableBegin(className, count);
+        cg().vtableBegin(className, methods.size());
         cg().declAppend(vtable);
         cg().vtableEnd();
     }
