@@ -20,11 +20,6 @@ public class Expr implements IExpr {
     }
 
     @Override
-    public Location getLoc() {
-        return null;
-    }
-
-    @Override
     public String getCode() {
         return code;
     }

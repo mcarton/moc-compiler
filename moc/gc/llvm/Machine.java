@@ -143,7 +143,7 @@ public final class Machine extends AbstractMachine {
     @Override
     public String genInst(IExpr expr) {
         // if expr.getLoc() is null, the expression is an llvm constant
-        return expr.getLoc() == null ? "" : expr.getCode();
+        return ((Expr)expr).getLoc() == null ? "" : expr.getCode();
     }
 
     @Override
@@ -334,7 +334,7 @@ public final class Machine extends AbstractMachine {
     }
     @Override
     public Expr genAff(Type type, IExpr lhs, IExpr rhs) {
-        Location loc = (Location)lhs.getLoc();
+        Location loc = ((Expr)lhs).getLoc();
         String typename = cg.typeName(type);
         printCode(lhs);
         printCode(rhs);
@@ -509,7 +509,7 @@ public final class Machine extends AbstractMachine {
      * Warning: the function has side effect on cg and may increment lastTmp!
      */
     protected void printCode(IExpr expr) {
-        if (expr.getLoc() != null) {
+        if (((Expr)expr).getLoc() != null) {
             cg.append(expr.getCode());
         }
     }
@@ -526,13 +526,14 @@ public final class Machine extends AbstractMachine {
      *
      * Warning: the function has side effect on cg and may increment lastTmp!
      */
-    protected String getValue(String type, IExpr expr, boolean printCode) {
+    protected String getValue(String type, IExpr iexpr, boolean printCode) {
+        Expr expr = (Expr)iexpr;
         if (expr.getLoc() != null) {
             if (printCode) {
                 cg.append(expr.getCode());
             }
 
-            if (((Expr)expr).needsLoad()) {
+            if (expr.needsLoad()) {
                 return cg.load(type, expr.getLoc().toString());
             }
             else {

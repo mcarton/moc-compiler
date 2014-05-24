@@ -6,6 +6,5 @@ package moc.gc;
  */
 public interface IExpr {
     String getCode();
-    ILocation getLoc();
 }
 
