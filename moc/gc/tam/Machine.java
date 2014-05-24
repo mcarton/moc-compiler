@@ -245,11 +245,15 @@ public class Machine extends AbstractMachine {
     }
     @Override
     public Expr genYes() {
-        return new Expr("    LOADL 1\n    SUBR I2B\n");
+        cg.loadl(1);
+        cg.subr("I2B");
+        return new Expr(cg.get());
     }
     @Override
     public Expr genNo() {
-        return new Expr("    LOADL 0\n    SUBR I2B\n");
+        cg.loadl(0);
+        cg.subr("I2B");
+        return new Expr(cg.get());
     }
     @Override
     public Expr genNew(Type t) {
