@@ -320,15 +320,17 @@ public class Machine extends AbstractMachine {
 
     @Override
     public Expr genIdent(InfoVar info) {
-        return new Expr("", (Location)info.getLoc());
+        cg.loada(info.getLoc().toString());
+        return new Expr(cg.get(), true);
     }
     @Override
     public Expr genAff(Type t, IExpr loc, IExpr gcrhs) {
-        cg.append(loc.getCode());
+        cg.comment("start genAff");
         cg.append(gcrhs.getCode());
-        cg.loada(loc.getLoc().toString());
         getValue(gcrhs, 1);
+        cg.append(loc.getCode());
         cg.storei(t.visit(sizeVisitor));
+        cg.comment("end genAff");
         return new Expr(cg.get());
     }
     @Override
@@ -342,8 +344,7 @@ public class Machine extends AbstractMachine {
         int size = type.visit(sizeVisitor);
         cg.append(expr.getCode());
         getValue(expr, size);
-        cg.loadi(size);
-        return new Expr(cg.get());
+        return new Expr(cg.get(), true);
     }
     @Override
     public IExpr genArrSub(Array type, IExpr lhs, IExpr rhs) {
@@ -409,8 +410,8 @@ public class Machine extends AbstractMachine {
     }
 
     private void getValue(IExpr expr, int size) {
-        if (expr.getLoc() != null){
-            cg.load(size, expr.getLoc().toString());
+        if (((Expr)expr).isAddress()) {
+            cg.loadi(1);
         }
     }
 

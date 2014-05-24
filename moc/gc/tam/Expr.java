@@ -3,29 +3,25 @@ package moc.gc.tam;
 import moc.gc.IExpr;
 
 public class Expr implements IExpr {
-    Location loc;
     String code;
     boolean isAddress;
 
     public Expr(String code) {
-        this.loc = null;
-        this.code = code;
-        this.isAddress = false;
+        this(code, false);
     }
 
-    public Expr(String code, Location location) {
-        this.loc = location;
+    public Expr(String code, boolean isAddress) {
         this.code = code;
-        this.isAddress = false;
+        this.isAddress = isAddress;
     }
 
-    public void setLoc(Location loc) {
-        this.loc = loc;
+    public boolean isAddress() {
+        return isAddress;
     }
 
     @Override
     public Location getLoc() {
-        return loc;
+        return null;
     }
 
     @Override
