@@ -281,7 +281,14 @@ public class Machine extends AbstractMachine {
     public String genDelete(Type t, IExpr expr) {
         cg.append(expr.getCode());
         getValue(expr, t.visit(sizeVisitor));
+        /* NOTE: Mfree does not seem to be implemented on the tam compiler
+         *       and/or interpreter. The following instruction should be:
         cg.subr("Mfree");
+                 As a temporary fix, we just pop the pointer instead of freeing
+                 it.
+         */
+        cg.pop(0, 1);
+
         return cg.get();
     }
 
