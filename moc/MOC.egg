@@ -1251,9 +1251,40 @@ MFUNC_PARAMETER -> ident colon PTYPE ident #set;
 
 -- -- string MOC (starts with @)
 --F -> stringo;
---  --self = Java "this"
---F -> self;
---F -> super;
+
+-- self and super
+F -> self #gen #lvalue;
+#gen {
+    ClassType classType = F^symbolTable.getClassType();
+
+    if (classType == null) {
+        error(CLASS_selfNotInMethod);
+    }
+
+    Pointer ptr = new Pointer(classType);
+    F^type = ptr;
+    F^expr = F^machine.genSelf(ptr);
+}
+#lvalue {
+    F^lvalue = false;
+}
+
+F -> super #gen #lvalue;
+#gen {
+    ClassType classType = F^symbolTable.getClassType();
+
+    if (classType == null) {
+        error(CLASS_superNotInMethod);
+    }
+
+    Pointer ptr = new Pointer(classType);
+    F^type = ptr;
+    F^expr = F^machine.genSuper(ptr);
+}
+#lvalue {
+    F^lvalue = false;
+}
+
 -- -- method call
 --F -> osbra F MARGS csbra;
 ---- for class method call

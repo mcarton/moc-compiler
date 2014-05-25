@@ -259,6 +259,12 @@ public final class Machine extends AbstractMachine {
         return new Expr(null, Integer.toString(StringEscapor.escapeChar(txt)));
     }
     @Override
+    public Expr genNull() {
+        // first `null` means the expression is constant, it is not related to
+        // we are creating a null constant
+        return new Expr(null, "null");
+    }
+    @Override
     public Expr genYes() {
         return new Expr(null, "0");
     }
@@ -267,11 +273,14 @@ public final class Machine extends AbstractMachine {
         return new Expr(null, "1");
     }
     @Override
-    public Expr genNull() {
-        // first `null` means the expression is constant, it is not related to
-        // we are creating a null constant
-        return new Expr(null, "null");
+    public Expr genSelf(Pointer type) {
+        return null;
     }
+    @Override
+    public Expr genSuper(Pointer type) {
+        return null;
+    }
+
     @Override
     public Expr genNew(Type type) {
         String tmpPtr = cg.malloc(Integer.toString(type.visit(sizeVisitor)));

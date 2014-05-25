@@ -14,6 +14,7 @@ public class SymbolTable {
     private HashMap<String, Info> map = new HashMap<String, Info>();
     private SymbolTable mother;
     private Type returnType;
+    private ClassType classType; // null if we are not in a method
 
     /**
      * Constructor for a symbols table without mother.
@@ -69,7 +70,6 @@ public class SymbolTable {
         map.put(n, new InfoType(t));
     }
 
-    // TODO: the following two functions do not really make sense here
     /**
      * Set the current function.
      */
@@ -83,10 +83,15 @@ public class SymbolTable {
      */
     public void setCurrentMethod(Method method) {
         returnType = method.getReturnType();
+        classType = method.getClassType();
     }
 
     public Type getReturnType() {
         return returnType;
+    }
+
+    public ClassType getClassType() {
+        return classType;
     }
 
     public String toString() {

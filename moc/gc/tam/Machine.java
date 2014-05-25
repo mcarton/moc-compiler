@@ -256,6 +256,15 @@ public class Machine extends AbstractMachine {
         return new Expr(cg.get());
     }
     @Override
+    public Expr genSelf(Pointer type) {
+        return null;
+    }
+    @Override
+    public Expr genSuper(Pointer type) {
+        return null;
+    }
+
+    @Override
     public Expr genNew(Type t) {
         cg.loadl(t.visit(sizeVisitor));
         cg.subr("Malloc");

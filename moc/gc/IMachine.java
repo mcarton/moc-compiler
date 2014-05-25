@@ -137,6 +137,8 @@ public interface IMachine {
     IExpr genNull();
     IExpr genYes();
     IExpr genNo();
+    IExpr genSelf(Pointer type);
+    IExpr genSuper(Pointer type);
 
     /** Allocate space for a variable of type `type`.
      */
