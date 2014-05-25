@@ -23,7 +23,7 @@ public interface Type {
      */
     public boolean equals(Type other);
 
-    public abstract <R> R visit(TypeVisitor<R> visitor);
+    public <R> R visit(TypeVisitor<R> visitor);
 
     public boolean isArray();
     public boolean isBool();
@@ -33,6 +33,4 @@ public interface Type {
     public boolean isNull();
     public boolean isPointer();
     public boolean isVoid();
-    public boolean isConstant();
-    public void setConstant(boolean constant);
 }

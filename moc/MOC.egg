@@ -74,8 +74,6 @@ inh hok : boolean for ARGS, ARGSX;
 -- lvalue is true if the expression is lvalue (i.e. is a variable, roughly)
 syn lvalue : boolean for A, AX, R, RX, T, TX, F;
 
-syn const : boolean for CONST;
-
 --terminals
 space separator    is "[\r\n\t ]+";
 comment comm       is "\/\/[^\n]*\n";
@@ -123,7 +121,6 @@ sugar self         is "self";
 sugar super        is "super";
 sugar yes          is "yes";
 sugar no           is "no";
-sugar const        is "const";
 
 term integer       is "[0-9]+";
 term character     is "\'([^\'\\]|\\\\|\\n|\\t|\\\"|\\\')\'";
@@ -257,12 +254,9 @@ TYPE -> STYPE #get REFS #gen;
 REFS -> #gen; #gen { REFS^type = REFS^htype; }
 
 -- pointers
-REFS -> mult CONST REFS #gen;
+REFS -> mult REFS #gen;
 #gen {
     REFS^type = new Pointer(REFS1^type);
-    if (CONST^const) {
-        REFS^type.setConstant(true);
-    }
 }
 
 -- arrays
@@ -277,7 +271,7 @@ REFS -> osbra integer csbra REFS #gen;
     REFS^type = new Array(REFS1^type, nbElements);
 }
 
-STYPE -> typeident CONST #gen;
+STYPE -> typeident #gen;
 #gen {
     Info info = STYPE^symbolTable.globalSearch(typeident^txt);
     if (info == null) {
@@ -287,24 +281,12 @@ STYPE -> typeident CONST #gen;
         match (info) {
             case InfoType {
                 STYPE^type = info.getType();
-                if (CONST^const) {
-                    info.getType().setConstant(true);
-                }
             }
             default {
                 error(TYPE_notAType, typeident^txt);
             }
         }
     }
-}
-
-CONST -> #const;
-#const {
-    CONST^const = false;
-}
-CONST -> const #const;
-#const {
-    CONST^const = true;
 }
 
 -- function body and instructions blocks
@@ -994,7 +976,7 @@ global
     }
 }
 #lvalue {
-    F^lvalue = !type.isConstant();
+    F^lvalue = true;
 }
 
 -- pointed-to memory access
@@ -1014,7 +996,7 @@ global
     }
 }
 #lvalue {
-    F^lvalue = !type.isConstant();
+    F^lvalue = true;
 }
 
 -- subprogram call arguments
