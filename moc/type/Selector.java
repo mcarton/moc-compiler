@@ -15,6 +15,10 @@ public class Selector {
         this.paramName= paramName;
     }
 
+    public boolean hasParameter() {
+        return paramType != null;
+    }
+
     public String getName() {
         return name;
     }
