@@ -285,7 +285,7 @@ final class CodeGenerator {
         append(", i32 0, i1 false)\n"); // 0 alignment means not aligned
     }
 
-    void methodCstDeclaration(String name, int size) {
+    void methodCstDeclaration(String type, String name, int size) {
         // @ptr.method.Point.init
         // = internal constant %mocc.method {
         // i8* bitcast ([6 x i8]* @names.method.Point.init to i8*),
@@ -299,8 +299,11 @@ final class CodeGenerator {
         declAppend(" x i8]* @names.");
         declAppend(name);
         declAppend(" to i8*),\n");
-        declAppend("    void (...)* ");
-        declAppend("null"); // TODO: bitcast method
+        declAppend("    void (...)* bitcast(");
+        declAppend(type);
+        declAppend(" @");
+        declAppend(name);
+        declAppend(" to void (...)*)");
         declAppend("\n}\n");
     }
 

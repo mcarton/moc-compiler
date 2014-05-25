@@ -129,6 +129,7 @@ final class FunctionCodeGenerator {
     void genVirtualTable(String className, List<Method> methods) {
         StringBuilder vtable = new StringBuilder();
         StringBuilder methodNamesString = new StringBuilder();
+        StringBuilder methodTypeString = new StringBuilder();
 
         Iterator<Method> methIt = methods.iterator();
         while (methIt.hasNext()) {
@@ -140,13 +141,25 @@ final class FunctionCodeGenerator {
                 methodNameLenght += selector.getName().length() + 1;
             }
 
+            // TODO: arrays as parameter or return type
+            methodTypeString.append(cg().typeName(current.getReturnType()));
+            methodTypeString.append("(%class." + className + '*');
+            for (Type type : current.getParameterTypes()) {
+                methodTypeString.append(", ");
+                methodTypeString.append(cg().typeName(type));
+            }
+            methodTypeString.append(")*");
+
             String name = methodNamesString.toString();
             methodNamesString.setLength(0);
+
+            String type = methodTypeString.toString();
+            methodTypeString.setLength(0);
 
             String mangledName = mangledName(current);
             String constantName = "@names." + mangledName;
             cg().stringCstDeclaration(constantName, methodNameLenght+1, name);
-            cg().methodCstDeclaration(mangledName, methodNameLenght+1);
+            cg().methodCstDeclaration(type, mangledName, methodNameLenght+1);
 
             vtable.append("    %mocc.method* @ptr.");
             vtable.append(mangledName);
