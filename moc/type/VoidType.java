@@ -9,7 +9,7 @@ public final class VoidType extends AbstractType<VoidType> {
     }
 
     @Override
-    public boolean constructsFrom(Type autre) {
+    public boolean constructsFrom(Type other) {
         return false;
     }
 

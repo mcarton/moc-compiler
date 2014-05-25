@@ -29,8 +29,8 @@ public final class IntegerType extends AbstractType<IntegerType> {
     }
 
     @Override
-    public boolean equals(Type autre) {
-        return autre.isInt();
+    public boolean equals(Type other) {
+        return other.isInt();
     }
 
     @Override

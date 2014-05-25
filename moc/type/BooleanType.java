@@ -29,8 +29,8 @@ public final class BooleanType extends AbstractType<BooleanType> {
     }
 
     @Override
-    public boolean equals(Type autre) {
-        return autre.isBool();
+    public boolean equals(Type other) {
+        return other.isBool();
     }
 
     @Override

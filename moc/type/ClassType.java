@@ -63,7 +63,7 @@ public final class ClassType extends AbstractType<ClassType> {
     }
 
     @Override
-    public boolean constructsFrom(Type autre) {
+    public boolean constructsFrom(Type other) {
         return false;
     }
 
