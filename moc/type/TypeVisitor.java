@@ -10,6 +10,7 @@ public interface TypeVisitor<R> {
     public R visit(VoidType what);
 
     public R visit(Array what);
+    public R visit(IdType what);
     public R visit(NullType what);
     public R visit(Pointer what);
 }

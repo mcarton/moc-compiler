@@ -28,7 +28,9 @@ public final class Pointer extends AbstractType<Pointer> {
 
     @Override
     public boolean castsFrom(Type other) {
-        return constructsFrom(other) || other.isPointer();
+        return constructsFrom(other)
+            || other.isPointer()
+            || other.isId() && pointee.isClass();
     }
 
     @Override

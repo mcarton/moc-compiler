@@ -31,36 +31,13 @@ abstract class AbstractType<T extends Type> implements Type {
     }
     */
 
-    @Override
-    public boolean isArray() {
-        return false;
-    }
-    @Override
-    public boolean isBool() {
-        return false;
-    }
-    @Override
-    public boolean isClass() {
-        return false;
-    }
-    @Override
-    public boolean isChar() {
-        return false;
-    }
-    @Override
-    public boolean isInt() {
-        return false;
-    }
-    @Override
-    public boolean isNull() {
-        return false;
-    }
-    @Override
-    public boolean isPointer() {
-        return false;
-    }
-    @Override
-    public boolean isVoid() {
-        return false;
-    }
+    @Override public boolean isArray()   { return false; }
+    @Override public boolean isBool()    { return false; }
+    @Override public boolean isClass()   { return false; }
+    @Override public boolean isChar()    { return false; }
+    @Override public boolean isId()      { return false; }
+    @Override public boolean isInt()     { return false; }
+    @Override public boolean isNull()    { return false; }
+    @Override public boolean isPointer() { return false; }
+    @Override public boolean isVoid()    { return false; }
 }

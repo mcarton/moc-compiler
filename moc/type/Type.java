@@ -29,6 +29,7 @@ public interface Type {
     public boolean isBool();
     public boolean isClass();
     public boolean isChar();
+    public boolean isId();
     public boolean isInt();
     public boolean isNull();
     public boolean isPointer();

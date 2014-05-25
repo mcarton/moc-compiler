@@ -25,6 +25,9 @@ class CasterFromVisitor implements TypeVisitor<TypeVisitor<Caster>> {
     public TypeVisitor<Caster> visit(Array from) {
         return new FromArrayCaster(from);
     }
+    public TypeVisitor<Caster> visit(IdType from) {
+        return null; //TODO:id
+    }
     public TypeVisitor<Caster> visit(NullType from) {
         return new FromNullCaster();
     }
@@ -43,6 +46,7 @@ class DefaultCaster implements TypeVisitor<Caster> {
     public Caster visit(VoidType to)      { return null; }
 
     public Caster visit(Array to)         { return null; }
+    public Caster visit(IdType to)        { return null; }
     public Caster visit(NullType to)      { return null; }
     public Caster visit(Pointer to)       { return null; }
 }

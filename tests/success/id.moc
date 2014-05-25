@@ -1,0 +1,16 @@
+class SomeName {
+}
+
+void foo(id bar) {
+}
+
+id bar() {
+    return null;
+}
+
+void main() {
+    id toto = new(SomeName);
+    foo(toto);
+    toto = bar();
+}
+

@@ -22,6 +22,7 @@ final class RepresentationVisitor implements TypeVisitor<String> {
             + what.getPointee().visit(this)
             + "]";
     }
+    public String visit(IdType what)        { return "%mocc.id"; }
     public String visit(NullType what)      { return "i8*"; }
     public String visit(Pointer what) {
         return what.getPointee().visit(this) + "*";

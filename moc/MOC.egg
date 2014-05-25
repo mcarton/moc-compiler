@@ -355,8 +355,11 @@ INST -> using typeident affect TYPE semicolon #symbolTable #gen;
     if (INST^symbolTable.localSearch(typeident^txt) != null) {
         error(TYPE_exists, typeident^txt);
     }
-    elseif (TYPE^type.isVoid()) { -- TODO:moc: id
+    elseif (TYPE^type.isVoid()) {
         error(TYPE_void);
+    }
+    elseif (TYPE^type.isId()) {
+        error(TYPE_id);
     }
     else {
         if (INST^machine.hasWarning("shadow")
@@ -816,6 +819,9 @@ F -> new opar TYPE NEW_VALUE cpar #gen #lvalue;
     if (TYPE^type.isVoid()) {
         error(TYPE_void);
     }
+    elseif (TYPE^type.isId()) {
+        error(TYPE_id);
+    }
     else {
         F^type = new Pointer(TYPE^type);
 
@@ -850,6 +856,9 @@ F -> new osbra E csbra opar TYPE cpar #gen #lvalue;
 #gen {
     if (TYPE^type.isVoid()) {
         error(TYPE_void);
+    }
+    elseif (TYPE^type.isId()) {
+        error(TYPE_id);
     }
     else {
         if (E^type.isInt()) {
@@ -1201,7 +1210,7 @@ QUAL -> plus  #set; #set { QUAL^sym = "+"; }
 QUAL -> minus #set; #set { QUAL^sym = "-"; }
 
 -- type "any"
---TYPE -> id;
+TYPE -> id #gen; #gen { TYPE^type = new IdType(); }
 
 -- method return type between parenthesis
 PTYPE-> opar TYPE cpar #type;

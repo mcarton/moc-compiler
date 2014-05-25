@@ -447,6 +447,7 @@ class SizeVisitor implements TypeVisitor<Integer> {
     public Integer visit(Array what) {
         return what.getPointee().visit(this) * what.getNbElements();
     }
+    public Integer visit(IdType what)        { return 1; }
     public Integer visit(NullType what)      { return 1; }
     public Integer visit(Pointer what)       { return 1; }
 }
