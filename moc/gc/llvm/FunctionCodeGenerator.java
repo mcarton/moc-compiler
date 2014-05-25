@@ -3,6 +3,7 @@ package moc.gc.llvm;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Vector;
 import moc.gc.*;
 import moc.symbols.*;
@@ -81,8 +82,8 @@ final class FunctionCodeGenerator {
         machine.lastTmp = 0; // reseted for parameters
 
         cg().beginDefine(returnTypeName, name);
-        returnArray(!parameters.isEmpty());
-        parameters(fun.getParameterTypes().iterator());
+        returnArray();
+        parameters(fun.getParameterTypes().iterator(), returnsArray);
         cg().endDefine();
 
         allocateReturn(returnsVoid);
@@ -108,12 +109,16 @@ final class FunctionCodeGenerator {
         machine.lastTmp = 0; // reseted for parameters
 
         cg().beginDefine(returnTypeName, mangledName(method));
-        returnArray(!parameters.isEmpty());
-        // TODO:methods: add parameters
+        returnArray();
+        cg().parameter(false, cg().typeName(method.getClassType()) + '*', "%__self");
+        parameters(method.getParameterTypes().iterator(), true);
         cg().endDefine();
 
         allocateReturn(returnsVoid);
-        // TODO:methods: allocates parameters
+        allocateParameter(new Pointer(method.getClassType()), "%__self", "%self");
+        allocateParameters(
+            parameters.iterator(), method.getParameterTypes().iterator(), true
+        );
 
         cg().body(block);
         endFunction();
@@ -157,7 +162,7 @@ final class FunctionCodeGenerator {
 
     // implementation stuffs for function definition:
 
-    /** Allocate space for the return value. */
+    /** Allocate space for the parameters. */
     void allocateParameters(
         Iterator<ILocation> locIt, Iterator<Type> it, boolean hasParameters
     ) {
@@ -165,8 +170,7 @@ final class FunctionCodeGenerator {
         while (it.hasNext()) {
             Type paramType = it.next();
             String paramName = locIt.next().toString();
-            cg().alloca(paramName, cg().typeName(paramType));
-            machine.copy(paramType, "%__p"+ ++paramIt, paramName);
+            allocateParameter(paramType, "%__p"+ ++paramIt, paramName);
         }
 
         if (hasParameters || !returnsVoid) {
@@ -175,7 +179,13 @@ final class FunctionCodeGenerator {
         }
     }
 
-    /** Allocate space for the parameters. */
+    /** Allocate space for a parameter. */
+    void allocateParameter(Type type, String tmpName, String name) {
+        cg().alloca(name, cg().typeName(type));
+        machine.copy(type, tmpName, name);
+    }
+
+    /** Allocate space for the return value. */
     void allocateReturn(boolean returnsVoid) {
         if (!returnsVoid) {
             cg().alloca(returnParameterName, returnTypeName);
@@ -183,7 +193,7 @@ final class FunctionCodeGenerator {
     }
 
     /** Add the parameter names of the form "__p0", "__p1". */
-    void parameters(Iterator<Type> it) {
+    void parameters(Iterator<Type> it, boolean hasPrevious) {
         int paramIt = 0;
         while (it.hasNext()) {
             Type type = it.next();
@@ -193,16 +203,18 @@ final class FunctionCodeGenerator {
                 typename += '*';
             }
 
-            cg().parameter(typename, "%__p" + ++paramIt, it.hasNext());
+            cg().parameter(hasPrevious, typename, "%__p" + ++paramIt);
+            hasPrevious = true;
         }
     }
 
     /** Add the `return` parameter if the return type if an array. */
-    void returnArray(boolean onlyParameter) {
+    void returnArray() {
         if (returnsArray) {
             cg().parameter(
+                false,
                 cg().typeName(returnType) + "* noalias sret",
-                returnParameterName, onlyParameter
+                returnParameterName
             );
         }
     }
@@ -238,7 +250,8 @@ final class FunctionCodeGenerator {
         return names;
     }
 
-    void passParameters(Iterator<Type> typeIt, Iterator<String> nameIt) {
+    void passParameters(ListIterator<Type> typeIt, Iterator<String> nameIt) {
+        boolean hasPrevious = typeIt.hasPrevious();
         while (typeIt.hasNext()) {
             Type type = typeIt.next();
             String typename = cg().typeName(type);
@@ -247,19 +260,23 @@ final class FunctionCodeGenerator {
                 typename += '*';
             }
 
-            cg().parameter(typename, nameIt.next(), typeIt.hasNext());
+            cg().parameter(hasPrevious, typename, nameIt.next());
+            hasPrevious = true;
         }
     }
 
     /**
      * When the return type is an arrays it is passed as the first parameter.
      */
-    String passReturnAddress(String funName, boolean hasParameters) {
+    String passReturnAddress(String funName, boolean hasNext) {
         String returnTypeName = cg().typeName(returnType);
         String tmpValueName = machine.getTmpName();
         cg().alloca(tmpValueName, returnTypeName);
         cg().callVoid(funName);
-        cg().parameter(returnTypeName + '*', tmpValueName, hasParameters);
+        cg().parameter(false, returnTypeName + '*', tmpValueName);
+        if (hasNext) {
+            cg().append(", ");
+        }
         return tmpValueName;
     }
 

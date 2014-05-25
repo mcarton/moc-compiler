@@ -397,14 +397,14 @@ final class CodeGenerator {
         append('(');
     }
 
-    /** {@code <type> <name>} optionally followed by a comma */
-    void parameter(String type, String name, boolean hasNext) {
+    /** {@code <type> <name>} optionally preceded by a comma */
+    void parameter(boolean hasPrevious, String type, String name) {
+        if (hasPrevious) {
+            append(", ");
+        }
         append(type);
         append(' ');
         append(name);
-        if (hasNext) {
-            append(", ");
-        }
     }
 
     void body(String block) {
