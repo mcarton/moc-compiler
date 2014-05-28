@@ -19,10 +19,6 @@ public final class FunctionType {
         return parameterTypes;
     }
 
-    public boolean callableWith(TypeList params) {
-        return parameterTypes.constructsFrom(params);
-    }
-
     public String toString() {
         return parameterTypes + "->" + returnType;
     }
