@@ -163,12 +163,12 @@ final class FunctionCodeGenerator {
 
             vtable.append("    %mocc.method* @ptr.");
             vtable.append(mangledName);
-            if (methIt.hasNext()) {
-                vtable.append(",\n");
-            }
+            vtable.append(",\n");
         }
 
-        cg().vtableBegin(className, methods.size());
+        vtable.append("    %mocc.method* null\n");
+
+        cg().vtableBegin(className, methods.size()+1);
         cg().declAppend(vtable);
         cg().vtableEnd();
     }
