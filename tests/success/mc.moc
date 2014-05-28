@@ -6,7 +6,7 @@ Int* malloc(Int size){
 }
 
 // inline assembly in a function
-void log(Char const* message, Int value){
+void log(Char* message, Int value){
     Int x = 12;
 }
 
