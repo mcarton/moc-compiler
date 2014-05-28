@@ -19,7 +19,6 @@ class Point {
 
 void main() {
     Point* point;
-    [point x: 6 y: 7];
-    Int a = [point x];
+    [point x: 6];
 }
 
