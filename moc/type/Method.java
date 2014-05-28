@@ -38,6 +38,19 @@ public class Method {
                     new ParameteredSelectorIterator(selectors.iterator())
                 );
             }
+
+            public String toString() {
+                String result = "[";
+                boolean first = true;
+                for (Type type : this) {
+                    if (!first) {
+                        result += ", ";
+                    }
+                    result += type.toString();
+                    first = false;
+                }
+                return result + ']';
+            }
         };
     }
 
@@ -80,6 +93,28 @@ public class Method {
         }
 
         return true;
+    }
+
+    public boolean callableWith(Iterable<Type> types) {
+        Iterator<Selector> selIt = selectors.iterator();
+        Iterator<Type> typeIt = types.iterator();
+
+        while (selIt.hasNext() && typeIt.hasNext()) {
+            Selector sel = selIt.next();
+            Type type = typeIt.next();
+
+            if (!sel.hasParameter() && type == null) {
+                continue;
+            }
+
+            if (
+                !sel.hasParameter() || type == null
+            ||  !sel.getParamType().constructsFrom(type)) {
+                return false;
+            }
+        }
+
+        return !selIt.hasNext() && !typeIt.hasNext();
     }
 }
 
