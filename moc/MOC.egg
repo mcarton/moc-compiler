@@ -1303,6 +1303,7 @@ global
             match (type) {
                 case ClassType {
                     Method method = type.getInstanceMethod(selectors);
+                    F^type = method.getReturnType();
                     if (method != null) {
                         if (method.callableWith(types)) {
                             F^expr = F^machine.genCall(method, F1^expr, exprs);
