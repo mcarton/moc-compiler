@@ -1,21 +1,21 @@
 package moc.type;
 
 import java.lang.Iterable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Vector;
 import java.util.NoSuchElementException;
 
 public class Method {
     ClassType classType;
     Type returnType;
-    Vector<Selector> selectors = new Vector<>();
+    ArrayList<Selector> selectors = new ArrayList<>();
     boolean isStatic;
 
     public Method(
         ClassType classType, Type returnType,
-        Vector<Selector> selectors, boolean isStatic
+        ArrayList<Selector> selectors, boolean isStatic
     ) {
         this.classType = classType;
         this.returnType = returnType;
@@ -51,6 +51,35 @@ public class Method {
 
     public List<Selector> getSelectors() {
         return Collections.unmodifiableList(selectors);
+    }
+
+    public boolean isStatic() {
+        return isStatic;
+    }
+
+    public String toString() {
+        String result = isStatic ? "+" : "-";
+        for (Selector sel : selectors) {
+            result += sel.getName() + ':';
+        }
+        return result;
+    }
+
+    public boolean hasNames(ArrayList<String> names) {
+        if (names.size() != selectors.size()) {
+            return false;
+        }
+
+        Iterator<String> nameIt = names.iterator();
+        Iterator<Selector> selIt = selectors.iterator();
+
+        while (nameIt.hasNext() && selIt.hasNext()) {
+            if (!selIt.next().getName().equals(nameIt.next())) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
 

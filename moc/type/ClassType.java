@@ -1,14 +1,15 @@
 package moc.type;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Vector;
 
 public final class ClassType extends AbstractType<ClassType> {
     ClassType superClass;
     String name;
-    Vector<Attributes> attributes = new Vector<>();
-    Vector<Method> methods = new Vector<>();
+    ArrayList<Attributes> attributes = new ArrayList<>();
+    ArrayList<Method> methods = new ArrayList<>();
 
     public ClassType(String name, ClassType superClass) {
         this.name = name;
@@ -55,6 +56,24 @@ public final class ClassType extends AbstractType<ClassType> {
 
     public List<Method> getMethods() {
         return Collections.unmodifiableList(methods);
+    }
+
+    public Method getClassMethod(ArrayList<String> names) {
+        return getMethod(true, names);
+    }
+
+    public Method getInstanceMethod(ArrayList<String> names) {
+        return getMethod(false, names);
+    }
+
+    public Method getMethod(boolean isStatic, ArrayList<String> names) {
+        for (Method method : methods) {
+            if (method.isStatic() == isStatic && method.hasNames(names)) {
+                return method;
+            }
+        }
+
+        return null;
     }
 
     public boolean inheritsFrom(Type other) {

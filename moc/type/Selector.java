@@ -12,7 +12,7 @@ public class Selector {
     public Selector(String name, Type paramType, String paramName) {
         this.name = name;
         this.paramType = paramType;
-        this.paramName= paramName;
+        this.paramName = paramName;
     }
 
     public boolean hasParameter() {
