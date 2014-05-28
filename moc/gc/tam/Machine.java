@@ -322,6 +322,12 @@ public class Machine extends AbstractMachine {
         cg.call("SB", "function_" + funName);
         return new Expr(cg.get());
     }
+
+    @Override
+    public IExpr genCall(Method method, IExpr instance, ArrayList<IExpr> params) {
+        return null; // TODO:method
+    }
+
     @Override
     public Expr genSizeOf(Type type) {
         return genInt(type.visit(sizeVisitor));

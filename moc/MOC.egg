@@ -15,7 +15,7 @@ inh machine : IMachine for
     IMPLEMENTATION, METHOD, METHODS, ATTRIBUTES,
     E, EX, A, AX, R, RX, T, TX, F, NEW_VALUE,
     REFS, STYPE, PTYPE, TYPE,
-    MFUNC_PARAMETER, MFUNC_PARAMETERS --, MARG, MARGS
+    MFUNC_PARAMETER, MFUNC_PARAMETERS, MARG, MARGS
 ;
 
 -- the current symbols table
@@ -25,7 +25,7 @@ inh symbolTable : SymbolTable for
     IMPLEMENTATION, METHOD, METHODS, ATTRIBUTES, SUPER,
     TYPE, STYPE, PTYPE, REFS,
     F, TX, T, RX, R, AX, A, EX, E, NEW_VALUE,
-    MFUNC_PARAMETER, MFUNC_PARAMETERS --, MARG, MARGS
+    MFUNC_PARAMETER, MFUNC_PARAMETERS, MARG, MARGS
 ;
 
 -- 0 => empty statement, 1 => non-empty but does not return, 2 => returns
@@ -49,9 +49,9 @@ inh parameters : ArrayList<ILocation> for
 ;
 inh types : TypeList for
     FUNC_PARAMETERS, FUNC_PARAMETERSX, FUNC_PARAMETER,
-    ARGS, ARGSX
+    ARGS, ARGSX, MARG, MARGS
 ;
-inh selectors : Vector<Selector> for MFUNC_PARAMETER, MFUNC_PARAMETERS;
+inh selectors : ArrayList<Selector> for MFUNC_PARAMETER, MFUNC_PARAMETERS;
 
 syn sym : String for OPREL, OPADD, OPMUL, OPUN, QUAL;
 
@@ -63,7 +63,8 @@ syn expr : IExpr for
     F, TX, T, RX, R, AX, A, EX, E, NEW_VALUE
 ;
 inh hexpr : IExpr for TX, RX, AX;
-inh exprs : ArrayList<IExpr> for ARGS, ARGSX;
+inh exprs : ArrayList<IExpr> for ARGS, ARGSX, MARG, MARGS;
+inh selectorNames : ArrayList<String> for MARG, MARGS;
 
 inh currIndex : ListIterator<Type> for ARGS, ARGSX;
 
@@ -1173,7 +1174,7 @@ METHODS -> METHOD METHODS #gen;
 METHOD -> QUAL PTYPE #init MFUNC_PARAMETERS #begin BLOCK #gen;
 global
     SymbolTable blockTds;
-    Vector<Selector> selectors;
+    ArrayList<Selector> selectors;
     ArrayList<ILocation> parameters;
     Method method;
 #init {
@@ -1181,7 +1182,7 @@ global
     MFUNC_PARAMETERS^symbolTable = blockTds;
     BLOCK^symbolTable = blockTds;
 
-    selectors = new Vector<Selector>();
+    selectors = new ArrayList<Selector>();
     MFUNC_PARAMETERS^selectors = selectors;
 
     parameters = new ArrayList<ILocation>();
@@ -1276,15 +1277,80 @@ F -> super #gen #lvalue;
     F^lvalue = false;
 }
 
--- -- method call
---F -> osbra F MARGS csbra;
----- for class method call
+-- method call
+F -> osbra F #init MARGS csbra #gen #lvalue;
+global
+    ArrayList<String> selectors;
+    TypeList types;
+    ArrayList<IExpr> exprs;
+#init {
+    selectors = new ArrayList<String>();
+    types = new TypeList();
+    exprs = new ArrayList<IExpr>();
+
+    MARGS^selectorNames = selectors;
+    MARGS^types = types;
+    MARGS^exprs = exprs;
+}
+#gen {
+    match (F1^type) {
+        case IdType {
+            F^expr = null; -- TODO: handle calls on id
+            F^type = new VoidType();
+        }
+        case Pointer {
+            Type type = F1^type.getPointee();
+            match (type) {
+                case ClassType {
+                    Method method = type.getInstanceMethod(selectors);
+                    if (method != null) {
+                        if (method.callableWith(types)) {
+                            F^expr = F^machine.genCall(method, F1^expr, exprs);
+                        }
+                        else {
+                            error(
+                                CLASS_wrongMethodTypes, type, method,
+                                method.getParameterTypes(), types
+                            );
+                        }
+                    }
+                    else {
+                        error(CLASS_unknowMethod, type, selectors);
+                    }
+                }
+                default {
+                    error(CLASS_methodNeedClassesOrId, F1^type);
+                }
+            }
+        }
+        default {
+            error(CLASS_methodNeedClassesOrId, F1^type);
+        }
+    }
+}
+#lvalue {
+    F^lvalue = false;
+}
+
 --F -> osbra typeident MARGS csbra;
----- method call arguments
---MARGS -> ;
---MARGS -> MARG MARGS;
--- -- selector + arg
---MARG -> ident colon  E;
--- -- selector without arg
---MARG -> ident;
----- --end of MOC extension
+
+-- method call arguments
+MARGS -> ;
+MARGS -> MARG MARGS;
+
+-- selector + arg
+MARG -> ident colon E #add;
+#add {
+    MARG^selectorNames.add(ident^txt);
+    MARG^types.add(E^type);
+    MARG^exprs.add(E^expr);
+}
+
+-- selector without arg
+MARG -> ident #add;
+#add {
+    MARG^selectorNames.add(ident^txt);
+    MARG^types.add(null);
+    MARG^exprs.add(null);
+}
+

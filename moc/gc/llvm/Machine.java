@@ -333,6 +333,11 @@ public final class Machine extends AbstractMachine {
     }
 
     @Override
+    public IExpr genCall(Method method, IExpr instance, ArrayList<IExpr> params) {
+        return null; // TODO:method
+    }
+
+    @Override
     public Expr genSizeOf(Type type) {
         return genInt(type.visit(sizeVisitor));
     }

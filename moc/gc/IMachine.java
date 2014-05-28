@@ -158,7 +158,11 @@ public interface IMachine {
 
     /** Call a function.
      */
-    IExpr genCall(String funName, FunctionType fun, ArrayList<IExpr> exprs);
+    IExpr genCall(String funName, FunctionType fun, ArrayList<IExpr> params);
+
+    /** Call a method on a instance.
+     */
+    IExpr genCall(Method method, IExpr instance, ArrayList<IExpr> params);
 
     /** Return the size of the given type.
      */
