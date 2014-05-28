@@ -38,7 +38,7 @@ public final class TypeList implements Iterable<Type> {
     }
 
     /** A TypeList is constructible from another iff they have the same size and
-     *  are constructible it is constructible from the other element-wise.
+     *  is constructible from the other list element-wise.
      */
     public boolean constructsFrom(TypeList other) {
         if (size() != other.size()) {
