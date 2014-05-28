@@ -54,6 +54,9 @@ public final class ClassType extends AbstractType<ClassType> {
         return Collections.unmodifiableList(attributes);
     }
 
+    /**
+     * Get class own methods, without its parents'.
+     */
     public List<Method> getMethods() {
         return Collections.unmodifiableList(methods);
     }
@@ -71,6 +74,10 @@ public final class ClassType extends AbstractType<ClassType> {
             if (method.isStatic() == isStatic && method.hasNames(names)) {
                 return method;
             }
+        }
+
+        if (superClass != null) {
+            return superClass.getMethod(isStatic, names);
         }
 
         return null;
