@@ -83,9 +83,14 @@ public final class ClassType extends AbstractType<ClassType> {
         return null;
     }
 
+    /**
+     * A class inherits from itself, its parent, and its parent's parents
+     * recursively.
+     */
     public boolean inheritsFrom(Type other) {
-        return superClass != null
-           && (superClass.equals(other) || superClass.inheritsFrom(other));
+        return equals(other) ||
+            (superClass != null
+                && (superClass.equals(other) || superClass.inheritsFrom(other)));
     }
 
     @Override
