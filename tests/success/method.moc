@@ -7,6 +7,8 @@ class Point {
     }
 
     -(Point*) init {
+        x = 0;
+        y = 0;
         return self;
     }
 
@@ -19,6 +21,8 @@ class Point {
     }
 
     -(void) x:(Int) a y:(Int) b {
+        x = a;
+        y = b;
     }
 }
 

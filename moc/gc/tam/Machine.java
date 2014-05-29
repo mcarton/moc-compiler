@@ -100,6 +100,10 @@ public class Machine extends AbstractMachine {
         currentAddress += type.visit(sizeVisitor);
         return tempLoc;
     }
+    @Override
+    public Location getLocationForAttribute(Type type, String name) {
+        return null; // TODO:attributes
+    }
 
     // code generation stuffs:
     @Override

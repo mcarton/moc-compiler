@@ -65,6 +65,11 @@ public interface IMachine {
      */
     ILocation getLocationForVariable(Type type, String name);
 
+    /** Get the machine-dependant ILocation for an attribute named
+     *  <code>name</code> with type <code>type</code> in the current class.
+     */
+    ILocation getLocationForAttribute(Type type, String name);
+
     // string stuffs:
     int stringSize(String unescaped);
 

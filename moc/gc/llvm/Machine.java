@@ -102,6 +102,10 @@ public final class Machine extends AbstractMachine {
     public Location getLocationFor(Type type, String name) {
         return new Location('%' + name + '.' + block);
     }
+    @Override
+    public Location getLocationForAttribute(Type type, String name) {
+        return new Location("TODO:attributes");
+    }
 
     // code generation stuffs:
     /**
@@ -274,11 +278,11 @@ public final class Machine extends AbstractMachine {
     }
     @Override
     public Expr genSelf(Pointer type) {
-        return null;
+        return new Expr(new Location("%self"), "");
     }
     @Override
     public Expr genSuper(Pointer type) {
-        return null;
+        return new Expr(new Location("%super"), ""); // TODO?
     }
 
     @Override
