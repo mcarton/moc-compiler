@@ -1088,9 +1088,9 @@ ENTITIES -> IMPLEMENTATION ENTITIES #gen;
 }
 
 -- class definition
-IMPLEMENTATION -> class typeident SUPER #set
+IMPLEMENTATION -> class typeident SUPER #set #symbolTable
                       occbra ATTRIBUTES
-                      METHODS ccbra #symbolTable #gen;
+                      METHODS ccbra #gen;
 global
     ClassType type;
 #set {
