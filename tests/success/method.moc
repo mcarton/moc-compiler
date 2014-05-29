@@ -2,7 +2,12 @@ class Point {
     Int x;
     Int y;
 
-    +(void) init {
+    +(Point*) alloc {
+        return new(Point);
+    }
+
+    -(Point*) init {
+        return self;
     }
 
     -(Int) x {
