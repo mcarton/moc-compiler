@@ -541,20 +541,17 @@ INST -> return E semicolon #gen;
 -- affectation
 E -> A EX #type;
 #type {
-    if (EX^type == null) {
-        E^type = A^type;
-    }
-    elseif (A^type.constructsFrom(EX^type)) {
-        E^type = A^type;
-    }
-    else {
-        error(TYPE_unexpected, A^type, EX^type);
-    }
+    E^type = A^type;
+
     -- `EX -> ;` => EX^expr == null
     if (EX^expr == null) {
         E^expr = E^machine.genNonAff(A^type, A^expr);
     }
-    else {
+    elseif (A^type != null) {
+        if (!A^type.constructsFrom(EX^type)) {
+            error(TYPE_unexpected, A^type, EX^type);
+        }
+
         if (A^lvalue) {
             IExpr tmp = E^machine.genCast(EX^type, A^type, EX^expr);
             E^expr = E^machine.genAff(A^type, A^expr, tmp);
