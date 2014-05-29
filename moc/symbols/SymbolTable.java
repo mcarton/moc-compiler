@@ -14,7 +14,7 @@ public class SymbolTable {
     private HashMap<String, Info> map = new HashMap<String, Info>();
     private SymbolTable mother;
     private Type returnType;
-    private ClassType classType; // null if we are not in a method
+    private ClassType classType; // null if we are not in an instance method
 
     /**
      * Constructor for a symbols table without mother.
@@ -29,6 +29,7 @@ public class SymbolTable {
     public SymbolTable(SymbolTable mother) {
         this.mother = mother;
         returnType = mother == null ? null : mother.getReturnType();
+        classType  = mother == null ? null : mother.getClassType();
     }
 
     /**
@@ -75,6 +76,7 @@ public class SymbolTable {
      */
     public void setCurrentFunction(String name, FunctionType function) {
         returnType = function.getReturnType();
+        classType = null;
         mother.insertFun(name, function);
     }
 
@@ -83,7 +85,9 @@ public class SymbolTable {
      */
     public void setCurrentMethod(Method method) {
         returnType = method.getReturnType();
-        classType = method.getClassType();
+        if (!method.isStatic()) {
+            classType = method.getClassType();
+        }
     }
 
     public Type getReturnType() {
