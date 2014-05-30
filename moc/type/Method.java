@@ -116,6 +116,22 @@ public class Method {
 
         return !selIt.hasNext() && !typeIt.hasNext();
     }
+
+    public boolean overrides(Method other) {
+        if (selectors.size() != other.selectors.size()) {
+            return false;
+        }
+
+        Iterator<Selector> itsSel = other.getSelectors().iterator();
+
+        for (Selector sel : selectors) {
+            if (!sel.equals(itsSel.next())) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }
 
 /** A convenience iterator that skips selectors without parameters. */

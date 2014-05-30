@@ -13,16 +13,47 @@ class Point {
     }
 
     -(Int) x {
-        return 0;
+        return x;
     }
 
     -(Int) y {
-        return 0;
+        return y;
     }
 
     -(void) x:(Int) a y:(Int) b {
         x = a;
         y = b;
+    }
+
+    -(void) print {
+        // let say we are printing x and y
+    }
+}
+
+class Point3D : Point {
+    Int z;
+
+    +(Point3D*) alloc {
+        return new(Point3D);
+    }
+
+    -(Point3D*) init {
+        [super init];
+        z = 0;
+        return self;
+    }
+
+    -(Int) z {
+        return z;
+    }
+
+    -(void) x:(Int) a y:(Int) b z:(Int) c {
+        [super x:a y:b];
+        z = c;
+    }
+
+    -(void) print {
+        // let say we are printing x, y and z
     }
 }
 

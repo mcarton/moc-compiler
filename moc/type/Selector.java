@@ -30,5 +30,12 @@ public class Selector {
     public String getParamName() {
         return paramName;
     }
+
+    public boolean equals(Selector other) {
+        return name.equals(other.name)
+            && (paramType == null && other.paramType == null
+                || paramType.equals(other.paramType)
+                    && paramName.equals(other.paramName));
+    }
 }
 

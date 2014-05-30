@@ -14,6 +14,12 @@ public final class ClassType extends AbstractType<ClassType> {
     public ClassType(String name, ClassType superClass) {
         this.name = name;
         this.superClass = superClass;
+
+        if (superClass != null) {
+            for (Method method : superClass.methods) {
+                methods.add(method);
+            }
+        }
     }
 
     public String toString() {
@@ -33,6 +39,16 @@ public final class ClassType extends AbstractType<ClassType> {
     }
 
     public void addMethod(Method method) {
+        if (superClass != null) {
+            int index = 0;
+            for (Method other : superClass.methods) {
+                if (method.overrides(other)) {
+                    methods.set(index, method);
+                    return;
+                }
+                ++index;
+            }
+        }
         methods.add(method);
     }
 
