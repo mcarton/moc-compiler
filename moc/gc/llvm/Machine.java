@@ -103,7 +103,9 @@ public final class Machine extends AbstractMachine {
         return new Location('%' + name + '.' + block);
     }
     @Override
-    public Location getLocationForAttribute(Type type, String name) {
+    public Location getLocationForAttribute(
+        ClassType clazz, Type type, String name
+    ) {
         return new Location("TODO:attributes");
     }
 

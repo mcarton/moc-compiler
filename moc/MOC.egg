@@ -1152,8 +1152,9 @@ ATTRIBUTES -> TYPE ident semicolon ATTRIBUTES #add;
         error(ATTR_exists, ident^txt);
     }
     elseif (TYPE^type != null) {
-        ILocation loc
-            = ATTRIBUTES^machine.getLocationForAttribute(TYPE^type, ident^txt);
+        ILocation loc = ATTRIBUTES^machine.getLocationForAttribute(
+            ATTRIBUTES^classType, TYPE^type, ident^txt
+        );
         ATTRIBUTES^symbolTable.insertVar(ident^txt, TYPE^type, loc);
         ATTRIBUTES^classType.addAttribute(TYPE^type, ident^txt);
     }

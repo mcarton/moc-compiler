@@ -101,7 +101,9 @@ public class Machine extends AbstractMachine {
         return tempLoc;
     }
     @Override
-    public Location getLocationForAttribute(Type type, String name) {
+    public Location getLocationForAttribute(
+        ClassType clazz, Type type, String name
+    ) {
         return null; // TODO:attributes
     }
 
