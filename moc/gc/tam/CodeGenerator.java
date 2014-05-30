@@ -146,9 +146,9 @@ final class CodeGenerator {
     void ret(int returnSize, int paramSize) {
         indent();
         append("RETURN (");
-        append(paramSize);
-        append(") ");
         append(returnSize);
+        append(") ");
+        append(paramSize);
         skipLine();
     }
 
