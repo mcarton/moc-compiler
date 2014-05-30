@@ -164,21 +164,13 @@ final class FunctionCodeGenerator {
     }
 
     void genVirtualTable(String className, List<Method> methods) {
-        StringBuilder vtable = new StringBuilder();
+        cg().vtableBegin(className, methods.size());
 
         Iterator<Method> methIt = methods.iterator();
         for(Method method : methods) {
-            String mangledName = mangledName(method);
-
-            vtable.append("    %mocc.method* @ptr.");
-            vtable.append(mangledName);
-            vtable.append(",\n");
+            cg().vtableAdd(mangledName(method));
         }
 
-        vtable.append("    %mocc.method* null\n");
-
-        cg().vtableBegin(className, methods.size() + 1 /* terminal null */);
-        cg().declAppend(vtable);
         cg().vtableEnd();
     }
 

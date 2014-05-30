@@ -381,12 +381,18 @@ final class CodeGenerator {
         declAppend("@vtable.");
         declAppend(name);
         declAppend(" = internal constant [");
-        declAppend(size);
+        declAppend(size + 1 /* terminal null */);
         declAppend(" x %mocc.method*] [\n");
     }
 
+    void vtableAdd(String mangledName) {
+        declAppend("    %mocc.method* @ptr.");
+        declAppend(mangledName);
+        declAppend(",\n");
+    }
+
     void vtableEnd() {
-        declAppend("\n]\n");
+        declAppend("    %mocc.method* null\n]\n");
     }
 
     // function declaration
