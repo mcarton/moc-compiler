@@ -308,19 +308,6 @@ final class CodeGenerator {
     }
 
     /**
-     * {@code <tmp> = bitcast i8 0 to i8 }
-     *
-     * There is no real no-op instruction in llvm IR code, but this is
-     * optimized out by llc and used by llvm-gcc.
-     */
-    void noop() {
-        String tmp = machine.getTmpName();
-        indent();
-        append(tmp);
-        append(" = bitcast i8 0 to i8\n");
-    }
-
-    /**
      * Special case for "ret void".
      *
      * Note: a {@code ret} ends an llvm code block.
