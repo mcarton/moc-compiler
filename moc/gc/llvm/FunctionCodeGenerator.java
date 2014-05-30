@@ -67,7 +67,7 @@ final class FunctionCodeGenerator {
         );
 
         // TODO: call the proper method
-        String tmpValueName = callBegin(mangledName(method), true);
+        String tmpValueName = callBegin(name(method), true);
         cg().parameter(false, selfType, selfName);
         passParameters(true, method.getParameterTypes().iterator(), names.iterator());
         cg().callEnd();
@@ -89,7 +89,7 @@ final class FunctionCodeGenerator {
         prepare(fun.getReturnType());
         machine.lastTmp = 0; // reseted for parameters
 
-        cg().beginDefine(returnTypeName, name);
+        cg().beginDefine(returnTypeName, '@' + name);
         returnArray();
         parameters(fun.getParameterTypes().iterator(), returnsArray);
         cg().endDefine();
@@ -116,9 +116,16 @@ final class FunctionCodeGenerator {
         prepare(method.getReturnType());
         machine.lastTmp = 0; // reseted for parameters
 
-        cg().beginDefine(returnTypeName, mangledName(method));
+        String className = cg().typeName(method.getClassType()) + '*';
+        String name = name(method);
+        String methodName = "@method." + name;
+        String constantName = "@name." + name;
+
+        cg().beginDefine(returnTypeName, methodName);
         returnArray();
-        cg().parameter(false, cg().typeName(method.getClassType()) + '*', "%self");
+        if (!method.isStatic()) {
+            cg().parameter(false, className, "%self");
+        }
         parameters(method.getParameterTypes().iterator(), true);
         cg().endDefine();
 
@@ -130,44 +137,25 @@ final class FunctionCodeGenerator {
         cg().body(block);
         endFunction();
 
-        return cg().get();
-    }
+        if (!method.isStatic()) {
+            cg().stringCstDeclaration(constantName, name.length()+1, name);
 
-    void genMethods(String className, List<Method> methods) {
-        StringBuilder methodNamesString = new StringBuilder();
-        StringBuilder methodTypeString = new StringBuilder();
-
-        Iterator<Method> methIt = methods.iterator();
-        while (methIt.hasNext()) {
-            Method current = methIt.next();
-
-            int methodNameLenght = 0;
-            for (Selector selector : current.getSelectors()) {
-                methodNamesString.append(selector.getName());
-                methodNamesString.append("\\00");
-                methodNameLenght += selector.getName().length() + 1;
-            }
-
-            // TODO: arrays as parameter or return type
-            methodTypeString.append(cg().typeName(current.getReturnType()));
-            methodTypeString.append("(%class." + className + '*');
-            for (Type type : current.getParameterTypes()) {
+            // TODO: clean+ array parameters
+            StringBuilder methodTypeString = new StringBuilder();
+            methodTypeString.append(returnTypeName);
+            methodTypeString.append('(');
+            methodTypeString.append(className);
+            for (Type type : method.getParameterTypes()) {
                 methodTypeString.append(", ");
                 methodTypeString.append(cg().typeName(type));
             }
             methodTypeString.append(")*");
-
-            String name = methodNamesString.toString();
-            methodNamesString.setLength(0);
-
-            String type = methodTypeString.toString();
-            methodTypeString.setLength(0);
-
-            String mangledName = mangledName(current);
-            String constantName = "@names." + mangledName;
-            cg().stringCstDeclaration(constantName, methodNameLenght+1, name);
-            cg().methodCstDeclaration(type, mangledName, methodNameLenght+1);
+            cg().methodCstDeclaration(
+                methodTypeString.toString(), name, name.length()+1
+            );
         }
+
+        return cg().get();
     }
 
     void genVirtualTable(String className, List<Method> methods) {
@@ -175,7 +163,7 @@ final class FunctionCodeGenerator {
 
         Iterator<Method> methIt = methods.iterator();
         for(Method method : methods) {
-            cg().vtableAdd(mangledName(method));
+            cg().vtableAdd(name(method));
         }
 
         cg().vtableEnd();
@@ -319,11 +307,8 @@ final class FunctionCodeGenerator {
         }
     }
 
-    String mangledName(Method method) {
-        StringBuilder sb = new StringBuilder("method");
-
-        sb.append('.');
-        sb.append(method.getClassType());
+    static String name(Method method) {
+        StringBuilder sb = new StringBuilder(method.getClassType().toString());
 
         for (Selector selector : method.getSelectors()) {
             sb.append('.' + selector.getName());

@@ -285,18 +285,21 @@ final class CodeGenerator {
         append(", i32 0, i1 false)\n"); // 0 alignment means not aligned
     }
 
+    /**
+     * {@code
+     *     @ptr.<name> = internal constant %mocc.method {
+     *         i8* bitcast ([<size> x i8]* @name.<name> to i8*),
+     *         void (...)* bitcast(<type> @<name> to void (...)*)
+     *     }
+     * }
+     */
     void methodCstDeclaration(String type, String name, int size) {
-        // @ptr.method.Point.init
-        // = internal constant %mocc.method {
-        // i8* bitcast ([6 x i8]* @names.method.Point.init to i8*),
-        // void(...)* null }
-        //
         declAppend("@ptr.");
         declAppend(name);
         declAppend(" = internal constant %mocc.method {\n");
         declAppend("    i8* bitcast ([");
         declAppend(size);
-        declAppend(" x i8]* @names.");
+        declAppend(" x i8]* @name.");
         declAppend(name);
         declAppend(" to i8*),\n");
         declAppend("    void (...)* bitcast(");
@@ -379,16 +382,16 @@ final class CodeGenerator {
     }
 
     void vtableEnd() {
-        declAppend("    %mocc.method* null\n]\n");
+        declAppend("    %mocc.method* null\n]\n\n");
     }
 
     // function declaration
 
-    /** {@code define <returnType> @<name> (} */
+    /** {@code define <returnType> <name> (} */
     void beginDefine(String returnType, String name) {
         append("define ");
         append(returnType);
-        append(" @");
+        append(' ');
         append(name);
         append('(');
     }

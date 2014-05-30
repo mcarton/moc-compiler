@@ -520,10 +520,9 @@ public final class Machine extends AbstractMachine {
 
         cg.classEnd();
 
-        fcg.genMethods(clazz.getName(), clazz.getOwnMethods());
-        fcg.genVirtualTable(clazz.getName(), clazz.getMethods());
-
         cg.append(methods);
+
+        fcg.genVirtualTable(clazz.getName(), clazz.getMethods());
 
         return cg.get();
     }
