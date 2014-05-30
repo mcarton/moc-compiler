@@ -353,7 +353,7 @@ public final class Machine extends AbstractMachine {
         Location location = (Location)info.getLoc();
         if (location.isMember()) {
             String tmp = cg.getelementptr(
-                cg.typeName(location.getClassType()), "%__self",
+                cg.typeName(location.getClassType()), "%self",
                 new String[]{
                     "i64", "0", // there are no type errors here
                     "i32", Integer.toString(location.getMemberNumber())

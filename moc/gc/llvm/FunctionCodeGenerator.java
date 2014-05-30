@@ -110,12 +110,11 @@ final class FunctionCodeGenerator {
 
         cg().beginDefine(returnTypeName, mangledName(method));
         returnArray();
-        cg().parameter(false, cg().typeName(method.getClassType()) + '*', "%__self");
+        cg().parameter(false, cg().typeName(method.getClassType()) + '*', "%self");
         parameters(method.getParameterTypes().iterator(), true);
         cg().endDefine();
 
         allocateReturn(returnsVoid);
-        allocateParameter(new Pointer(method.getClassType()), "%__self", "%self");
         allocateParameters(
             parameters.iterator(), method.getParameterTypes().iterator(), true
         );
