@@ -161,7 +161,6 @@ final class FunctionCodeGenerator {
     void genVirtualTable(String className, List<Method> methods) {
         cg().vtableBegin(className, methods.size());
 
-        Iterator<Method> methIt = methods.iterator();
         for(Method method : methods) {
             cg().vtableAdd(name(method));
         }

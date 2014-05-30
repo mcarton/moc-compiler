@@ -4,12 +4,10 @@ import java.lang.StringBuilder;
 import moc.type.Type;
 
 final class CodeGenerator {
-    Machine machine;
     StringBuilder sb;
     StringBuilder declarationSb;
 
-    CodeGenerator(Machine machine) {
-        this.machine = machine;
+    CodeGenerator() {
         this.sb = new StringBuilder();
 
         String declarations =
@@ -41,7 +39,7 @@ final class CodeGenerator {
         append(code);
         skipLine();
     }
-    
+
     void call(String reg, String fun) {
         indent();
         append("CALL (");

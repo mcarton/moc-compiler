@@ -21,7 +21,7 @@ public class Machine extends AbstractMachine {
                             // 1 -> LB previous function
                             // 2 -> return address
     Stack<Integer> addressStack = new Stack<>();
-    CodeGenerator cg = new CodeGenerator(this);
+    CodeGenerator cg = new CodeGenerator();
 
     int labelCount = 0;
     Map<String, String> binaryOperators = new HashMap<>();

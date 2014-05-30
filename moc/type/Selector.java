@@ -31,11 +31,22 @@ public class Selector {
         return paramName;
     }
 
-    public boolean equals(Selector other) {
-        return name.equals(other.name)
-            && (paramType == null && other.paramType == null
-                || paramType.equals(other.paramType)
-                    && paramName.equals(other.paramName));
+    @Override
+    public boolean equals(Object other) {
+        if (other == null) {
+            return false;
+        }
+
+        if (other instanceof Selector) {
+            Selector otherSelector = (Selector)other;
+            return name.equals(otherSelector.name)
+                && (paramType == null && otherSelector.paramType == null
+                    || paramType.equals(otherSelector.paramType)
+                        && paramName.equals(otherSelector.paramName));
+        }
+        else {
+            return false;
+        }
     }
 }
 

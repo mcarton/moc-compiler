@@ -41,16 +41,18 @@ public class Method {
             }
 
             public String toString() {
+                StringBuilder sb = new StringBuilder("[");
                 String result = "[";
                 boolean first = true;
                 for (Type type : this) {
                     if (!first) {
-                        result += ", ";
+                        sb.append(", ");
                     }
-                    result += type.toString();
+                    sb.append(type);
                     first = false;
                 }
-                return result + ']';
+                sb.append(']');
+                return sb.toString();
             }
         };
     }
@@ -72,11 +74,13 @@ public class Method {
     }
 
     public String toString() {
-        String result = isStatic ? "+" : "-";
+        StringBuilder sb = new StringBuilder();
+        sb.append(isStatic ? "+" : "-");
         for (Selector sel : selectors) {
-            result += sel.getName() + ':';
+            sb.append(sel.getName());
+            sb.append(':');
         }
-        return result;
+        return sb.toString();
     }
 
     public boolean hasNames(ArrayList<String> names) {
