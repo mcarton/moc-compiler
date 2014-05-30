@@ -206,8 +206,22 @@ public class Machine extends AbstractMachine {
 
     @Override
     public String genWhile(IExpr cond, String block) {
-        // TODO:code
-        return null;
+        String whileLabel =  "while_"  + labelCount;
+        String thenLabel  =  "then_"   + labelCount;
+        String endLabel   =  "endif_"  + labelCount;
+        ++labelCount;
+
+        cg.label(whileLabel);
+        cg.append(cond.getCode());
+        getValue(cond, 1);
+        cg.jumpif(0, endLabel);
+        cg.label(thenLabel);
+        cg.append(block);
+        cg.jump(whileLabel);
+
+        cg.label(endLabel);
+
+        return cg.get();
     }
 
     @Override
