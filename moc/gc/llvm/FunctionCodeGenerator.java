@@ -132,8 +132,16 @@ final class FunctionCodeGenerator {
         StringBuilder methodTypeString = new StringBuilder();
 
         Iterator<Method> methIt = methods.iterator();
+        int nonStaticCount = 0;
         while (methIt.hasNext()) {
             Method current = methIt.next();
+
+            if (current.isStatic()) {
+                continue; // static methods do not need to be in vtable
+            }
+
+            ++nonStaticCount;
+
             int methodNameLenght = 0;
             for (Selector selector : current.getSelectors()) {
                 methodNamesString.append(selector.getName());
@@ -168,7 +176,7 @@ final class FunctionCodeGenerator {
 
         vtable.append("    %mocc.method* null\n");
 
-        cg().vtableBegin(className, methods.size()+1);
+        cg().vtableBegin(className, nonStaticCount + 1 /* terminal null */);
         cg().declAppend(vtable);
         cg().vtableEnd();
     }
