@@ -126,21 +126,13 @@ final class FunctionCodeGenerator {
         return cg().get();
     }
 
-    void genVirtualTable(String className, List<Method> methods) {
-        StringBuilder vtable = new StringBuilder();
+    void genMethods(String className, List<Method> methods) {
         StringBuilder methodNamesString = new StringBuilder();
         StringBuilder methodTypeString = new StringBuilder();
 
         Iterator<Method> methIt = methods.iterator();
-        int nonStaticCount = 0;
         while (methIt.hasNext()) {
             Method current = methIt.next();
-
-            if (current.isStatic()) {
-                continue; // static methods do not need to be in vtable
-            }
-
-            ++nonStaticCount;
 
             int methodNameLenght = 0;
             for (Selector selector : current.getSelectors()) {
@@ -168,6 +160,15 @@ final class FunctionCodeGenerator {
             String constantName = "@names." + mangledName;
             cg().stringCstDeclaration(constantName, methodNameLenght+1, name);
             cg().methodCstDeclaration(type, mangledName, methodNameLenght+1);
+        }
+    }
+
+    void genVirtualTable(String className, List<Method> methods) {
+        StringBuilder vtable = new StringBuilder();
+
+        Iterator<Method> methIt = methods.iterator();
+        for(Method method : methods) {
+            String mangledName = mangledName(method);
 
             vtable.append("    %mocc.method* @ptr.");
             vtable.append(mangledName);
@@ -176,7 +177,7 @@ final class FunctionCodeGenerator {
 
         vtable.append("    %mocc.method* null\n");
 
-        cg().vtableBegin(className, nonStaticCount + 1 /* terminal null */);
+        cg().vtableBegin(className, methods.size() + 1 /* terminal null */);
         cg().declAppend(vtable);
         cg().vtableEnd();
     }

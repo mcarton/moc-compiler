@@ -10,6 +10,8 @@ public final class ClassType extends AbstractType<ClassType> {
     String name;
     ArrayList<Attributes> attributes = new ArrayList<>();
     ArrayList<Method> methods = new ArrayList<>();
+    ArrayList<Method> ownMethods = new ArrayList<>();
+    ArrayList<Method> staticMethods = new ArrayList<>();
 
     public ClassType(String name, ClassType superClass) {
         this.name = name;
@@ -38,18 +40,24 @@ public final class ClassType extends AbstractType<ClassType> {
         attributes.add(new Attributes(type, name));
     }
 
-    public void addMethod(Method method) {
-        if (superClass != null) {
-            int index = 0;
-            for (Method other : superClass.methods) {
-                if (method.overrides(other)) {
-                    methods.set(index, method);
-                    return;
-                }
-                ++index;
-            }
+    public void addMethod(Method method, boolean isStatic) {
+        if (isStatic) {
+            staticMethods.add(method);
         }
-        methods.add(method);
+        else {
+            ownMethods.add(method);
+            if (superClass != null) {
+                int index = 0;
+                for (Method other : superClass.methods) {
+                    if (method.overrides(other)) {
+                        methods.set(index, method);
+                        return;
+                    }
+                    ++index;
+                }
+            }
+            methods.add(method);
+        }
     }
 
     public Type getAttributeType(String name) {
@@ -73,6 +81,13 @@ public final class ClassType extends AbstractType<ClassType> {
     /**
      * Get class own methods, without its parents'.
      */
+    public List<Method> getOwnMethods() {
+        return Collections.unmodifiableList(ownMethods);
+    }
+
+    /**
+     * Get class own methods, including overrided methods.
+     */
     public List<Method> getMethods() {
         return Collections.unmodifiableList(methods);
     }
@@ -86,14 +101,14 @@ public final class ClassType extends AbstractType<ClassType> {
     }
 
     public Method getMethod(boolean isStatic, ArrayList<String> names) {
+        return getMethod(isStatic ? staticMethods : methods, names);
+    }
+
+    private Method getMethod(ArrayList<Method> methods, ArrayList<String> names) {
         for (Method method : methods) {
-            if (method.isStatic() == isStatic && method.hasNames(names)) {
+            if (method.hasNames(names)) {
                 return method;
             }
-        }
-
-        if (superClass != null) {
-            return superClass.getMethod(isStatic, names);
         }
 
         return null;

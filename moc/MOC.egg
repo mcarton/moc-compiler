@@ -1190,9 +1190,10 @@ global
 }
 #begin {
     -- TODO: all the checks
-    method = new Method(METHOD^classType, PTYPE^type, selectors, QUAL^sym.equals("+"));
+    boolean isStatic = QUAL^sym.equals("+");
+    method = new Method(METHOD^classType, PTYPE^type, selectors, isStatic);
     METHOD^machine.beginMethod(method);
-    METHOD^classType.addMethod(method);
+    METHOD^classType.addMethod(method, isStatic);
     blockTds.setCurrentMethod(method);
 }
 #gen {

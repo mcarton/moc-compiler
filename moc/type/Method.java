@@ -12,6 +12,7 @@ public class Method {
     Type returnType;
     ArrayList<Selector> selectors = new ArrayList<>();
     boolean isStatic;
+    boolean overrides;
 
     public Method(
         ClassType classType, Type returnType,
@@ -130,7 +131,11 @@ public class Method {
             }
         }
 
-        return true;
+        return overrides = true;
+    }
+
+    public boolean overrides() {
+        return overrides;
     }
 }
 
