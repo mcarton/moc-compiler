@@ -38,30 +38,38 @@ final class FunctionCodeGenerator {
     /**
      * Generate code for a function call.
      */
-    Expr genCall(String funName, FunctionType fun, ArrayList<IExpr> exprs) {
+    Expr genCall(String funName, FunctionType fun, ArrayList<IExpr> params) {
         prepare(fun.getReturnType());
 
-        printParametersCode(exprs.iterator());
+        printParametersCode(params.iterator());
         ArrayList<String> names = loadParameters(
-            fun.getParameterTypes().iterator(), exprs.iterator()
+            fun.getParameterTypes().iterator(), params.iterator()
         );
 
-        String tmpValueName = null;
+        TypeList parameterTypes = fun.getParameterTypes();
+        String tmpValueName = callBegin(funName, !parameterTypes.isEmpty());
+        passParameters(false, parameterTypes.iterator(), names.iterator());
+        cg().callEnd();
 
-        if (!returnsVoid) {
-            tmpValueName = cg().callNonVoid(returnTypeName, funName);
-        }
-        else if (returnsArray) {
-            tmpValueName = passReturnAddress(
-                funName, !fun.getParameterTypes().isEmpty()
-            );
-        }
-        else {
-            cg().callVoid(funName);
-        }
+        return new Expr(new Location(tmpValueName), cg().get());
+    }
 
-        passParameters(fun.getParameterTypes().iterator(), names.iterator());
+    Expr genCall(Method method, IExpr self, ArrayList<IExpr> params) {
+        prepare(method.getReturnType());
 
+        machine.printCode(self);
+        printParametersCode(params.iterator());
+
+        String selfType = cg().typeName(method.getClassType()) + '*';
+        String selfName = machine.getValue(selfType, self);
+        ArrayList<String> names = loadParameters(
+            method.getParameterTypes().iterator(), params.iterator()
+        );
+
+        // TODO: call the proper method
+        String tmpValueName = callBegin(mangledName(method), true);
+        cg().parameter(false, selfType, selfName);
+        passParameters(true, method.getParameterTypes().iterator(), names.iterator());
         cg().callEnd();
 
         return new Expr(new Location(tmpValueName), cg().get());
@@ -251,20 +259,32 @@ final class FunctionCodeGenerator {
 
     // implementation stuffs for function call:
 
+    String callBegin(String funName, boolean hasParameters) {
+        if (!returnsVoid) {
+            return cg().callNonVoid(returnTypeName, funName);
+        }
+        else if (returnsArray) {
+            return passReturnAddress(funName, hasParameters);
+        }
+        else {
+            cg().callVoid(funName);
+            return null;
+        }
+    }
+
     ArrayList<String> loadParameters(Iterator<Type> typeIt, Iterator<IExpr> exprIt) {
-        ArrayList<String> names = new ArrayList<String>();
+        ArrayList<String> names = new ArrayList<>();
         while (exprIt.hasNext()) {
-            names.add(
-                machine.getValue(
+            names.add(machine.getValue(
                     cg().typeName(typeIt.next()), exprIt.next(), false
-                )
-            );
+            ));
         }
         return names;
     }
 
-    void passParameters(ListIterator<Type> typeIt, Iterator<String> nameIt) {
-        boolean hasPrevious = typeIt.hasPrevious();
+    void passParameters(
+        boolean hasPrevious, Iterator<Type> typeIt, Iterator<String> nameIt
+    ) {
         while (typeIt.hasNext()) {
             Type type = typeIt.next();
             String typename = cg().typeName(type);
