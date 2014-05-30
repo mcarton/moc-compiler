@@ -106,7 +106,7 @@ public final class Machine extends AbstractMachine {
     public Location getLocationForAttribute(
         ClassType clazz, Type type, String name
     ) {
-        return new Location("TODO:attributes");
+        return new Location(name, clazz, clazz.getAttributes().size()+1);
     }
 
     // code generation stuffs:
@@ -350,7 +350,20 @@ public final class Machine extends AbstractMachine {
 
     @Override
     public Expr genIdent(InfoVar info) {
-        return new Expr((Location)info.getLoc(), "", !info.getType().isArray());
+        Location location = (Location)info.getLoc();
+        if (location.isMember()) {
+            String tmp = cg.getelementptr(
+                cg.typeName(location.getClassType()), "%__self",
+                new String[]{
+                    "i64", "0", // there are no type errors here
+                    "i32", Integer.toString(location.getMemberNumber())
+                }
+            );
+            return new Expr(new Location(tmp), cg.get(), !info.getType().isArray());
+        }
+        else {
+            return new Expr(location, "", !info.getType().isArray());
+        }
     }
     @Override
     public Expr genAff(Type type, IExpr lhs, IExpr rhs) {
