@@ -374,12 +374,23 @@ public class Machine extends AbstractMachine {
     }
     @Override
     public IExpr genArrSub(Array type, IExpr lhs, IExpr rhs) {
-        return lhs; // TODO:code
+        return genSubImpl(type.getPointee().visit(sizeVisitor), lhs, rhs);
     }
     @Override
     public IExpr genPtrSub(Pointer type, IExpr lhs, IExpr rhs) {
-        return lhs; // TODO:code
+        return genSubImpl(type.getPointee().visit(sizeVisitor), lhs, rhs);
     }
+    private Expr genSubImpl(int size, IExpr lhs, IExpr rhs) {
+        cg.loadl(size);
+        cg.append(rhs.getCode());
+        getValue(rhs, 1 /* integer size */);
+        cg.subr("IMul");
+        cg.append(lhs.getCode());
+        getValue(lhs, 1 /* pointer size */);
+        cg.subr("IAdd");
+        return new Expr(cg.get(), true);
+    }
+
     @Override
     public IExpr genCast(Type from, Type to, IExpr expr) {
         return expr; // TODO:code
