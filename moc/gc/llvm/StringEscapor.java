@@ -18,6 +18,10 @@ class StringEscapor {
                     }
                     backslash = !backslash;
                     break;
+                case '0':
+                    sb.append(backslash ? "\\00" : "0");
+                    backslash = false;
+                    break;
                 case 'n':
                     sb.append(backslash ? "\\0A" : "n");
                     backslash = false;
@@ -46,6 +50,7 @@ class StringEscapor {
         if (unescaped.charAt(1) == '\\') {
             switch (unescaped.charAt(2)) {
                 case '\\': return '\\';
+                case '0' : return 0;
                 case 'n' : return '\n';
                 case 't' : return '\t';
                 case '"' : return '\"';

@@ -124,8 +124,8 @@ sugar yes          is "yes";
 sugar no           is "no";
 
 term integer       is "[0-9]+";
-term character     is "\'([^\'\\]|\\\\|\\n|\\t|\\\"|\\\')\'";
-term string        is "\"([^\"\\]|\\\\|\\n|\\t|\\\"|\\\')*\"";
+term character     is "\'([^\'\\]|\\\\|\\0|\\n|\\t|\\\"|\\\')\'";
+term string        is "\"([^\"\\]|\\\\|\\0|\\n|\\t|\\\"|\\\')*\"";
 term ident         is "[a-z][_0-9A-Za-z]*";
 term typeident     is "[A-Z][_0-9A-Za-z]*";
 
