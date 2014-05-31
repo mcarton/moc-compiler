@@ -86,7 +86,7 @@ public final class ClassType extends AbstractType<ClassType> {
     }
 
     /**
-     * Get class own methods, including overrided methods.
+     * Get instance methods, including overrided methods.
      */
     public List<Method> getMethods() {
         return Collections.unmodifiableList(methods);
@@ -122,6 +122,10 @@ public final class ClassType extends AbstractType<ClassType> {
         return equals(other) ||
             (superClass != null
                 && (superClass.equals(other) || superClass.inheritsFrom(other)));
+    }
+
+    public int parentNumbers() {
+        return superClass == null ? 0 : 1+superClass.parentNumbers();
     }
 
     @Override
