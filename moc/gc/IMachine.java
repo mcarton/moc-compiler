@@ -86,7 +86,7 @@ public interface IMachine {
 
     /** Code for an expression.
      */
-    String genInst(IExpr expr);
+    String genInst(Type type, IExpr expr);
 
     /** Code for a instruction that is a block.
      */

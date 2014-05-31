@@ -147,7 +147,7 @@ public final class Machine extends AbstractMachine {
     }
 
     @Override
-    public String genInst(IExpr expr) {
+    public String genInst(Type type, IExpr expr) {
         // if expr.getLoc() is null, the expression is an llvm constant
         return ((Expr)expr).getLoc() == null ? "" : expr.getCode();
     }

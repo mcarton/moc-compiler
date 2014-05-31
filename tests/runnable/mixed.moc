@@ -1,0 +1,18 @@
+// !return value: 0
+
+include(`puts.hoc')
+
+Int main() {
+    Int a = 1;
+    Int b = 6;
+    a + b; // this used have the tam machine to fail
+    Int c = b;
+    a = 7;
+
+    put_int(a); put_char('\n');
+    put_int(b); put_char('\n');
+    put_int(c); put_char('\n'); // this used to print '7'
+
+    return 0;
+}
+

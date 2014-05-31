@@ -154,8 +154,12 @@ public class Machine extends AbstractMachine {
     }
 
     @Override
-    public String genInst(IExpr expr) {
-        return expr.getCode();
+    public String genInst(Type type, IExpr expr) {
+        int size = type.visit(sizeVisitor);
+        cg.append(expr.getCode());
+        getValue(expr, size);
+        cg.pop(0, size);
+        return cg.get();
     }
 
     @Override
@@ -360,9 +364,8 @@ public class Machine extends AbstractMachine {
         return new Expr(cg.get());
     }
     @Override
-    public Expr genNonAff(Type t, IExpr expr) {
-        // TODO:code
-        return (moc.gc.tam.Expr)expr;
+    public IExpr genNonAff(Type type, IExpr expr) {
+        return expr;
     }
 
     @Override
