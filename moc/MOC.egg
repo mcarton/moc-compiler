@@ -1264,8 +1264,10 @@ F -> super #gen #lvalue;
 F -> osbra F #init MARGS csbra #gen #lvalue;
 global
     ArrayList<String> selectors;
-    TypeList types;
-    ArrayList<IExpr> exprs;
+    TypeList types;         -- the types used to call the method,
+                            -- with "null" for parameter-less selectors
+    ArrayList<IExpr> exprs; -- the parameters,
+                            -- there are no null for parameter-less selectors
 #init {
     selectors = new ArrayList<String>();
     types = new TypeList();
@@ -1335,6 +1337,5 @@ MARG -> ident #add;
 #add {
     MARG^selectorNames.add(ident^txt);
     MARG^types.add(null);
-    MARG^exprs.add(null);
 }
 
