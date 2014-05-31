@@ -293,17 +293,6 @@ public final class Machine extends AbstractMachine {
         return genNewImpl(tmpPtr, type);
     }
     @Override
-    public Expr genNew(Type type, IExpr value) {
-        String typename = cg.typeName(type);
-        printCode(value);
-        String ptr = cg.malloc(Integer.toString(type.visit(sizeVisitor)));
-        String valueCode = getValue(typename, value, false);
-        String castedPtr =
-            cg.cast("bitcast", "i8*", ptr, typename + '*');
-        copy(type, valueCode, castedPtr);
-        return new Expr(new Location(castedPtr), cg.get());
-    }
-    @Override
     public Expr genNewArray(IExpr nbElements, Type type) {
         String tmpSize = Integer.toString(type.visit(sizeVisitor));
         String tmpNbElements = getValue("i64", nbElements);

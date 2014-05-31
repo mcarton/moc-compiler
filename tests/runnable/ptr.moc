@@ -13,7 +13,8 @@ Int main() {
 
     delete(a);
 
-    Int* b = new(Int, 108);
+    Int* b = new(Int);
+    *b = 108;
     put_int(*b); put_char('\n');
 
     Int* c = new[10](Int);

@@ -13,7 +13,7 @@ inh machine : IMachine for
     ENTITIES, FUNCTION, ASM, INST, BLOCK, INSTS, IF, ELSE,
     FUNC_PARAMETERS, FUNC_PARAMETER, FUNC_PARAMETERSX, ARGS, ARGSX,
     IMPLEMENTATION, METHOD, METHODS, ATTRIBUTES,
-    E, EX, A, AX, R, RX, T, TX, F, NEW_VALUE,
+    E, EX, A, AX, R, RX, T, TX, F,
     REFS, STYPE, PTYPE, TYPE,
     MFUNC_PARAMETER, MFUNC_PARAMETERS, MARG, MARGS
 ;
@@ -24,7 +24,7 @@ inh symbolTable : SymbolTable for
     FUNCTION, FUNC_PARAMETER, FUNC_PARAMETERS, FUNC_PARAMETERSX,
     IMPLEMENTATION, METHOD, METHODS, ATTRIBUTES, SUPER,
     TYPE, STYPE, PTYPE, REFS,
-    F, TX, T, RX, R, AX, A, EX, E, NEW_VALUE,
+    F, TX, T, RX, R, AX, A, EX, E,
     MFUNC_PARAMETER, MFUNC_PARAMETERS, MARG, MARGS
 ;
 
@@ -37,7 +37,7 @@ inh classType : ClassType for ATTRIBUTES, METHODS, METHOD;
 syn superType : ClassType for SUPER;
 syn type : Type for
     TYPE, STYPE, PTYPE, REFS,
-    F, TX, T, RX, R, AX, A, EX, E, NEW_VALUE
+    F, TX, T, RX, R, AX, A, EX, E
 ;
 inh htype : Type for
     REFS,
@@ -60,7 +60,7 @@ syn code : String for
     FUNCTION, ASM, IMPLEMENTATION, METHOD, METHODS
 ;
 syn expr : IExpr for
-    F, TX, T, RX, R, AX, A, EX, E, NEW_VALUE
+    F, TX, T, RX, R, AX, A, EX, E
 ;
 inh hexpr : IExpr for TX, RX, AX;
 inh exprs : ArrayList<IExpr> for ARGS, ARGSX, MARG, MARGS;
@@ -812,7 +812,7 @@ F -> OPUN F #type #lvalue;
 }
 
 -- new/delete expressions
-F -> new opar TYPE NEW_VALUE cpar #gen #lvalue;
+F -> new opar TYPE cpar #gen #lvalue;
 #gen {
     if (TYPE^type.isVoid()) {
         error(TYPE_void);
@@ -822,31 +822,11 @@ F -> new opar TYPE NEW_VALUE cpar #gen #lvalue;
     }
     else {
         F^type = new Pointer(TYPE^type);
-
-        if (NEW_VALUE^type == null) {
-            F^expr = F^machine.genNew(TYPE^type);
-        }
-        else {
-            IExpr tmp
-                = F^machine.genCast(NEW_VALUE^type, TYPE^type, NEW_VALUE^expr);
-            F^expr = F^machine.genNew(TYPE^type, tmp);
-        }
+        F^expr = F^machine.genNew(TYPE^type);
     }
 }
 #lvalue {
     F^lvalue = false;
-}
-
-NEW_VALUE -> #gen;
-#gen {
-    NEW_VALUE^expr = null;
-    NEW_VALUE^type = null;
-}
-
-NEW_VALUE -> comma E #gen;
-#gen {
-    NEW_VALUE^expr = E^expr;
-    NEW_VALUE^type = E^type;
 }
 
 -- dynamic arrays
