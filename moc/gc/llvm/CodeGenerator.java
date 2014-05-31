@@ -289,7 +289,7 @@ final class CodeGenerator {
      * {@code
      *     @ptr.<name> = internal constant %mocc.method {
      *         i8* bitcast ([<size> x i8]* @name.<name> to i8*),
-     *         void (...)* bitcast(<type> @<name> to void (...)*)
+     *         void (...)* bitcast(<type> @method.<name> to void (...)*)
      *     }
      * }
      */
@@ -304,7 +304,7 @@ final class CodeGenerator {
         declAppend(" to i8*),\n");
         declAppend("    void (...)* bitcast(");
         declAppend(type);
-        declAppend(" @");
+        declAppend(" @method.");
         declAppend(name);
         declAppend(" to void (...)*)");
         declAppend("\n}\n");
