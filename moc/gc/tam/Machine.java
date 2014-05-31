@@ -14,17 +14,20 @@ import moc.type.*;
  * The TAM machine and its generation functions.
  */
 public class Machine extends AbstractMachine {
-    SizeVisitor sizeVisitor = new SizeVisitor();
+    final SizeVisitor sizeVisitor = new SizeVisitor();
 
     int currentParameterAddress;
-    int currentAddress = 3; // 0 -> ?
-                            // 1 -> LB previous function
-                            // 2 -> return address
-    Stack<Integer> addressStack = new Stack<>();
-    CodeGenerator cg = new CodeGenerator();
+    final int initialOffset = 3;
+        // there is an initial offset cause be the call to main
+        // 0 -> 0
+        // 1 -> LB previous function
+        // 2 -> return address
+    int currentAddress = initialOffset;
+    final Stack<Integer> addressStack = new Stack<>();
+    final CodeGenerator cg = new CodeGenerator();
 
     int labelCount = 0;
-    Map<String, String> binaryOperators = new HashMap<>();
+    final Map<String, String> binaryOperators = new HashMap<>();
 
     private int parametersSize;
 
@@ -254,12 +257,62 @@ public class Machine extends AbstractMachine {
     }
     @Override
     public Expr genString(int length, String txt) {
-        cg.loadl(txt);
-        return new Expr(cg.get());
+        boolean backslash = false;
+        int size = 0;
+        for (int i = 1; i < txt.length()-1; ++i) { // exludes ""
+            switch (txt.charAt(i)) {
+                case '\\':
+                    if (backslash) {
+                        cg.declLoadl("'\\\\'");
+                        ++size;
+                    }
+                    backslash = !backslash;
+                    break;
+                case '0':
+                    cg.declLoadl(backslash ? "'\\0'" : "'0'");
+                    ++size;
+                    backslash = false;
+                    break;
+                case 'n':
+                    cg.declLoadl(backslash ? "'\\n'" : "'n'");
+                    ++size;
+                    backslash = false;
+                    break;
+                case 't':
+                    cg.declLoadl(backslash ? "'\\t'" : "'t'");
+                    ++size;
+                    backslash = false;
+                    break;
+                case '"':
+                    cg.declLoadl(backslash ? "'\\\"'" : "'\"'");
+                    ++size;
+                    backslash = false;
+                    break;
+                default:
+                    cg.declLoadl("'" + txt.charAt(i) + "'");
+                    ++size;
+                    backslash = false;
+            }
+        }
+        cg.declLoadl(0);
+        cg.loada(currentAddress-initialOffset + "[CB]");
+        return new Expr(cg.get(), true);
     }
     @Override
     public Expr genCharacter(String txt) {
-        cg.loadl(txt);
+        if (txt.charAt(1) == '\\') {
+            switch (txt.charAt(2)) {
+                case '\\': cg.loadl("'\\'"); break;
+                case '0' : cg.loadl(0);      break;
+                case 'n' : cg.loadl("'\n'"); break;
+                case 't' : cg.loadl("'\t'"); break;
+                case '"' : cg.loadl("'\"'"); break;
+                default  : cg.loadl("'" + txt.charAt(2) + "'");
+            }
+        }
+        else {
+            cg.loadl("'" + txt.charAt(1) + "'");
+        }
         return new Expr(cg.get());
     }
     @Override
@@ -351,7 +404,7 @@ public class Machine extends AbstractMachine {
     @Override
     public Expr genIdent(InfoVar info) {
         cg.loada(info.getLoc().toString());
-        return new Expr(cg.get(), true);
+        return new Expr(cg.get(), !info.getType().isArray());
     }
     @Override
     public Expr genAff(Type t, IExpr loc, IExpr gcrhs) {
@@ -451,7 +504,7 @@ public class Machine extends AbstractMachine {
 
     private void getValue(IExpr expr, int size) {
         if (((Expr)expr).isAddress()) {
-            cg.loadi(1);
+            cg.loadi(size);
         }
     }
 

@@ -1,9 +1,14 @@
-void put_string(Char* string) {
-    // TODO
-}
-
 void put_char(Char c) {
     asm("LOAD (1) -1[LB]");
     asm("SUBR COut");
+}
+
+void put_string(Char* string) {
+    Int i = 0;
+    while (string[i] != '\0') {
+        put_char(string[i]);
+        i = i+1;
+    }
+    put_char('\n');
 }
 

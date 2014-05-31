@@ -4,19 +4,8 @@ import java.lang.StringBuilder;
 import moc.type.Type;
 
 final class CodeGenerator {
-    StringBuilder sb;
-    StringBuilder declarationSb;
-
-    CodeGenerator() {
-        this.sb = new StringBuilder();
-
-        String declarations =
-            "CALL (SB) function_main\n"
-        +   "HALT\n"
-        ;
-
-        this.declarationSb = new StringBuilder(declarations);
-    }
+    final StringBuilder sb = new StringBuilder();
+    final StringBuilder declarationSb = new StringBuilder();
 
     void reset() {
         sb.setLength(0);
@@ -29,6 +18,7 @@ final class CodeGenerator {
     }
 
     String getDeclaration() {
+        declarationSb.append("CALL (SB) function_main\nHALT\n");
         return declarationSb.toString();
     }
 
@@ -172,6 +162,12 @@ final class CodeGenerator {
 
     void declAppend(Object what) {
         declarationSb.append(what);
+    }
+
+    void declLoadl(Object what) {
+        declAppend("LOADL ");
+        declAppend(what);
+        declAppend('\n');
     }
 
     void indent() {
