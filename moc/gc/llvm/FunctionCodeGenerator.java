@@ -251,7 +251,7 @@ final class FunctionCodeGenerator {
             return cg().callNonVoid(returnTypeName, funName);
         }
         else if (returnsArray) {
-            return passReturnAddress(funName, hasParameters);
+            return callReturnsArray(funName, hasParameters);
         }
         else {
             cg().callVoid(funName);
@@ -288,7 +288,7 @@ final class FunctionCodeGenerator {
     /**
      * When the return type is an arrays it is passed as the first parameter.
      */
-    String passReturnAddress(String funName, boolean hasNext) {
+    String callReturnsArray(String funName, boolean hasNext) {
         String returnTypeName = cg().typeName(returnType);
         String tmpValueName = machine.getTmpName();
         cg().alloca(tmpValueName, returnTypeName);
