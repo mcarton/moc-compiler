@@ -32,6 +32,10 @@ public final class ClassType extends AbstractType<ClassType> {
         return name;
     }
 
+    public boolean hasSuper() {
+        return superClass != null;
+    }
+
     public ClassType getSuper() {
         return superClass;
     }
@@ -125,7 +129,7 @@ public final class ClassType extends AbstractType<ClassType> {
     }
 
     public int parentNumbers() {
-        return superClass == null ? 0 : 1+superClass.parentNumbers();
+        return hasSuper() ? 1+superClass.parentNumbers() : 0;
     }
 
     @Override
