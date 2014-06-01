@@ -142,8 +142,12 @@ public interface IMachine {
     IExpr genNull();
     IExpr genYes();
     IExpr genNo();
-    IExpr genSelf(Pointer type);
-    IExpr genSuper(Pointer type);
+
+    /** Generate code for the `self` variable in a class of type `type`. */
+    IExpr genSelf(Type type);
+
+    /** Generate code for the `super` variable in a class of type `type`. */
+    IExpr genSuper(Type type);
 
     /** Allocate space for a variable of type `type`.
      */
@@ -163,7 +167,9 @@ public interface IMachine {
 
     /** Call a method on a instance.
      */
-    IExpr genCall(Method method, IExpr instance, ArrayList<IExpr> params);
+    IExpr genCall(
+        Method method, Pointer type, IExpr instance, ArrayList<IExpr> params
+    );
 
     /** Return the size of the given type.
      */

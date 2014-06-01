@@ -333,11 +333,11 @@ public class Machine extends AbstractMachine {
         return new Expr(cg.get());
     }
     @Override
-    public Expr genSelf(Pointer type) {
+    public Expr genSelf(Type type) {
         return null;
     }
     @Override
-    public Expr genSuper(Pointer type) {
+    public Expr genSuper(Type type) {
         return null;
     }
 
@@ -392,7 +392,9 @@ public class Machine extends AbstractMachine {
     }
 
     @Override
-    public IExpr genCall(Method method, IExpr instance, ArrayList<IExpr> params) {
+    public IExpr genCall(
+        Method method, Pointer type, IExpr instance, ArrayList<IExpr> params
+    ) {
         return null; // TODO:method
     }
 

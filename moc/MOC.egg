@@ -1236,9 +1236,8 @@ F -> self #gen #lvalue;
         error(CLASS_selfNotInMethod);
     }
 
-    Pointer ptr = new Pointer(classType);
-    F^type = ptr;
-    F^expr = F^machine.genSelf(ptr);
+    F^type = new Pointer(classType);
+    F^expr = F^machine.genSelf(classType);
 }
 #lvalue {
     F^lvalue = false;
@@ -1252,9 +1251,8 @@ F -> super #gen #lvalue;
         error(CLASS_superNotInMethod);
     }
 
-    Pointer ptr = new Pointer(classType);
-    F^type = ptr;
-    F^expr = F^machine.genSuper(ptr);
+    F^type = new Pointer(classType.getSuper());
+    F^expr = F^machine.genSuper(classType);
 }
 #lvalue {
     F^lvalue = false;
@@ -1291,7 +1289,9 @@ global
                     if (method != null) {
                         F^type = method.getReturnType();
                         if (method.callableWith(types)) {
-                            F^expr = F^machine.genCall(method, F1^expr, exprs);
+                            F^expr = F^machine.genCall(
+                                method, F1^type, F1^expr, exprs
+                            );
                         }
                         else {
                             error(

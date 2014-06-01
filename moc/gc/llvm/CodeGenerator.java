@@ -210,11 +210,10 @@ final class CodeGenerator {
         append(")\n");
     }
 
-    /** {@code <tmp> = getelementptr <type>* <lhs>, i64 <rhs>} */
-    String getelementptr(String type, String lhs, String[] rhs) {
-        String tmp = machine.getTmpName();
+    /** {@code <where> = getelementptr <type>* <lhs>, i64 <rhs>} */
+    void getelementptr(String where, String type, String lhs, String[] rhs) {
         indent();
-        append(tmp);
+        append(where);
         append(" = getelementptr ");
         append(type);
         append("* ");
@@ -226,6 +225,12 @@ final class CodeGenerator {
             append(rhs[i+1]);
         }
         append('\n');
+    }
+
+    /** {@code <tmp> = getelementptr <type>* <lhs>, i64 <rhs>} */
+    String getelementptr(String type, String lhs, String[] rhs) {
+        String tmp = machine.getTmpName();
+        getelementptr(tmp, type, lhs, rhs);
         return tmp;
     }
 

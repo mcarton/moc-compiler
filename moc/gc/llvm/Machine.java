@@ -279,11 +279,11 @@ public final class Machine extends AbstractMachine {
         return new Expr(null, "1");
     }
     @Override
-    public Expr genSelf(Pointer type) {
+    public Expr genSelf(Type type) {
         return new Expr(new Location("%self"), "");
     }
     @Override
-    public Expr genSuper(Pointer type) {
+    public Expr genSuper(Type type) {
         return new Expr(new Location("%super"), ""); // TODO?
     }
 
@@ -328,8 +328,10 @@ public final class Machine extends AbstractMachine {
     }
 
     @Override
-    public IExpr genCall(Method method, IExpr instance, ArrayList<IExpr> params) {
-        return fcg.genCall(method, instance, params);
+    public IExpr genCall(
+        Method method, Pointer type, IExpr instance, ArrayList<IExpr> params
+    ) {
+        return fcg.genCall(method, type, instance, params);
     }
 
     @Override

@@ -56,19 +56,19 @@ final class FunctionCodeGenerator {
         return new Expr(new Location(tmpValueName), cg().get());
     }
 
-    Expr genCall(Method method, IExpr self, ArrayList<IExpr> params) {
+    Expr genCall(Method method, Pointer type, IExpr self, ArrayList<IExpr> params) {
         prepare(method.getReturnType());
 
         printParametersCode(params.iterator());
 
-        String selfType = cg().typeName(method.getClassType());
-        String selfTypePtr = selfType + '*';
+        String selfType = cg().typeName(type.getPointee());
+        String selfTypePtr = cg().typeName(type);
         String selfName = machine.getValue(selfTypePtr, self);
         ArrayList<String> names = loadParameters(
             method.getParameterTypes().iterator(), params.iterator()
         );
 
-        String methodName = getMethodFromVtable(method, selfType, selfName);
+        String methodName = getMethodFromVtable(method, type, selfType, selfName);
 
         String tmpValueName = callBegin(
             returnTypeName + " (...)*", methodName, true
@@ -80,12 +80,12 @@ final class FunctionCodeGenerator {
         return new Expr(new Location(tmpValueName), cg().get());
     }
 
-    String getMethodFromVtable(Method method, String selfType, String self) {
+    String getMethodFromVtable(Method method, Pointer type, String selfType, String self) {
         ArrayList<String> gepParameters = new ArrayList<>(4);
         gepParameters.add("i64");
         gepParameters.add("0");
 
-        for (int i = 0, end = method.getClassType().parentNumbers();
+        for (int i = 0, end = ((ClassType)type.getPointee()).parentNumbers();
              i <= end; ++i) {
             gepParameters.add("i32");
             gepParameters.add("0");
@@ -172,6 +172,11 @@ final class FunctionCodeGenerator {
         }
         parameters(method.getParameterTypes().iterator(), true);
         cg().endDefine();
+
+        if (!method.isStatic() && method.getClassType().hasSuper()) {
+            String superName = cg().typeName(method.getClassType().getSuper()) + '*';
+            cg().cast("%super", "bitcast", className, "%self", superName);
+        }
 
         allocateReturn(returnsVoid);
         allocateParameters(
