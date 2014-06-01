@@ -284,7 +284,7 @@ public final class Machine extends AbstractMachine {
     }
     @Override
     public Expr genSuper(Type type) {
-        return new Expr(new Location("%super"), ""); // TODO?
+        return new Expr(new Location("%super"), "");
     }
 
     @Override
@@ -302,8 +302,17 @@ public final class Machine extends AbstractMachine {
     }
     private Expr genNewImpl(String allocated, Type type) {
         // cast to right pointer type
-        String tmpCastedPtr =
-            cg.cast("bitcast", "i8*", allocated, cg.typeName(type) + '*');
+        String typeName = cg.typeName(type);
+        String typeNamePtr = typeName + '*';
+        String tmpCastedPtr = cg.cast("bitcast", "i8*", allocated, typeNamePtr);
+
+        if (type.isClass()) {
+            ClassType clazz = (ClassType)type;
+            String name = clazz.getName();
+            String vtable = fcg.getVtable(clazz, typeName, tmpCastedPtr);
+            String tmp = cg.load("%mocc.method*", "@vtablePtr." + name);
+            cg.store("%mocc.method*", tmp, vtable);
+        }
 
         return new Expr(new Location(tmpCastedPtr), cg.get());
     }
@@ -501,7 +510,7 @@ public final class Machine extends AbstractMachine {
             cg.classAddMember(superName, it.hasNext());
         }
         else {
-            cg.classAddMember("%mocc.vtable*", it.hasNext());
+            cg.classAddMember("%mocc.vtable", it.hasNext());
         }
 
         while (it.hasNext()) {

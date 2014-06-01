@@ -377,12 +377,12 @@ final class CodeGenerator {
         append('\n');
     }
 
-    /** @vtable.class.<name> = internal constant [<size> x %mocc.method*] [ */
+    /** {@code @vtable.class.<name> = internal constant [<size> x %mocc.method*] [ } */
     void vtableBegin(String name, int size) {
         declAppend("@vtable.");
         declAppend(name);
         declAppend(" = internal constant [");
-        declAppend(size + 1 /* terminal null */);
+        declAppend(size);
         declAppend(" x %mocc.method*] [\n");
     }
 
@@ -393,7 +393,23 @@ final class CodeGenerator {
     }
 
     void vtableEnd() {
-        declAppend("    %mocc.method* null\n]\n\n");
+        declAppend("    %mocc.method* null\n]\n");
+    }
+
+    /** {@code
+     *      @vtablePtr.<name> = internal constant %mocc.method* bitcast (
+     *          [<size> x %mocc.method*]* @vtable.<name> to %mocc.method*
+     *      )
+     *  }
+     */
+    void vtablePtr(String name, int size) {
+        declAppend("@vtablePtr.");
+        declAppend(name);
+        declAppend(" = internal constant %mocc.method* bitcast ([");
+        declAppend(size);
+        declAppend(" x %mocc.method*]* @vtable.");
+        declAppend(name);
+        declAppend(" to %mocc.method*)\n\n");
     }
 
     // function declaration

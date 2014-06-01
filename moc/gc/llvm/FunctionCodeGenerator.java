@@ -80,27 +80,13 @@ final class FunctionCodeGenerator {
         return new Expr(new Location(tmpValueName), cg().get());
     }
 
-    String getMethodFromVtable(Method method, Pointer type, String selfType, String self) {
-        ArrayList<String> gepParameters = new ArrayList<>(4);
-        gepParameters.add("i64");
-        gepParameters.add("0");
-
-        for (int i = 0, end = ((ClassType)type.getPointee()).parentNumbers();
-             i <= end; ++i) {
-            gepParameters.add("i32");
-            gepParameters.add("0");
-        }
-
-        String vtable = cg().getelementptr(
-            selfType, self, gepParameters.toArray(new String[gepParameters.size()])
-        );
-        String loadedVtable = cg().load("%mocc.vtable*", vtable);
+    String getMethodFromVtable(
+        Method method, Pointer type, String selfType, String self
+    ) {
+        String vtable = getVtable((ClassType)type.getPointee(), selfType, self);
 
         int methodIndex = method.getClassType().getMethods().indexOf(method);
-        String methodCst = cg().getelementptr(
-            "%mocc.vtable", loadedVtable, new String[] {"i32", "0", "i32", "0"}
-        );
-        String loadedMethod = cg().load("%mocc.method*", methodCst);
+        String loadedMethod = cg().load("%mocc.method*", vtable);
         String methodPtr = cg().getelementptr(
             "%mocc.method", loadedMethod,
             new String[] {"i32", Integer.toString(methodIndex), "i32", "1"}
@@ -117,6 +103,21 @@ final class FunctionCodeGenerator {
         else {
             return loadedMethodPtr;
         }
+    }
+
+    String getVtable(ClassType type, String selfType, String self) {
+        ArrayList<String> parameters = new ArrayList<>(4);
+        parameters.add("i64");
+        parameters.add("0");
+
+        for (int i = 0, end = type.parentNumbers(); i <= end+1; ++i) {
+            parameters.add("i32");
+            parameters.add("0");
+        }
+
+        return cg().getelementptr(
+            selfType, self, parameters.toArray(new String[parameters.size()])
+        );
     }
 
     /**
@@ -208,13 +209,15 @@ final class FunctionCodeGenerator {
     }
 
     void genVirtualTable(String className, List<Method> methods) {
-        cg().vtableBegin(className, methods.size());
+        int tableSize = methods.size() + 1 /* terminal null */;
+        cg().vtableBegin(className, tableSize);
 
         for(Method method : methods) {
             cg().vtableAdd(name(method));
         }
 
         cg().vtableEnd();
+        cg().vtablePtr(className, tableSize);
     }
 
     // implementation stuffs for function definition:
