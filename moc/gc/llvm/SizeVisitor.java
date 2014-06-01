@@ -10,7 +10,17 @@ final public class SizeVisitor implements TypeVisitor<Integer> {
     public Integer visit(IntegerType what)   { return 8; }
 
     public Integer visit(ClassType what) {
-        return -1; // TODO:class
+        int size = 0;
+        for (Attributes att : what.getAttributes()) {
+            size += att.type.visit(this);
+        }
+        if (what.hasSuper()) {
+            size += visit(what.getSuper());
+        }
+        else {
+            size += 8; // vtable
+        }
+        return size;
     }
 
     public Integer visit(VoidType what)      { return 0; }
