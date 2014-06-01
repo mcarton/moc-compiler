@@ -38,7 +38,8 @@ class Point3D : Point {
     }
 
     -(Point3D*) init {
-        [super init];
+        //[super init]; // would call [self init]
+        [self x: 0 y: 0];
         z = 0;
         return self;
     }

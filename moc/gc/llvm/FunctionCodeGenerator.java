@@ -47,7 +47,9 @@ final class FunctionCodeGenerator {
         );
 
         TypeList parameterTypes = fun.getParameterTypes();
-        String tmpValueName = callBegin(funName, !parameterTypes.isEmpty());
+        String tmpValueName = callBegin(
+            returnTypeName, '@' + funName, !parameterTypes.isEmpty()
+        );
         passParameters(false, parameterTypes.iterator(), names.iterator());
         cg().callEnd();
 
@@ -57,22 +59,64 @@ final class FunctionCodeGenerator {
     Expr genCall(Method method, IExpr self, ArrayList<IExpr> params) {
         prepare(method.getReturnType());
 
-        machine.printCode(self);
         printParametersCode(params.iterator());
 
-        String selfType = cg().typeName(method.getClassType()) + '*';
-        String selfName = machine.getValue(selfType, self);
+        String selfType = cg().typeName(method.getClassType());
+        String selfTypePtr = selfType + '*';
+        String selfName = machine.getValue(selfTypePtr, self);
         ArrayList<String> names = loadParameters(
             method.getParameterTypes().iterator(), params.iterator()
         );
 
-        // TODO: call the proper method
-        String tmpValueName = callBegin(name(method), true);
-        cg().parameter(false, selfType, selfName);
+        String methodName = getMethodFromVtable(method, selfType, selfName);
+
+        String tmpValueName = callBegin(
+            returnTypeName + " (...)*", methodName, true
+        );
+        cg().parameter(false, selfTypePtr, selfName);
         passParameters(true, method.getParameterTypes().iterator(), names.iterator());
         cg().callEnd();
 
         return new Expr(new Location(tmpValueName), cg().get());
+    }
+
+    String getMethodFromVtable(Method method, String selfType, String self) {
+        ArrayList<String> gepParameters = new ArrayList<>(4);
+        gepParameters.add("i64");
+        gepParameters.add("0");
+
+        for (int i = 0, end = method.getClassType().parentNumbers();
+             i <= end; ++i) {
+            gepParameters.add("i32");
+            gepParameters.add("0");
+        }
+
+        String vtable = cg().getelementptr(
+            selfType, self, gepParameters.toArray(new String[gepParameters.size()])
+        );
+        String loadedVtable = cg().load("%mocc.vtable*", vtable);
+
+        int methodIndex = method.getClassType().getMethods().indexOf(method);
+        String methodCst = cg().getelementptr(
+            "%mocc.vtable", loadedVtable, new String[] {"i32", "0", "i32", "0"}
+        );
+        String loadedMethod = cg().load("%mocc.method*", methodCst);
+        String methodPtr = cg().getelementptr(
+            "%mocc.method", loadedMethod,
+            new String[] {"i32", Integer.toString(methodIndex), "i32", "1"}
+        );
+        String loadedMethodPtr = cg().load("void (...)*", methodPtr);
+
+        if (!returnsVoid) {
+            String castMethodPtr = cg().cast(
+                "bitcast",
+                "void (...)*", loadedMethodPtr, returnTypeName + " (...)*"
+            );
+            return castMethodPtr;
+        }
+        else {
+            return loadedMethodPtr;
+        }
     }
 
     /**
@@ -246,7 +290,9 @@ final class FunctionCodeGenerator {
 
     // implementation stuffs for function call:
 
-    String callBegin(String funName, boolean hasParameters) {
+    String callBegin(
+        String returnTypeName, String funName, boolean hasParameters
+    ) {
         if (!returnsVoid) {
             return cg().callNonVoid(returnTypeName, funName);
         }
@@ -254,7 +300,7 @@ final class FunctionCodeGenerator {
             return callReturnsArray(funName, hasParameters);
         }
         else {
-            cg().callVoid(funName);
+            cg().callVoid(returnTypeName, funName);
             return null;
         }
     }

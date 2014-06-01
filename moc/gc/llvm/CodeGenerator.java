@@ -117,7 +117,7 @@ final class CodeGenerator {
         append(")\n");
     }
 
-    /** {@code <tmp> = call <returnType> @<name>( } */
+    /** {@code <tmp> = call <returnType> <name>( } */
     String callNonVoid(String returnType, String name) {
         String tmp = machine.getTmpName();
         indent();
@@ -127,17 +127,23 @@ final class CodeGenerator {
         return tmp;
     }
 
-    /** {@code call void @<name>( } */
+    /** {@code call void <name>( } */
     void callVoid(String name) {
         indent();
         callImpl("void", name);
     }
 
-    /** {@code call <returnType> @<name>( } */
+    /** {@code call <type> <name>( } */
+    void callVoid(String type, String name) {
+        indent();
+        callImpl(type, name);
+    }
+
+    /** {@code call <returnType> <name>( } */
     private void callImpl(String returnType, String name) {
         append("call ");
         append(returnType);
-        append(" @");
+        append(' ');
         append(name);
         append('(');
     }
