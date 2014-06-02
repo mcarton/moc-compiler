@@ -451,7 +451,12 @@ public class Machine extends AbstractMachine {
 
     @Override
     public IExpr genCast(Type from, Type to, IExpr expr) {
-        return expr; // TODO:code
+        if (from.isArray() && to.isPointer()) {
+            return new Expr(expr.getCode()); // need not to load
+        }                                    // for array to ptr cast
+        else {
+            return expr;
+        }
     }
 
     @Override
