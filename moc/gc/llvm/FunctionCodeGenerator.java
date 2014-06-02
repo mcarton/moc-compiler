@@ -40,22 +40,22 @@ final class FunctionCodeGenerator {
      */
     Expr genCall(String funName, FunctionType fun, ArrayList<IExpr> params) {
         prepare(fun.getReturnType());
-
-        printParametersCode(params.iterator());
-        ArrayList<String> names = loadParameters(
-            fun.getParameterTypes().iterator(), params.iterator()
-        );
-
-        TypeList parameterTypes = fun.getParameterTypes();
-        String tmpValueName = callBegin(
-            returnTypeName, '@' + funName, !parameterTypes.isEmpty()
-        );
-        passParameters(false, parameterTypes.iterator(), names.iterator());
-        cg().callEnd();
-
-        return new Expr(new Location(tmpValueName), cg().get());
+        return genCallImpl(funName, fun.getParameterTypes(), params);
     }
 
+    /**
+     * Generate code for a static method call.
+     */
+    Expr genCall(Method method, ArrayList<IExpr> params) {
+        prepare(method.getReturnType());
+        return genCallImpl(
+            "method."+ name(method), method.getParameterTypes(), params
+        );
+    }
+
+    /**
+     * Generate code for a method call on a instance.
+     */
     Expr genCall(Method method, Pointer type, IExpr self, ArrayList<IExpr> params) {
         prepare(method.getReturnType());
 
@@ -75,6 +75,23 @@ final class FunctionCodeGenerator {
         );
         cg().parameter(false, selfTypePtr, selfName);
         passParameters(true, method.getParameterTypes().iterator(), names.iterator());
+        cg().callEnd();
+
+        return new Expr(new Location(tmpValueName), cg().get());
+    }
+
+    Expr genCallImpl(
+        String funName, Iterable<Type> types, ArrayList<IExpr> params
+    ) {
+        printParametersCode(params.iterator());
+        ArrayList<String> names = loadParameters(
+            types.iterator(), params.iterator()
+        );
+
+        String tmpValueName = callBegin(
+            returnTypeName, '@' + funName, types.iterator().hasNext()
+        );
+        passParameters(false, types.iterator(), names.iterator());
         cg().callEnd();
 
         return new Expr(new Location(tmpValueName), cg().get());

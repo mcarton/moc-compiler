@@ -345,7 +345,7 @@ public final class Machine extends AbstractMachine {
 
     @Override
     public IExpr genCall(Method method, ArrayList<IExpr> params) {
-        return null; // TODO:method
+        return fcg.genCall(method, params);
     }
 
     @Override
