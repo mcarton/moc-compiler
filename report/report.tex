@@ -33,15 +33,24 @@
 \section{Introduction}
   Nous avons décider de compiler en \tam{} et en langage intermédiaire \llvm{}.
   De plus les interfaces devraient être suffisamment génériques pour permettre
-  de compiler dans n'importe quel langage.
+  de compiler dans n'importe quel langage. Pour utiliser la machine \llvm{}, il
+  suffit d'appeler le script \texttt{mocc} avec l'option \verb+-m llvm+ (la
+  machine \tam{} est la machine par défaut).
 
   La compilation en langage intermédiaire \llvm{} nous permet de générer des
-  exécutables natifs utilisant la \textit{libc}.
+  exécutables natifs utilisant la \textit{libc} bien plus facilement, et de
+  manière plus portable que ne l'aurait été la génération en directement en
+  \textit{x86}. De plus le langage étant plus expressif (il est notament typé),
+  il permet de trouver plus facilement les erreurs éventuelles. Enfin il nous
+  permet de béficier des différentes passes d'optimisation du compilateur
+  \verb+llc+.
 
   Nous avons donc supprimé l'assembleur en-ligne tel qu'il était fourni (dans
   \verb+ASM.egg+), et rajouté une instruction \verb+asm+ qui prend une chaine
   de caractères, ce qui permet d'inclure de l'assembleur \llvm{} ou \tam{}
-  selon la machine cible voulue.
+  selon la machine cible voulue. Il n'y a pour l'instant aucun moyen d'utiliser
+  les variables définies en moc dans cet assembleur autrement qu'avec leur
+  adresse.
 
 \section{Tests}
   Nous avons écrit beaucoup de tests. Il y en a 4 types (tous dans le
@@ -61,6 +70,9 @@
       Ces fichiers nécessitent d'être préprocessés avant d'être compilés afin
       d'y inclure les fonctions d'affichages spécifique à \llvm{} ou \tam{}
       (écrites en assembleur).
+
+      Les scripts \verb+tests/run-llvm+ et \verb+tests/run-tam+ permettent de
+      préprocesser, compiler et lancer ces tests.
   \end{itemize}
 
 \section{Design decisions}
@@ -73,10 +85,20 @@
 
     Le typage des tableaux (voir section~\ref{tab}) est aussi plus fort qu'en C.
 
+    \subsubsection{Conversions}
+      Il a deux types de casts: implicites et explicites.
+
+      TODO: raconter des trucs ici
+
   \subsection{Noms de types}
     Les noms de type commencent tous par une majuscule. Ceci afin de permettre
     d'avoir des alias de type (voir section~\ref{alias}) et par uniformité avec
     les nom de classes.
+
+    Cette restriction permet de désambiguïser une instruction comme
+    \verb+a*b;+ qui pourrait être interprétée comme la multiplication de
+    \verb+a+ et \verb+b+ ou la déclaration d'un pointeur \verb+b+ de type
+    \verb+a*+.
 
   \subsection{\texttt{NULL} et \texttt{nil}, \texttt{YES} et \texttt{NO}}
     Il n'y a pas de \verb+nil+ (qui serait inutile vu qu'il n'y aurait pas de
@@ -90,7 +112,26 @@
     mettent entre les accolades, après les attributs; il n'y a donc plus de
     \verb+@end+.
 
-\section{Extension du langage}
+    Par exemple:
+    \begin{moccode}
+class Point {
+    Int x;
+    Int y;
+
+    +(void) init {
+    }
+
+    -(Int) x {
+        return 0;
+    }
+
+    -(Int) y {
+        return 0;
+    }
+}
+    \end{moccode}
+
+\section{Extensions du langage}
   \subsection{Alias de type}\label{alias}
     Il est possible de définir des alias de type:
     \begin{moccode}
@@ -120,7 +161,7 @@ Char[5] s = "net7";
 Int* taille = new(Int);
 *taille = 10;
 
-Char* test = new(*taille, Char);
+Char* test = new[*taille](Char);
 delete(taille);
 delete(test);
     \end{moccode}
