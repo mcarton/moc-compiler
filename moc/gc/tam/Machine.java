@@ -411,13 +411,18 @@ public class Machine extends AbstractMachine {
     @Override
     public Expr genIdent(InfoVar info) {
         cg.loada(info.getLoc().toString());
-        return new Expr(cg.get(), !info.getType().isArray());
+
+        // array parameters need not to be loaded
+        boolean needsLoadi =
+            !(((Location)info.getLoc()).getDep() < 0 && info.getType().isArray());
+
+        return new Expr(cg.get(), needsLoadi);
     }
     @Override
-    public Expr genAff(Type t, IExpr loc, IExpr gcrhs) {
+    public Expr genAff(Type t, IExpr loc, IExpr rhs) {
         cg.comment("start genAff");
-        cg.append(gcrhs.getCode());
-        getValue(gcrhs, 1);
+        cg.append(rhs.getCode());
+        getValue(rhs, 1);
         cg.append(loc.getCode());
         cg.storei(t.visit(sizeVisitor));
         cg.comment("end genAff");
