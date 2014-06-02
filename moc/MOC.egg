@@ -1318,7 +1318,51 @@ global
     F^lvalue = false;
 }
 
---F -> osbra typeident MARGS csbra;
+F -> osbra STYPE #init MARGS csbra #gen #lvalue;
+global
+    -- see method call on expression to know what those are
+    ArrayList<String> selectors;
+    TypeList types;
+    ArrayList<IExpr> exprs;
+#init {
+    selectors = new ArrayList<String>();
+    types = new TypeList();
+    exprs = new ArrayList<IExpr>();
+
+    MARGS^selectorNames = selectors;
+    MARGS^types = types;
+    MARGS^exprs = exprs;
+}
+#gen {
+    if (STYPE^type != null) {
+        match (STYPE^type) {
+            case ClassType {
+                Method method = STYPE^type.getStaticMethod(selectors);
+                if (method != null) {
+                    F^type = method.getReturnType();
+                    if (method.callableWith(types)) {
+                        F^expr = F^machine.genCall(method, exprs);
+                    }
+                    else {
+                        error(
+                            CLASS_wrongMethodTypes, STYPE^type, method,
+                            method.getParameterTypes(), types
+                        );
+                    }
+                }
+                else {
+                    error(CLASS_unknowMethod, STYPE^type, selectors);
+                }
+            }
+            default {
+                error(CLASS_notAClass, STYPE^type);
+            }
+        }
+    }
+}
+#lvalue {
+    F^lvalue = false;
+}
 
 -- method call arguments
 MARGS -> ;

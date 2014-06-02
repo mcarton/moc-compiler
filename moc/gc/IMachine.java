@@ -171,6 +171,9 @@ public interface IMachine {
         Method method, Pointer type, IExpr instance, ArrayList<IExpr> params
     );
 
+    /** Call a static method. */
+    IExpr genCall(Method method, ArrayList<IExpr> params);
+
     /** Return the size of the given type.
      */
     IExpr genSizeOf(Type type);

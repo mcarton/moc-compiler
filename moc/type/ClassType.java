@@ -104,6 +104,10 @@ public final class ClassType extends AbstractType<ClassType> {
         return getMethod(false, names);
     }
 
+    public Method getStaticMethod(ArrayList<String> names) {
+        return getMethod(true, names);
+    }
+
     public Method getMethod(boolean isStatic, ArrayList<String> names) {
         return getMethod(isStatic ? staticMethods : methods, names);
     }
