@@ -75,9 +75,9 @@ public interface IMachine {
 
     // code generation stuffs:
     String genFunction(
-        FunctionType f, ArrayList<ILocation> parameters, String name, String bloc
+        FunctionType f, ArrayList<ILocation> parameters, String name, String block
     );
-    String genMethod(Method method, ArrayList<ILocation> parameters, String bloc);
+    String genMethod(Method method, ArrayList<ILocation> parameters, String block);
     String genReturn(Type returnType, IExpr expr);
 
     /** Code for a block of code.
