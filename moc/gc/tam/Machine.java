@@ -381,9 +381,17 @@ public class Machine extends AbstractMachine {
     }
 
     @Override
-    public Expr genNew(Type t) {
-        cg.loadl(t.visit(sizeVisitor));
+    public Expr genNew(Type type) {
+        cg.loadl(type.visit(sizeVisitor));
         cg.subr("Malloc");
+
+        if (type.isClass()) { // initialize vtable
+            ClassType clazz = (ClassType)type;
+            cg.loada("vtable_" + clazz.getName());
+            cg.loada("-2 [ST]");
+            cg.loadi(1);
+            cg.storei(1);
+        }
 
         return new Expr(cg.get());
     }
@@ -597,8 +605,24 @@ public class Machine extends AbstractMachine {
 
     @Override
     public String genClass(ClassType clazz, String methodsCode) {
-        genComment("Class " + clazz.toString());
-        cg.declAppend(methodsCode);
+        String className = clazz.toString();
+        cg.globalComment("Class " + className);
+
+        cg.vtable(className);
+
+        for (Method method : clazz.getMethods()) {
+            cg.declLoadl('"' + method.getName() + '"');
+            cg.declLoada("method_" + name(method));
+        }
+
+        // mark the end of the vtable
+        cg.declLoadl("\"\"");
+        cg.declLoadl(0);
+
+        cg.globalComment("end of vtable for " + className + '\n');
+
+        cg.append(methodsCode);
+
         return cg.get();
     }
 }

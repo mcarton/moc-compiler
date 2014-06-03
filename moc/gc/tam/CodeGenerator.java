@@ -18,7 +18,7 @@ final class CodeGenerator {
     }
 
     String getDeclaration() {
-        declarationSb.insert(0, "CALL (SB) function_main\nHALT\n");
+        declarationSb.append("CALL (SB) function_main\nHALT\n");
         return declarationSb.toString();
     }
 
@@ -43,6 +43,22 @@ final class CodeGenerator {
         append("; ");
         append(txt);
         skipLine();
+    }
+
+    void declAppend(Object what) {
+        declarationSb.append(what);
+    }
+
+    void declLoadl(Object what) {
+        declAppend("LOADL ");
+        declAppend(what);
+        declAppend('\n');
+    }
+
+    void declLoada(Object what) {
+        declAppend("LOADA ");
+        declAppend(what);
+        declAppend('\n');
     }
 
     void function(String name) {
@@ -161,19 +177,15 @@ final class CodeGenerator {
         skipLine();
     }
 
+    void vtable(String className) {
+        declAppend("vtable_");
+        declAppend(className);
+        declAppend(":\n");
+    }
+
     // implementation stuff:
     void append(Object what) {
         sb.append(what);
-    }
-
-    void declAppend(Object what) {
-        declarationSb.append(what);
-    }
-
-    void declLoadl(Object what) {
-        declAppend("LOADL ");
-        declAppend(what);
-        declAppend('\n');
     }
 
     void indent() {
