@@ -414,18 +414,13 @@ public class Machine extends AbstractMachine {
 
     @Override
     public Expr genCall(
-        String funName, FunctionType fun,
-        ArrayList<IExpr> exprs
+        String funName, FunctionType fun, ArrayList<IExpr> params
     ) {
-        ListIterator<IExpr> it = exprs.listIterator(exprs.size());
-        ListIterator<Type> typeIt
-            = fun.getParameterTypes().iterator(exprs.size());
-        while (it.hasPrevious()) {
-            IExpr expr = it.previous();
-            Type type = typeIt.previous();
-            cg.append(expr.getCode());
-            getValue(expr, type.visit(sizeVisitor));
-        }
+        int parameterNumber = params.size();
+        genCallImpl(
+            fun.getParameterTypes().iterator(parameterNumber),
+            params.listIterator(parameterNumber)
+        );
         cg.call("SB", "function_" + funName);
         return new Expr(cg.get());
     }
@@ -438,8 +433,32 @@ public class Machine extends AbstractMachine {
     }
 
     @Override
-    public IExpr genCall(Method method, ArrayList<IExpr> params) {
-        return null; // TODO:method
+    public Expr genCall(Method method, ArrayList<IExpr> params) {
+        // TODO: it is currently impossible to iterate from end to begin
+        //       on method parameters, this is an ugly fix
+        ArrayList<Type> types = new ArrayList<>();
+        for (Type type : method.getParameterTypes()) {
+            types.add(type);
+        }
+
+        genCallImpl(
+            types.listIterator(types.size()),
+            params.listIterator(types.size())
+        );
+        cg.call("SB", "method_" + name(method));
+
+        return new Expr(cg.get());
+    }
+
+    private void genCallImpl(
+        ListIterator<Type> typeIt, ListIterator<IExpr> paramIt
+    ) {
+        while (paramIt.hasPrevious()) {
+            IExpr expr = paramIt.previous();
+            Type type = typeIt.previous();
+            cg.append(expr.getCode());
+            getValue(expr, type.visit(sizeVisitor));
+        }
     }
 
     @Override
