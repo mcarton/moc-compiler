@@ -64,7 +64,8 @@ syn expr : IExpr for
 ;
 inh hexpr : IExpr for TX, RX, AX;
 inh exprs : ArrayList<IExpr> for ARGS, ARGSX, MARG, MARGS;
-inh selectorNames : ArrayList<String> for MARG, MARGS;
+inh selectorNames : ArrayList<String> for
+    MARG, MARGS, MFUNC_PARAMETER, MFUNC_PARAMETERS;
 
 inh currIndex : ListIterator<Type> for ARGS, ARGSX;
 
@@ -1160,6 +1161,7 @@ global
     SymbolTable blockTds;
     ArrayList<Selector> selectors;
     ArrayList<ILocation> parameters;
+    ArrayList<String> names;
     Method method;
 #init {
     blockTds = new SymbolTable(METHOD^symbolTable);
@@ -1171,10 +1173,27 @@ global
 
     parameters = new ArrayList<ILocation>();
     MFUNC_PARAMETERS^parameters = parameters;
+
+    names = new ArrayList<String>();
+    MFUNC_PARAMETERS^selectorNames = names;
 }
 #begin {
-    -- TODO: all the checks
+    -- TODO: check overrided methods have the same types as the method they
+    --       override
     boolean isStatic = QUAL^sym.equals("+");
+
+    Method other;
+    if (isStatic) {
+        other = METHOD^classType.getStaticMethod(names);
+    }
+    else {
+        other = METHOD^classType.getInstanceMethod(names);
+    }
+
+    if (other != null) {
+        error(CLASS_methodExists, names);
+    }
+
     method = new Method(METHOD^classType, PTYPE^type, selectors, isStatic);
     METHOD^machine.beginMethod(method);
     METHOD^classType.addMethod(method, isStatic);
@@ -1211,14 +1230,15 @@ MFUNC_PARAMETERS -> MFUNC_PARAMETER MFUNC_PARAMETERS;
 -- selector without parameters
 MFUNC_PARAMETER -> ident #set;
 #set {
+    MFUNC_PARAMETER^selectorNames.add(ident^txt);
     MFUNC_PARAMETER^selectors.add(new Selector(ident^txt));
 }
 
 -- selector + parameter type + parameter name
 MFUNC_PARAMETER -> ident colon PTYPE ident #set;
 #set {
+    MFUNC_PARAMETER^selectorNames.add(ident^txt);
     MFUNC_PARAMETER^selectors.add(new Selector(ident^txt, PTYPE^type, ident1^txt));
-    -- TODO: all the checks (type, existence, etc)
 
     ILocation loc
         = MFUNC_PARAMETER^machine.getLocationForParameter(PTYPE^type, ident1^txt);
