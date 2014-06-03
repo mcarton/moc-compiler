@@ -96,10 +96,6 @@ public final class ClassType extends AbstractType<ClassType> {
         return Collections.unmodifiableList(methods);
     }
 
-    public Method getClassMethod(ArrayList<String> names) {
-        return getMethod(true, names);
-    }
-
     public Method getInstanceMethod(ArrayList<String> names) {
         return getMethod(false, names);
     }
