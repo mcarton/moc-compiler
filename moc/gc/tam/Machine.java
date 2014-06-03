@@ -534,20 +534,11 @@ public class Machine extends AbstractMachine {
 
 /** A visitor to get the size of types.
  */
-class SizeVisitor implements TypeVisitor<Integer> {
+final class SizeVisitor extends moc.type.SizeVisitor {
+    protected int baseClassSize()            { return 1; /* vtable */ }
     public Integer visit(CharacterType what) { return 1; }
     public Integer visit(BooleanType what)   { return 1; }
     public Integer visit(IntegerType what)   { return 1; }
-
-    public Integer visit(ClassType what) {
-        return -1; // TODO:class
-    }
-
-    public Integer visit(VoidType what)      { return 0; }
-
-    public Integer visit(Array what) {
-        return what.getPointee().visit(this) * what.getNbElements();
-    }
     public Integer visit(IdType what)        { return 1; }
     public Integer visit(NullType what)      { return 1; }
     public Integer visit(Pointer what)       { return 1; }
