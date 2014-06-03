@@ -46,7 +46,7 @@
   sur Windows nécessiterait uniquement d'ajouter des déclarations pour le
   linkage.} que ne l'aurait été la génération en directement en
   \textit{x86}. De plus le langage étant plus expressif (il est notamment typé),
-  il permet de trouver plus facilement les erreurs éventuelles. Enfin il nous
+  il permet de trouver plus facilement les erreurs éventuelles. Enfin, il nous
   permet de bénéficier des différentes passes d'optimisation du compilateur
   \verb+llc+ (il est intéressant de noter qu'il est possible de voir le
   résultat après chaque passe).
@@ -57,7 +57,7 @@
   selon la machine cible voulue.
 
   \paragraph{}
-  \tam{} a cependant plusieurs avantages par rapport à \llvm{}: pour commencer
+  \tam{} a cependant plusieurs avantages par rapport à \llvm{}: pour commencer,
   \llvm{} est beaucoup plus expressif et typé: c'est souvent un avantage, mais
   rend parfois certaines tâches très complexe (par exemple la gestion de la
   \textit{vtable}, il est aussi nécessaire de préciser le type des variables et
@@ -69,7 +69,7 @@
 
   Enfin la possibilité de voir l'évolution de la pile et du tas instruction par
   instruction est un gros avantage de \tam{}. Pour pouvoir débugger la machine
-  \llvm{} il aurait fallut ajouter les informations de débuggage au fichier
+  \llvm{} il aurait fallu ajouter les informations de débuggage au fichier
   construit, rendant la machine encore plus complexe.
 
 \section{Tests}
@@ -101,18 +101,17 @@
   permet notamment de chainer les appels de méthode).
 
   \paragraph{}
-  Il n'y a pas de code spécifique à \llvm{} ou a \tam{} en dehors de leur
-  dossier respectif. L'interface \verb+IMachine+ et le \egg{} ont été prévues
+  Il n'y a pas de code spécifique à \llvm{} ou à \tam{} en dehors de leur
+  dossier respectif. L'interface \verb+IMachine+ et le \egg{} ont été prévus
   pour être le plus génériques possible, on devrait pas exemple pouvoir
   l'utiliser pour générer du \textit{C}.
 
   En particulier, la classe \verb+Type+ n'a pas de taille. En effet, si l'on
   devait générer par exemple du \textit{C}, celle-ci ne servirait pas (on
   utiliserait plutôt l'opérateur \verb+sizeof+). Pour récupérer la taille d'un
-  type, mais aussi son nom en \llvm{} (par exemple le type \verb+Int+ est
-  représenté par un \verb+i64+, la constante \verb+"hello"+ par un
-  \verb+[6 x i8]+ -- le nom n'ayant de sens qu'avec cette machine) on utilise
-  un visiteur.
+  type, mais aussi son nom en \llvm{} on utilise un visiteur (par exemple le
+  type \verb+Int+ est représenté par un \verb+i64+, la constante \verb+"hello"+
+  par un \verb+[6 x i8]+ -- le nom n'ayant de sens qu'avec cette machine).
 
   \paragraph{}
   De même, il y a deux interfaces \verb+IExpr+ et \verb+ILocation+ utilisées
@@ -128,9 +127,9 @@
 
   En \tam{}, une expression contient le code nécessaire pour la générer, et un
   booléen indiquant s'il est nécessaire d'utiliser l'instruction \verb+loadi+
-  pour obtenir la valeur -- ce booléen n'a pas forcément la même valeur que
+  pour obtenir la valeur (ce booléen n'a pas forcément la même valeur que
   celui de la machine \llvm{}, et serait inutile si l'on générait par exemple
-  du \textit{C}, il ne fait donc pas parti de l'interface commune. Les
+  du \textit{C}, il ne fait donc pas partie de l'interface commune). Les
   expressions \tam{} n'ont pas besoin de contenir d'adresse, celles-ci ne
   servent que pour obtenir l'expression associée à un identifiant de la table
   des symboles (variable locale, paramètre de fonction, attribut d'une classe).
@@ -158,8 +157,8 @@ void put_char(Char c) {
 
     Il n'est pas possible d'utiliser les variables autrement que par leur
     adresse. Vu le peu d'assembleur en-ligne que nous utilisons, nous n'avons
-    pas jugé qu'ajouter la possibilité d'utiliser des variables par leur nom en
-    valait la peine.
+    pas jugé qu'ajouter la possibilité d'utiliser des variables par leur nom
+    vaille la peine d'être développé.
 
   \subsection{Alias de type}\label{sec:alias}
     Il est possible de définir des alias de type:
@@ -292,11 +291,11 @@ class Point {
 
       \paragraph{}
       Cependant, afin de permettre d'appeler une méthode sur une instance de
-      type inconnu (\verb+id+), la table virtuelle n'est pas un simple tableau
+      type inconnu (\verb+id+) la table virtuelle n'est pas un simple tableau
       contenant l'adresse des fonctions. À la place, c'est une table
       associative \verb+nom -> adresse+ (où le «~nom~» est par exemple de la
-      forme \verb+x:y:z:+ pour refléter le fait qu'en \objc{} une méthode a
-      plusieurs noms).
+      forme \verb+x:y:z:+ pour refléter le fait qu'en \objc{} une méthode peut
+      avoir plusieurs noms).
 
       Pour appeler une méthode sur une instance de type inconnu, on pourrait
       alors chercher la méthode, par son nom dans cette table. Cependant, nous
