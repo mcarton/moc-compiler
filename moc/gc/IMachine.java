@@ -47,6 +47,14 @@ public interface IMachine {
      */
     void endMethod();
 
+    /** Indicates the machine we enter a class definition.
+     */
+    void beginClass(ClassType meth);
+
+    /** Indicates the machine we exit a class definition.
+     */
+    void endClass();
+
     /** Indicates the machine we enter a new block.
      */
     void beginBlock();

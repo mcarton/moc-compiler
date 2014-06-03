@@ -83,6 +83,11 @@ public final class Machine extends AbstractMachine {
     }
 
     @Override
+    public void beginClass(ClassType type) {}
+    @Override
+    public void endClass() {}
+
+    @Override
     public void beginBlock() {
         ++block;
     }

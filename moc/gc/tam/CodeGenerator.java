@@ -18,7 +18,7 @@ final class CodeGenerator {
     }
 
     String getDeclaration() {
-        declarationSb.append("CALL (SB) function_main\nHALT\n");
+        declarationSb.insert(0, "CALL (SB) function_main\nHALT\n");
         return declarationSb.toString();
     }
 

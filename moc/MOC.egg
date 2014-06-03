@@ -1075,6 +1075,7 @@ global
     type = new ClassType(typeident^txt, SUPER^superType);
     ATTRIBUTES^classType = type;
     METHODS^classType = type;
+    IMPLEMENTATION^machine.beginClass(type);
 }
 #symbolTable {
     if (IMPLEMENTATION^symbolTable.localSearch(typeident^txt) != null) {
@@ -1091,6 +1092,7 @@ global
 }
 #gen {
     IMPLEMENTATION^code = IMPLEMENTATION^machine.genClass(type, METHODS^code);
+    IMPLEMENTATION^machine.endClass();
 }
 
 -- superclass
@@ -1127,7 +1129,7 @@ SUPER -> colon typeident #type;
 
 -- attributes
 ATTRIBUTES -> ;
-ATTRIBUTES -> TYPE ident semicolon ATTRIBUTES #add;
+ATTRIBUTES -> TYPE ident semicolon #add ATTRIBUTES;
 #add {
     if (ATTRIBUTES^classType.getAttributeType(ident^txt) != null) {
         error(ATTR_exists, ident^txt);

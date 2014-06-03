@@ -30,6 +30,7 @@ public class Machine extends AbstractMachine {
     final Map<String, String> binaryOperators = new HashMap<>();
 
     private int parametersSize;
+    private int currentSelfOffset = 1 /* initial offset of 1 for vtable */;
 
     public Machine(int verbosity, ArrayList<String> warnings) {
         super(verbosity, warnings);
@@ -82,6 +83,15 @@ public class Machine extends AbstractMachine {
     }
 
     @Override
+    public void beginClass(ClassType type) {
+        currentSelfOffset = (type.hasSuper() ? type.visit(sizeVisitor) : 1);
+    }
+
+    @Override
+    public void endClass() {
+    }
+
+    @Override
     public void beginBlock() {
         addressStack.push(currentAddress);
     }
@@ -107,7 +117,9 @@ public class Machine extends AbstractMachine {
     public Location getLocationForAttribute(
         ClassType clazz, Type type, String name
     ) {
-        return null; // TODO:attributes
+        Location tempLoc = new Location(currentSelfOffset);
+        currentSelfOffset += type.visit(sizeVisitor);
+        return tempLoc;
     }
 
     // code generation stuffs:
@@ -355,11 +367,17 @@ public class Machine extends AbstractMachine {
     }
     @Override
     public Expr genSelf(Type type) {
-        return null;
+        // self and super are the first parameter
+        cg.loada(selfLocation());
+        return new Expr(cg.get());
     }
     @Override
     public Expr genSuper(Type type) {
-        return null;
+        return genSelf(type);
+    }
+
+    private String selfLocation() {
+        return (currentParameterAddress-1) + "[LB]";
     }
 
     @Override
@@ -431,13 +449,25 @@ public class Machine extends AbstractMachine {
 
     @Override
     public Expr genIdent(InfoVar info) {
-        cg.loada(info.getLoc().toString());
+        Location location = (Location)info.getLoc();
 
-        // array parameters need not to be loaded
-        boolean needsLoadi =
-            !(((Location)info.getLoc()).getDep() < 0 && info.getType().isArray());
+        if (location.getReg() == null) { // attributes
+            cg.loada(selfLocation());
+            cg.loadi(1);
+            cg.loadl(location.getDep());
+            cg.subr("IAdd");
 
-        return new Expr(cg.get(), needsLoadi);
+            return new Expr(cg.get());
+        }
+        else {
+            cg.loada(location.toString());
+
+            // array parameters need not to be loaded
+            boolean needsLoadi =
+                !(location.getDep() < 0 && info.getType().isArray());
+
+            return new Expr(cg.get(), needsLoadi);
+        }
     }
     @Override
     public Expr genAff(Type t, IExpr loc, IExpr rhs) {
@@ -548,7 +578,6 @@ public class Machine extends AbstractMachine {
 
     @Override
     public String genClass(ClassType clazz, String methodsCode) {
-        // TODO:class
         genComment("Class " + clazz.toString());
         cg.declAppend(methodsCode);
         return cg.get();
