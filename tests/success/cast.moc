@@ -1,9 +1,16 @@
+class A {}
+class B : A {}
+
 Int main() {
     Int a = (Int)'a';
     Char* b = (Char*)null;
     Char* c = (Char*)"enseeiht";
     Int* d;
     Char* e = (Char*)d;
+
+    B* bb;
+    A* aa = bb;
+
     return (Int)'7';
 }
 
