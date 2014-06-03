@@ -32,6 +32,8 @@ public class Machine extends AbstractMachine {
     private int parametersSize;
     private int currentSelfOffset = 1 /* initial offset of 1 for vtable */;
 
+    private static final String selfLocation = "-1 [LB]";
+
     public Machine(int verbosity, ArrayList<String> warnings) {
         super(verbosity, warnings);
 
@@ -74,9 +76,11 @@ public class Machine extends AbstractMachine {
 
     @Override
     public void beginMethod(Method method) {
+        currentParameterAddress = 0;
         parametersSize = paramSize(method.getParameterTypes());
-        if (!method.isStatic()) {
-            parametersSize += 1; // self
+        if (!method.isStatic()) { // for self
+            parametersSize += 1;
+            currentParameterAddress = -1;
         }
     }
 
@@ -370,7 +374,7 @@ public class Machine extends AbstractMachine {
     @Override
     public Expr genSelf(Type type) {
         // self and super are the first parameter
-        cg.loada(selfLocation());
+        cg.loada(selfLocation);
         return new Expr(cg.get());
     }
     @Override
@@ -378,9 +382,6 @@ public class Machine extends AbstractMachine {
         return genSelf(type);
     }
 
-    private String selfLocation() {
-        return (currentParameterAddress-1) + "[LB]";
-    }
 
     @Override
     public Expr genNew(Type type) {
@@ -516,12 +517,12 @@ public class Machine extends AbstractMachine {
         Location location = (Location)info.getLoc();
 
         if (location.getReg() == null) { // attributes
-            cg.loada(selfLocation());
+            cg.loada(selfLocation);
             cg.loadi(1);
             cg.loadl(location.getDep());
             cg.subr("IAdd");
 
-            return new Expr(cg.get());
+            return new Expr(cg.get(), true);
         }
         else {
             cg.loada(location.toString());
