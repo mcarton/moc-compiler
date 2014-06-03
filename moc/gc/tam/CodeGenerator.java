@@ -39,6 +39,12 @@ final class CodeGenerator {
         skipLine();
     }
 
+    void calli() {
+        indent();
+        append("CALLI");
+        skipLine();
+    }
+
     void comment(String txt) {
         append("; ");
         append(txt);

@@ -435,9 +435,44 @@ public class Machine extends AbstractMachine {
 
     @Override
     public IExpr genCall(
-        Method method, Pointer type, IExpr instance, ArrayList<IExpr> params
+        Method method, Pointer ptrType, IExpr self, ArrayList<IExpr> params
     ) {
-        return null; // TODO:method
+        cg.comment("Method " + method.getName() + " call:");
+        // TODO: it is currently impossible to iterate from end to begin
+        //       on method parameters, this is an ugly fix
+        ArrayList<Type> types = new ArrayList<>();
+        for (Type type : method.getParameterTypes()) {
+            types.add(type);
+        }
+
+        genCallImpl(
+            types.listIterator(types.size()),
+            params.listIterator(types.size())
+        );
+
+        cg.append(self.getCode());
+        getValue(self, ptrType.visit(sizeVisitor));
+
+        // copy the pointer
+        cg.loada("-1 [ST]");
+        cg.loadi(1);
+
+        // get the vtable
+        cg.loadi(1);
+
+        // the method address is at the position 2*n+1
+        int methodIndex = method.getClassType().getMethods().indexOf(method);
+        cg.loadl(2 * methodIndex);
+        cg.subr("IAdd");
+        cg.loadl(1);
+        cg.subr("IAdd");
+
+        cg.loadi(1);
+        cg.calli();
+
+        cg.comment("End of method " + method.getName() + " call:");
+
+        return new Expr(cg.get());
     }
 
     @Override
