@@ -73,7 +73,7 @@ public class Method {
         return isStatic;
     }
 
-    public String toString() {
+    public String getName() {
         StringBuilder sb = new StringBuilder();
         sb.append(isStatic ? "+" : "-");
         for (Selector sel : selectors) {
@@ -81,6 +81,10 @@ public class Method {
             sb.append(':');
         }
         return sb.toString();
+    }
+
+    public String toString() {
+        return getName();
     }
 
     public boolean hasNames(ArrayList<String> names) {
