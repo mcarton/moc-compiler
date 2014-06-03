@@ -73,13 +73,15 @@ public class Machine extends AbstractMachine {
     }
 
     @Override
-    public void beginMethod(Method meth) {
-        // TODO
+    public void beginMethod(Method method) {
+        parametersSize = paramSize(method.getParameterTypes());
+        if (!method.isStatic()) {
+            parametersSize += 1; // self
+        }
     }
 
     @Override
     public void endMethod() {
-        // TODO
     }
 
     @Override
