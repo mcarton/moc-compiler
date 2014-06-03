@@ -19,6 +19,7 @@
 \newcommand{\mocc}{\texttt{mocc}}
 \newcommand{\llvm}{\textit{llvm}}
 \newcommand{\tam} {\textit{tam}}
+\newcommand{\objc}{\textit{Objective-C}}
 \newminted[moccode]{cpp}{%
   tabsize=4, fontsize=\footnotesize,
   frame=lines, framesep=\fboxsep,
@@ -39,18 +40,20 @@
 
   La compilation en langage intermédiaire \llvm{} nous permet de générer des
   exécutables natifs utilisant la \textit{libc} bien plus facilement, et de
-  manière plus portable que ne l'aurait été la génération en directement en
+  manière plus portable\footnote{Bien que nous compilions uniquement pour une
+  machine linux 64~bits, le porter en 32~bits serait assez simple. Le porter
+  sur Windows nécessiterait uniquement d'ajouter des déclarations pour le
+  linkage.} que ne l'aurait été la génération en directement en
   \textit{x86}. De plus le langage étant plus expressif (il est notamment typé),
   il permet de trouver plus facilement les erreurs éventuelles. Enfin il nous
   permet de bénéficier des différentes passes d'optimisation du compilateur
-  \verb+llc+.
+  \verb+llc+ (il est intéressant de noter qu'il est possible de voir le
+  résultat après chaque passe).
 
   Nous avons donc supprimé l'assembleur en-ligne tel qu'il était fourni (dans
   \verb+ASM.egg+), et rajouté une instruction \verb+asm+ qui prend une chaine
   de caractères, ce qui permet d'inclure de l'assembleur \llvm{} ou \tam{}
-  selon la machine cible voulue. Il n'y a pour l'instant aucun moyen d'utiliser
-  les variables définies en moc dans cet assembleur autrement qu'avec leur
-  adresse.
+  selon la machine cible voulue.
 
   \paragraph{}
   \tam{} a cependant plusieurs avantages par rapport à \llvm{}: pour commencer
@@ -117,7 +120,7 @@ void put_char(Char c) {
     pas jugé qu'ajouter la possibilité d'utiliser des variables par leur nom en
     valait la peine.
 
-  \subsection{Alias de type}\label{alias}
+  \subsection{Alias de type}\label{sec:alias}
     Il est possible de définir des alias de type:
     \begin{moccode}
 using NouveauNom = NomExistant;
@@ -125,7 +128,7 @@ using NouveauNom = NomExistant;
 
     La syntaxe évite volontairement le \verb+typedef+ bizarre du C.
 
-  \subsection{Tableaux}\label{tab}
+  \subsection{Tableaux}\label{sec:tab}
     On peut créer des tableaux:
     \begin{moccode}
 Char[5] s = "net7";
@@ -138,7 +141,7 @@ Char[5] s = "net7";
     passables comme paramètre de fonction et peuvent être retournés). Le type
     tableau est un vrai type.
 
-  \subsection{Opérateurs new et delete}\label{new}
+  \subsection{Opérateurs new et delete}\label{sec:new}
     Ces opérateurs sont équivalents à \verb+malloc+ et \verb+free+, mais sont
     typés (le langage ne possède pas de type \verb+void*+).
 
@@ -152,7 +155,8 @@ delete(test);
     \end{moccode}
 
     L'opérateur \verb+new+ a aussi l'avantage de tenir compte de la taille et
-    d'initialiser la \textit{vtable}.
+    d'initialiser la \textit{vtable} (voir section \ref{sec:vtable}) dans le
+    cas d'une classe.
 
   \subsection{Opérateur sizeof}
     Cet opérateur retourne la taille d'un type:
@@ -161,7 +165,7 @@ delete(test);
 Int a = sizeof(Int); // 1 en tam, 8 en llvm sur une machine 64bits
     \end{moccode}
 
-    Il tient compte de la \textit{vtable} dans le cas des classes.
+    Il tient compte de la \textit{vtable} dans le cas d'une classe.
 
   \subsection{Boucle}
     Nous avons ajouté une boucle \verb+while+.
@@ -172,18 +176,31 @@ Int a = sizeof(Int); // 1 en tam, 8 en llvm sur une machine 64bits
 
     En particulier, il n'y a pas de type \verb+void*+, ce qui empêche notamment
     d'écrire une fonction comme \verb+malloc+, mais nous avons ajouté un
-    opérateur \verb+new+ (voir section~\ref{new}).
+    opérateur \verb+new+ (voir section~\ref{sec:new}).
 
-    Le typage des tableaux (voir section~\ref{tab}) est aussi plus fort qu'en C.
+    Le typage des tableaux (voir section~\ref{sec:tab}) est aussi plus fort qu'en C.
+
+    Cependant les entiers se comportent comme des booléens: nous avons commencé
+    comme cela, nous aurions dû ajouter le type booléen dès le début.
 
     \subsubsection{Conversions}
       Il a deux types de casts: implicites et explicites.
 
-      TODO: raconter des trucs ici
+      Les casts implicites ont lieux dans peu de cas. Par exemple la constante
+      \verb+null+ est de type \verb+NullType+ mais est convertible
+      implicitement vers tout les types de pointeur et un tableau est
+      convertible vers un pointeur du même type. De même, dans un \verb+if+ ou
+      un \verb+while+ la «~condition~» peut être un pointeur.
+
+      Les casts explicites se font à l'aide de \verb+(Type)valeur+. Tout les
+      casts ne sont pas permis cependant: par exemple un caractère ne peut pas
+      être converti en pointeur, bien qu'en \tam{} ils soient tout les deux
+      représentés par un mot et qu'en \llvm{} un caractère fait 8 bits et un
+      pointeur 64.
 
   \subsection{Noms de types}
     Les noms de type commencent tous par une majuscule. Ceci afin de permettre
-    d'avoir des alias de type (voir section~\ref{alias}) et par uniformité avec
+    d'avoir des alias de type (voir section~\ref{sec:alias}) et par uniformité avec
     les nom de classes.
 
     Cette restriction permet de désambiguïser une instruction comme
@@ -192,8 +209,8 @@ Int a = sizeof(Int); // 1 en tam, 8 en llvm sur une machine 64bits
     \verb+a*+.
 
   \subsection{\texttt{NULL} et \texttt{nil}, \texttt{YES} et \texttt{NO}}
-    Il n'y a pas de \verb+nil+ (qui serait inutile vu qu'il n'y aurait pas de
-    différence avec \verb+NULL+) et \verb+NULL+ s'écrit \verb+null+ par
+    Il n'y a pas de \verb+nil+ (qui serait inutile vu que nous n'avons pas vu
+    de différence avec \verb+NULL+) et \verb+NULL+ s'écrit \verb+null+ par
     consistance avec les autres variables.
 
     De même \verb+YES+ et \verb+NO+ s'écrivent \verb+yes+ et \verb+no+.
@@ -221,6 +238,28 @@ class Point {
     }
 }
     \end{moccode}
+
+    \subsubsection{Table virtuelle}\label{sec:vtable}
+      Afin de permettre l'appel de méthode par liaison tardive, chaque classe
+      possède un membre implicite: sa table virtuelle. Ce membre est
+      implicitement initialisé par l'opérateur \verb+new+.
+
+      Lors d'un appel de méthode sur une instance de type connu, l'existence de
+      la méthode et le type des paramètres est vérifié à la compilation. La
+      méthode à appeler est cherchée dans la \textit{vtable} par son index à
+      l'exécution.
+
+      \paragraph{}
+      Cependant, afin de permettre d'appeler une méthode sur une instance de
+      type inconnu (\verb+id+), la table virtuelle n'est pas un simple tableau
+      contenant l'adresse des fonctions. À la place, c'est une table
+      associative \verb+nom -> addresse+ (où le «~nom~» est par exemple de la
+      forme \verb+x:y:z:+ pour refléter le fait qu'en \objc{} une méthode a
+      plusieurs noms).
+
+      Pour appeler une méthode sur une instance de type inconnu, on pourrait
+      alors chercher la méthode, par son nom dans cette table. Cependant, nous
+      n'avons pas eu le temps d'implémenter ce type d'appel.
 
 \section{Warnings}
   Nous avons ajouté des warnings au compilateur.
