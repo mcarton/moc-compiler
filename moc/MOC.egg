@@ -1237,6 +1237,9 @@ F -> self #gen #lvalue;
     if (classType == null) {
         error(CLASS_selfNotInMethod);
     }
+    elseif (!classType.hasSuper()) {
+        error(CLASS_selfWithoutParent);
+    }
 
     F^type = new Pointer(classType);
     F^expr = F^machine.genSelf(classType);
