@@ -14,8 +14,9 @@
 
 \title{Rapport projet de TDL}
 \author{Maxence Ahlouche \and Martin Carton \and Clément Hubin-Andrieu}
-\date{mai 2014}
+\date{4 mai 2014}
 
+\newcommand{\egg} {\texttt{egg}}
 \newcommand{\mocc}{\texttt{mocc}}
 \newcommand{\llvm}{\textit{llvm}}
 \newcommand{\tam} {\textit{tam}}
@@ -77,8 +78,9 @@
   \begin{itemize}
     \item ceux des dossiers \verb+success+, \verb+warning+, \verb+failure+
       testent l'analyse syntaxique et sémantique du compilateur (respectivement
-      que le code est correct, qu'il génère un warning ou qu'il génère une
-      erreur). Ces exemples ne font rien de particulier;
+      que le code est correct, qu'il génère un warning (voir section
+      \ref{sec:warnings}) ou qu'il génère une erreur). Ces exemples ne font
+      rien de particulier;
     \item ceux du dossier \verb+runnable+ testent le code généré, les exemples
       sont compilés par \mocc{} puis doivent être compilés avec \verb+llc+
       ou lancés dans \verb+tam+ et lancés.
@@ -93,6 +95,45 @@
       Les scripts \verb+tests/run-llvm+ et \verb+tests/run-tam+ permettent de
       préprocesser, compiler et lancer ces tests.
   \end{itemize}
+
+\section{Génération de code}
+  Nous avons utilisé la syntaxe de Maxime, celle-ci étant plus légère (elle
+  permet notamment de chainer les appels de méthode).
+
+  \paragraph{}
+  Il n'y a pas de code spécifique à \llvm{} ou a \tam{} en dehors de leur
+  dossier respectif. L'interface \verb+IMachine+ et le \egg{} ont été prévues
+  pour être le plus génériques possible, on devrait pas exemple pouvoir
+  l'utiliser pour générer du \textit{C}.
+
+  En particulier, la classe \verb+Type+ n'a pas de taille. En effet, si l'on
+  devait générer par exemple du \textit{C}, celle-ci ne servirait pas (on
+  utiliserait plutôt l'opérateur \verb+sizeof+). Pour récupérer la taille d'un
+  type, mais aussi son nom en \llvm{} (par exemple le type \verb+Int+ est
+  représenté par un \verb+i64+, la constante \verb+"hello"+ par un
+  \verb+[6 x i8]+ -- le nom n'ayant de sens qu'avec cette machine) on utilise
+  un visiteur.
+
+  \paragraph{}
+  De même, il y a deux interfaces \verb+IExpr+ et \verb+ILocation+ utilisées
+  par l'interface \verb+IMachine+ et le \egg{}. Ces interfaces représentent
+  une expression et un emplacement mémoire pour chaque machine.
+
+  En \llvm{}, une expression contient soit un emplacement mémoire (qui est un
+  nom de la forme \verb+%nom+ pour les variables nommées, ou \verb+%5+ pour les
+  temporaires) et le code nécessaire pour la générer, soit une constante (par
+  exemple \verb+42+, ou encore \verb+null+). Une expression contient aussi un
+  booléen indiquant s'il est nécessaire d'utiliser l'instruction \verb+load+
+  pour obtenir la valeur.
+
+  En \tam{}, une expression contient le code nécessaire pour la générer, et un
+  booléen indiquant s'il est nécessaire d'utiliser l'instruction \verb+loadi+
+  pour obtenir la valeur -- ce booléen n'a pas forcément la même valeur que
+  celui de la machine \llvm{}, et serait inutile si l'on générait par exemple
+  du \textit{C}, il ne fait donc pas parti de l'interface commune. Les
+  expressions \tam{} n'ont pas besoin de contenir d'adresse, celles-ci ne
+  servent que pour obtenir l'expression associée à un identifiant de la table
+  des symboles (variable locale, paramètre de fonction, attribut d'une classe).
 
 \section{Extensions du langage}
   \subsection{Asm}
@@ -253,7 +294,7 @@ class Point {
       Cependant, afin de permettre d'appeler une méthode sur une instance de
       type inconnu (\verb+id+), la table virtuelle n'est pas un simple tableau
       contenant l'adresse des fonctions. À la place, c'est une table
-      associative \verb+nom -> addresse+ (où le «~nom~» est par exemple de la
+      associative \verb+nom -> adresse+ (où le «~nom~» est par exemple de la
       forme \verb+x:y:z:+ pour refléter le fait qu'en \objc{} une méthode a
       plusieurs noms).
 
@@ -261,7 +302,7 @@ class Point {
       alors chercher la méthode, par son nom dans cette table. Cependant, nous
       n'avons pas eu le temps d'implémenter ce type d'appel.
 
-\section{Warnings}
+\section{Warnings}\label{sec:warnings}
   Nous avons ajouté des warnings au compilateur.
 
   Il suffit d'appeler \mocc{} avec \verb+-w nom_du_warning+.
