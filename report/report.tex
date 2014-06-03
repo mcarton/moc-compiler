@@ -40,9 +40,9 @@
   La compilation en langage intermédiaire \llvm{} nous permet de générer des
   exécutables natifs utilisant la \textit{libc} bien plus facilement, et de
   manière plus portable que ne l'aurait été la génération en directement en
-  \textit{x86}. De plus le langage étant plus expressif (il est notament typé),
+  \textit{x86}. De plus le langage étant plus expressif (il est notamment typé),
   il permet de trouver plus facilement les erreurs éventuelles. Enfin il nous
-  permet de béficier des différentes passes d'optimisation du compilateur
+  permet de bénéficier des différentes passes d'optimisation du compilateur
   \verb+llc+.
 
   Nous avons donc supprimé l'assembleur en-ligne tel qu'il était fourni (dans
@@ -51,6 +51,22 @@
   selon la machine cible voulue. Il n'y a pour l'instant aucun moyen d'utiliser
   les variables définies en moc dans cet assembleur autrement qu'avec leur
   adresse.
+
+  \paragraph{}
+  \tam{} a cependant plusieurs avantages par rapport à \llvm{}: pour commencer
+  \llvm{} est beaucoup plus expressif et typé: c'est souvent un avantage, mais
+  rend parfois certaines tâches très complexe (par exemple la gestion de la
+  \textit{vtable}, il est aussi nécessaire de préciser le type des variables et
+  registres à chaque utilisation (et non déclaration), ce qui est très
+  répétitif).
+
+  Ensuite le nombre d'instructions très réduit de \tam{} rend la machine \tam{}
+  relativement simple, alors que la machine \llvm{} est bien plus complexe.
+
+  Enfin la possibilité de voir l'évolution de la pile et du tas instruction par
+  instruction est un gros avantage de \tam{}. Pour pouvoir débugger la machine
+  \llvm{} il aurait fallut ajouter les informations de débuggage au fichier
+  construit, rendant la machine encore plus complexe.
 
 \section{Tests}
   Nous avons écrit beaucoup de tests. Il y en a 4 types (tous dans le
@@ -74,6 +90,81 @@
       Les scripts \verb+tests/run-llvm+ et \verb+tests/run-tam+ permettent de
       préprocesser, compiler et lancer ces tests.
   \end{itemize}
+
+\section{Extensions du langage}
+  \subsection{Asm}
+    Comme indiqué dans l'introduction, nous avons remplacé l'instruction
+    \verb+asm+ fournie par une instruction plus simple prenant une chaine de
+    caractère.
+
+    \begin{moccode}
+// en llvm:
+void put_char(Char c) {
+    asm("%1 = load i8* %c.0, align 1");
+    asm("%2 = sext i8 %1 to i32");
+    asm("%3 = call i32 @putchar(i32 %2)");
+}
+
+// en tam:
+void put_char(Char c) {
+    asm("LOAD (1) -1[LB]");
+    asm("SUBR COut");
+}
+    \end{moccode}
+
+    Il n'est pas possible d'utiliser les variables autrement que par leur
+    adresse. Vu le peu d'assembleur en-ligne que nous utilisons, nous n'avons
+    pas jugé qu'ajouter la possibilité d'utiliser des variables par leur nom en
+    valait la peine.
+
+  \subsection{Alias de type}\label{alias}
+    Il est possible de définir des alias de type:
+    \begin{moccode}
+using NouveauNom = NomExistant;
+    \end{moccode}
+
+    La syntaxe évite volontairement le \verb+typedef+ bizarre du C.
+
+  \subsection{Tableaux}\label{tab}
+    On peut créer des tableaux:
+    \begin{moccode}
+Char[5] s = "net7";
+    \end{moccode}
+
+    La taille se met après le type, et non le nom comme en C.
+
+    Ils sont convertibles en pointeurs vers le type correspondant, mais le font
+    dans moins de cas qu'en C (notamment les tableaux sont copiables,
+    passables comme paramètre de fonction et peuvent être retournés). Le type
+    tableau est un vrai type.
+
+  \subsection{Opérateurs new et delete}\label{new}
+    Ces opérateurs sont équivalents à \verb+malloc+ et \verb+free+, mais sont
+    typés (le langage ne possède pas de type \verb+void*+).
+
+    \begin{moccode}
+Int* taille = new(Int);
+*taille = 10;
+
+Char* test = new[*taille](Char);
+delete(taille);
+delete(test);
+    \end{moccode}
+
+    L'opérateur \verb+new+ a aussi l'avantage de tenir compte de la taille et
+    d'initialiser la \textit{vtable}.
+
+  \subsection{Opérateur sizeof}
+    Cet opérateur retourne la taille d'un type:
+
+    \begin{moccode}
+Int a = sizeof(Int); // 1 en tam, 8 en llvm sur une machine 64bits
+    \end{moccode}
+
+    Il tient compte de la \textit{vtable} dans le cas des classes.
+
+  \subsection{Boucle}
+    Nous avons ajouté une boucle \verb+while+.
 
 \section{Design decisions}
   \subsection{Typage}
@@ -130,51 +221,6 @@ class Point {
     }
 }
     \end{moccode}
-
-\section{Extensions du langage}
-  \subsection{Alias de type}\label{alias}
-    Il est possible de définir des alias de type:
-    \begin{moccode}
-using NouveauNom = NomExistant;
-    \end{moccode}
-
-    La syntaxe évite volontairement le \verb+typedef+ bizarre du C.
-
-  \subsection{Tableaux}\label{tab}
-    On peut créer des tableaux:
-    \begin{moccode}
-Char[5] s = "net7";
-    \end{moccode}
-
-    La taille se met après le type, et non le nom comme en C.
-
-    Ils sont convertibles en pointeurs vers le type correspondant, mais le font
-    dans moins de cas qu'en C (notamment les tableaux sont copiables,
-    passables comme paramètre de fonction et peuvent être retournés). Le type
-    tableau est un vrai type.
-
-  \subsection{Opérateurs new et delete}\label{new}
-    Ces opérateurs sont équivalents à \verb+malloc+ et \verb+free+, mais sont
-    typés (le langage ne possède pas de type \verb+void*+).
-
-    \begin{moccode}
-Int* taille = new(Int);
-*taille = 10;
-
-Char* test = new[*taille](Char);
-delete(taille);
-delete(test);
-    \end{moccode}
-
-  \subsection{Opérateur sizeof}
-    Cet opérateur retourne la taille d'un type:
-
-    \begin{moccode}
-Int a = sizeof(Int); // 1 en tam, 8 en llvm sur une machine 64bits
-    \end{moccode}
-
-  \subsection{Boucle}
-    Nous avons ajouté une boucle \verb+while+.
 
 \section{Warnings}
   Nous avons ajouté des warnings au compilateur.
