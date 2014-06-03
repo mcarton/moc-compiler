@@ -115,6 +115,12 @@ final class CodeGenerator {
         skipLine();
     }
 
+    void method(String name) {
+        append("\nmethod_");
+        append(name);
+        append(":\n");
+    }
+
     void pop(int d, int n) {
         indent();
         append("POP (");

@@ -64,7 +64,7 @@ public class Machine extends AbstractMachine {
     @Override
     public void beginFunction(FunctionType fun) {
         currentParameterAddress = 0;
-        parametersSize = paramSize(fun);
+        parametersSize = paramSize(fun.getParameterTypes());
     }
 
     @Override
@@ -113,29 +113,50 @@ public class Machine extends AbstractMachine {
     // code generation stuffs:
     @Override
     public String genFunction(
-        FunctionType f, ArrayList<ILocation> parameters,
+        FunctionType fun, ArrayList<ILocation> parameters,
         String name, String block
     ) {
         cg.function(name);
+        return genFunctionImpl(
+            block, fun.getReturnType(), fun.getParameterTypes()
+        );
+    }
+
+    @Override
+    public String genMethod(
+        Method method, ArrayList<ILocation> parameters, String block
+    ) {
+        cg.method(name(method));
+        return genFunctionImpl(
+            block, method.getReturnType(), method.getParameterTypes()
+        );
+    }
+
+    private String genFunctionImpl(
+        String block, Type returnType, Iterable<Type> parameters
+    ) {
         cg.append(block);
 
-        if (f.getReturnType().isVoid()) {
-            cg.ret(0, paramSize(f));
+        if (returnType.isVoid()) {
+            cg.ret(0, paramSize(parameters));
         }
 
         return cg.get();
     }
 
-    @Override
-    public String genMethod(
-        Method method, ArrayList<ILocation> parameters, String bloc
-    ) {
-        return "TODO:method";
+    static private String name(Method method) {
+        StringBuilder sb = new StringBuilder(method.getClassType().toString());
+
+        for (Selector selector : method.getSelectors()) {
+            sb.append("__" + selector.getName());
+        }
+
+        return sb.toString();
     }
 
-    private int paramSize(FunctionType fun) {
+    private int paramSize(Iterable<Type> types) {
         int paramSize = 0;
-        for (Type t : fun.getParameterTypes()) {
+        for (Type t : types) {
             paramSize += t.visit(sizeVisitor);
         }
         return paramSize;
@@ -528,7 +549,9 @@ public class Machine extends AbstractMachine {
     @Override
     public String genClass(ClassType clazz, String methodsCode) {
         // TODO:class
-        return genComment("Class " + clazz.toString());
+        genComment("Class " + clazz.toString());
+        cg.declAppend(methodsCode);
+        return cg.get();
     }
 }
 
