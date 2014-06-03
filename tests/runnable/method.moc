@@ -1,0 +1,82 @@
+// !return value: 0
+
+include(`puts.hoc')
+
+class Point {
+    Int x;
+    Int y;
+
+    +(Point*) alloc {
+        return new(Point);
+    }
+
+    -(Point*) init {
+        x = 0;
+        y = 0;
+        return self;
+    }
+
+    -(Int) x {
+        return x;
+    }
+
+    -(Int) y {
+        return y;
+    }
+
+    -(void) x:(Int) a y:(Int) b {
+        x = a;
+        y = b;
+    }
+
+    -(void) print {
+        put_char('[');
+        put_int(x);
+        put_char(',');
+        put_int(y);
+        put_char(']');
+    }
+}
+
+class Point3D : Point {
+    Int z;
+
+    +(Point3D*) alloc {
+        return new(Point3D);
+    }
+
+    -(Point3D*) init {
+        //[super init]; // would call [self init]
+        [self x: 0 y: 0];
+        z = 0;
+        return self;
+    }
+
+    -(Int) z {
+        return z;
+    }
+
+    -(void) x:(Int) a y:(Int) b z:(Int) c {
+        [super x:a y:b];
+        z = c;
+    }
+
+    -(void) print {
+        put_char('[');
+        put_int(x);
+        put_char(',');
+        put_int(y);
+        put_char(',');
+        put_int(z);
+        put_char(']');
+    }
+}
+
+void main() {
+    Point* point = [Point3D alloc];
+    [point x: 6 y: 7];
+    [point print];
+    Int a = [point x];
+    put_int(a);
+}
+
