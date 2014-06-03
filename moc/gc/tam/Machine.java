@@ -464,9 +464,7 @@ public class Machine extends AbstractMachine {
 
         // the method address is at the position 2*n+1
         int methodIndex = method.getClassType().getMethods().indexOf(method);
-        cg.loadl(2 * methodIndex);
-        cg.subr("IAdd");
-        cg.loadl(1);
+        cg.loadl(2*methodIndex + 1);
         cg.subr("IAdd");
 
         cg.loadi(1);
