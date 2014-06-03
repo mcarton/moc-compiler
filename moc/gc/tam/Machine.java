@@ -455,8 +455,10 @@ public class Machine extends AbstractMachine {
         cg.append(self.getCode());
         getValue(self, ptrType.visit(sizeVisitor));
 
+        cg.loadl(1337); // TODO: find out why we need that
+
         // copy the pointer
-        cg.loada("-1 [ST]");
+        cg.loada("-2 [ST]");
         cg.loadi(1);
 
         // get the vtable
