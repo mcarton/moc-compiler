@@ -20,6 +20,7 @@ void modify(Char* original) {
 
 Int main() {
     Char[13] hello = "Hello world!";
+    Char[13] copy = hello;
 
     put_string(hello);
     modify_copy(hello);

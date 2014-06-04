@@ -59,7 +59,7 @@ class Point3D : Point {
 }
 
 void main() {
-    Point* point;
+    Point* point = [Point3D alloc];
     [point x: 6 y: 7];
     Int a = [point x];
 }
