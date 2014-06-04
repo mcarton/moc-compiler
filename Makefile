@@ -48,6 +48,11 @@ test-tam:
 pdf:
 	cd report; make pdf
 
+pack:
+	make clean
+	tar -vcf Maxence_Ahlouche-Martin_Carton-Clément_Hubin_Andrieu.tar \
+	    eggc-6.0.0.jar Makefile moc mocc report TAM tests
+
 .PHONY: javadoc
 javadoc:
 	javadoc -private -d javadoc -classpath $(GJAR) \
