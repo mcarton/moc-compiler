@@ -96,10 +96,17 @@ public final class ClassType extends AbstractType<ClassType> {
         return Collections.unmodifiableList(methods);
     }
 
+    /** Search a method in this class methods, but not its parents. */
+    public Method getOwnMethod(ArrayList<String> names) {
+        return getMethod(ownMethods, names);
+    }
+
+    /** Search a method in this class methods, including its parents. */
     public Method getInstanceMethod(ArrayList<String> names) {
         return getMethod(false, names);
     }
 
+    /** Search a method in this class static methods. */
     public Method getStaticMethod(ArrayList<String> names) {
         return getMethod(true, names);
     }

@@ -1187,7 +1187,7 @@ global
         other = METHOD^classType.getStaticMethod(names);
     }
     else {
-        other = METHOD^classType.getInstanceMethod(names);
+        other = METHOD^classType.getOwnMethod(names);
     }
 
     if (other != null) {
