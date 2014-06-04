@@ -26,7 +26,7 @@ class CasterFromVisitor implements TypeVisitor<TypeVisitor<Caster>> {
         return new FromArrayCaster(from);
     }
     public TypeVisitor<Caster> visit(IdType from) {
-        return null; //TODO:id
+        return new FromIdCaster(from);
     }
     public TypeVisitor<Caster> visit(NullType from) {
         return new FromNullCaster();
@@ -112,6 +112,9 @@ class FromNullCaster extends DefaultCaster {
     public Caster visit(Pointer to) {
         return IdentityCaster.instance;
     }
+    public Caster visit(IdType to) {
+        return IdentityCaster.instance;
+    }
 }
 
 class FromArrayCaster extends DefaultCaster {
@@ -143,6 +146,27 @@ class FromPointerCaster extends DefaultCaster {
         else {
             return new RegularCaster("bitcast", from, to);
         }
+    }
+    public Caster visit(IdType to) {
+        return new RegularCaster("bitcast", from, to);
+    }
+}
+
+class FromIdCaster extends DefaultCaster {
+    final IdType from;
+    FromIdCaster(IdType from) { this.from = from; }
+
+    public Caster visit(Pointer to) {
+        if (from.equals(to)) {
+            return IdentityCaster.instance;
+        }
+        else {
+            return new RegularCaster("bitcast", from, to);
+        }
+    }
+
+    public Caster visit(IdType to) {
+        return IdentityCaster.instance;
     }
 }
 
