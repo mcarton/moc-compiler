@@ -1,9 +1,9 @@
 \documentclass{scrartcl}
-\usepackage[utf8x]{inputenc}
-\usepackage[frenchb]{babel}
+\usepackage{fontspec}
+\usepackage{polyglossia}
+  \setmainlanguage{french}
 \usepackage{amssymb}
 \usepackage{lmodern}
-\usepackage[T1]{fontenc}
 \usepackage{hyperref}
 \usepackage{minted}
 
@@ -88,9 +88,13 @@
       La sortie attendue pour le programme \verb+exemple.moc+ se trouve dans
       le fichier \verb+exemple.moc.output+.
 
-      Ces fichiers nécessitent d'être préprocessés avant d'être compilés afin
-      d'y inclure les fonctions d'affichages spécifique à \llvm{} ou \tam{}
-      (écrites en assembleur).
+      Ces fichiers nécessitent d'être préprocessés\footnote{Nous avons choisi
+      d'utiliser le préprocesseur \textit{m4}; la page de manuelle de
+      \textit{cpp} mettant plusieurs fois en garde contre l'utilisation sur des
+      fichiers qui ne soient pas du \textit{C} ou \textit{C++}, et \textit{cpp}
+      laissant trainer des directives dans le fichier généré.} avant d'être
+      compilés afin d'y inclure les fonctions d'affichages spécifique à \llvm{}
+      ou \tam{} (écrites en assembleur).
 
       Les scripts \verb+tests/run-llvm+ et \verb+tests/run-tam+ permettent de
       préprocesser, compiler et lancer ces tests.
@@ -230,7 +234,7 @@ Int a = sizeof(Int); // 1 en tam, 8 en llvm sur une machine 64bits
       \verb+null+ est de type \verb+NullType+ mais est convertible
       implicitement vers tout les types de pointeur et un tableau est
       convertible vers un pointeur du même type. De même, dans un \verb+if+ ou
-      un \verb+while+ la «~condition~» peut être un pointeur.
+      un \verb+while+ la «condition» peut être un pointeur.
 
       Les casts explicites se font à l'aide de \verb+(Type)valeur+. Tout les
       casts ne sont pas permis cependant: par exemple un caractère ne peut pas
@@ -238,10 +242,24 @@ Int a = sizeof(Int); // 1 en tam, 8 en llvm sur une machine 64bits
       représentés par un mot et qu'en \llvm{} un caractère fait 8 bits et un
       pointeur 64.
 
+    \subsection{Chaines de caractères}
+      Les constantes littérales «chaine de caractère» (par exemple
+      \verb+"hello world!"+) sont de type tableau de caractère, et non pointeur
+      de caractère.
+
+      En \tam{} nous n'utilisons donc pas l'instruction \verb+LOADL "chaine"+
+      mais nous loadons les caractères un à un. Cela permet notamment de
+      pouvoir modifier ces chaines:
+      \begin{moccode}
+Char[6] hello = "hello!";
+hello[0] = 'H'; // utiliser un pointeur pour hello aurait modifié la chaine
+                // globale en tam et segfaulté l'application en llvm
+      \end{moccode}
+
   \subsection{Noms de types}
     Les noms de type commencent tous par une majuscule. Ceci afin de permettre
-    d'avoir des alias de type (voir section~\ref{sec:alias}) et par uniformité avec
-    les nom de classes.
+    d'avoir des alias de type (voir section~\ref{sec:alias}) et par uniformité
+    avec les nom de classes.
 
     Cette restriction permet de désambiguïser une instruction comme
     \verb+a*b;+ qui pourrait être interprétée comme la multiplication de
@@ -267,14 +285,15 @@ class Point {
     Int y;
 
     +(void) init {
+      x = 0; y = 0;
     }
 
     -(Int) x {
-        return 0;
+        return x;
     }
 
     -(Int) y {
-        return 0;
+        return y;
     }
 }
     \end{moccode}
@@ -293,13 +312,17 @@ class Point {
       Cependant, afin de permettre d'appeler une méthode sur une instance de
       type inconnu (\verb+id+) la table virtuelle n'est pas un simple tableau
       contenant l'adresse des fonctions. À la place, c'est une table
-      associative \verb+nom -> adresse+ (où le «~nom~» est par exemple de la
+      associative \verb+nom -> adresse+ (où le «nom» est par exemple de la
       forme \verb+x:y:z:+ pour refléter le fait qu'en \objc{} une méthode peut
       avoir plusieurs noms).
 
       Pour appeler une méthode sur une instance de type inconnu, on pourrait
       alors chercher la méthode, par son nom dans cette table. Cependant, nous
       n'avons pas eu le temps d'implémenter ce type d'appel.
+
+      \paragraph{}
+      Malheureusement, l'appel de méthode ne fonctionne pas en \llvm{}. Il
+      semble que nous n'initialisons pas correctement la table virtuelle.
 
 \section{Warnings}\label{sec:warnings}
   Nous avons ajouté des warnings au compilateur.
@@ -325,6 +348,19 @@ Int test() {
 }
     \end{moccode}
 
+    Le warning n'est pas très intelligent, par exemple il n'apparaitra pas dans
+    le cas suivant:
+    \begin{moccode}
+Int test() {
+    [...]
+
+    if(1) {
+        return 123;
+    }
+    f(); // pas de warning
+}
+    \end{moccode}
+
   \subsection{shadow}
     \verb"shadow" vérifie qu'une déclaration ne masque pas une déclaration
     précédente, par exemple:
@@ -337,5 +373,17 @@ Int test() {
     }
 }
     \end{moccode}
+
+\section{Conclusion}
+  Ce projet nous a permis de nous rendre compte de la difficulté d'écrire un
+  compilateur correct. Nous avons pu faire un compilateur fonctionnant assez
+  rapidement sur quelques exemples simples, mais avoir une gestion des erreurs
+  correcte est très compliqué.
+
+  Nous n'avons même pas essayé d'optimiser le code généré mais nous avons pu
+  nous rendre compte de la difficulté que cela peut avoir.
+
+  Nous avons trouvé ce projet très intéressant, il nous a permis de découvrir
+  les problèmes liés à la compilation et le langage intermédiaire \llvm{}.
 \end{document}
 

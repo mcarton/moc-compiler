@@ -1,6 +1,6 @@
 rapport.pdf: pdf
 pdf:
-	pdflatex -shell-escape report.tex
+	xelatex -shell-escape report.tex
 
 clean:
 	rm -f *.aux
