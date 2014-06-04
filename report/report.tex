@@ -59,7 +59,7 @@
   \paragraph{}
   \tam{} a cependant plusieurs avantages par rapport à \llvm{}: pour commencer,
   \llvm{} est beaucoup plus expressif et typé: c'est souvent un avantage, mais
-  rend parfois certaines tâches très complexe (par exemple la gestion de la
+  rend parfois certaines tâches très complexes (par exemple la gestion de la
   \textit{vtable}, il est aussi nécessaire de préciser le type des variables et
   registres à chaque utilisation (et non déclaration), ce qui est très
   répétitif).
@@ -82,15 +82,17 @@
       \ref{sec:warnings}) ou qu'il génère une erreur). Ces exemples ne font
       rien de particulier;
     \item ceux du dossier \verb+runnable+ testent le code généré, les exemples
-      sont compilés par \mocc{} puis doivent être compilés avec \verb+llc+
-      ou lancés dans \verb+tam+ et lancés.
+      sont compilés par \mocc{} puis doivent éventuellement être compilés avec
+      \verb+llc+ puis exécutés.
 
       La sortie attendue pour le programme \verb+exemple.moc+ se trouve dans
       le fichier \verb+exemple.moc.output+.
 
       Ces fichiers nécessitent d'être préprocessés\footnote{Nous avons choisi
-      d'utiliser le préprocesseur \textit{m4}; la page de manuelle de
-      \textit{cpp} mettant plusieurs fois en garde contre l'utilisation sur des
+      d'utiliser le préprocesseur \textit{m4} (qui est installé sur les
+      machines de l'n7); la page de manuel de \textit{cpp} (le préprocesseur
+      utilisé par \textit{gcc}) mettant plusieurs fois en garde contre
+      l'utilisation sur des
       fichiers qui ne soient pas du \textit{C} ou \textit{C++}, et \textit{cpp}
       laissant trainer des directives dans le fichier généré.} avant d'être
       compilés afin d'y inclure les fonctions d'affichages spécifique à \llvm{}
@@ -98,6 +100,21 @@
 
       Les scripts \verb+tests/run-llvm+ et \verb+tests/run-tam+ permettent de
       préprocesser, compiler et lancer ces tests.
+
+      Il suffit de les appeler avec le nom du fichier du dossier
+      \verb+test/runnable/+ à tester en paramètre; par exemple:
+      \begin{moccode}
+% ./tests/run-tam fact   
+Compiling /tmp/fact.moc
+MOC Version 0.0.1
+Writing code in /tmp/fact.tam
+Compilation successful.
+Assembling /tmp/fact.tam
+ASPARTAM Version 1.0.1
+OK. Assembled in /tmp/fact.tamo
+Execution de /tmp/fact.tamo
+120
+      \end{moccode}
   \end{itemize}
 
 \section{Génération de code}
@@ -107,7 +124,7 @@
   \paragraph{}
   Il n'y a pas de code spécifique à \llvm{} ou à \tam{} en dehors de leur
   dossier respectif. L'interface \verb+IMachine+ et le \egg{} ont été prévus
-  pour être le plus génériques possible, on devrait pas exemple pouvoir
+  pour être le plus génériques possible, on devrait par exemple pouvoir
   l'utiliser pour générer du \textit{C}.
 
   En particulier, la classe \verb+Type+ n'a pas de taille. En effet, si l'on
@@ -138,6 +155,10 @@
   servent que pour obtenir l'expression associée à un identifiant de la table
   des symboles (variable locale, paramètre de fonction, attribut d'une classe).
 
+  Enfin, chaque machine possède une classe nommée \verb+CodeGenerator+. Cette
+  classe permet de générer les instructions correctes et indentées correctement
+  plus simplement.
+
 \section{Extensions du langage}
   \subsection{Asm}
     Comme indiqué dans l'introduction, nous avons remplacé l'instruction
@@ -161,8 +182,8 @@ void put_char(Char c) {
 
     Il n'est pas possible d'utiliser les variables autrement que par leur
     adresse. Vu le peu d'assembleur en-ligne que nous utilisons, nous n'avons
-    pas jugé qu'ajouter la possibilité d'utiliser des variables par leur nom
-    vaille la peine d'être développé.
+    pas jugé que la possibilité d'utiliser des variables par leur nom vaille la
+    peine d'être développée.
 
   \subsection{Alias de type}\label{sec:alias}
     Il est possible de définir des alias de type:
@@ -170,7 +191,8 @@ void put_char(Char c) {
 using NouveauNom = NomExistant;
     \end{moccode}
 
-    La syntaxe évite volontairement le \verb+typedef+ bizarre du C.
+    La syntaxe évite volontairement le \verb+typedef+ bizarre du \textit{C}, et
+    préfère celle du \textit{C++11}.
 
   \subsection{Tableaux}\label{sec:tab}
     On peut créer des tableaux:
@@ -230,22 +252,22 @@ Int a = sizeof(Int); // 1 en tam, 8 en llvm sur une machine 64bits
     \subsubsection{Conversions}
       Il a deux types de casts: implicites et explicites.
 
-      Les casts implicites ont lieux dans peu de cas. Par exemple la constante
+      Les casts implicites ont lieu dans peu de cas. Par exemple la constante
       \verb+null+ est de type \verb+NullType+ mais est convertible
-      implicitement vers tout les types de pointeur et un tableau est
+      implicitement vers tous les types de pointeurs et un tableau est
       convertible vers un pointeur du même type. De même, dans un \verb+if+ ou
-      un \verb+while+ la «condition» peut être un pointeur.
+      un \verb+while+, la «condition» peut être un pointeur.
 
       Les casts explicites se font à l'aide de \verb+(Type)valeur+. Tout les
       casts ne sont pas permis cependant: par exemple un caractère ne peut pas
-      être converti en pointeur, bien qu'en \tam{} ils soient tout les deux
-      représentés par un mot et qu'en \llvm{} un caractère fait 8 bits et un
+      être converti en pointeur, bien qu'en \tam{} ils soient tous les deux
+      représentés par un mot et qu'en \llvm{} un caractère fasse 8 bits et un
       pointeur 64.
 
     \subsection{Chaines de caractères}
-      Les constantes littérales «chaine de caractère» (par exemple
-      \verb+"hello world!"+) sont de type tableau de caractère, et non pointeur
-      de caractère.
+      Les constantes littérales «chaine de caractères» (par exemple
+      \verb+"hello world!"+) sont de type tableau de caractères, et non
+      pointeur de caractères.
 
       En \tam{} nous n'utilisons donc pas l'instruction \verb+LOADL "chaine"+
       mais nous loadons les caractères un à un. Cela permet notamment de
@@ -322,13 +344,13 @@ class Point {
 
       \paragraph{}
       Malheureusement, l'appel de méthode ne fonctionne pas en \llvm{}. Il
-      semble que nous n'initialisons pas correctement la table virtuelle.
+      semble que nous n'initialisions pas correctement la table virtuelle.
 
 \section{Warnings}\label{sec:warnings}
   Nous avons ajouté des warnings au compilateur.
 
   Il suffit d'appeler \mocc{} avec \verb+-w nom_du_warning+.
-  Il y a aussi un warning \verb+all+.
+  Il y a aussi un warning \verb+all+ pour utiliser tout les warnings définis.
 
   \subsection{unreachable}
     \verb"unreachable" vérifie la présence d'instructions inutiles.
@@ -378,10 +400,10 @@ Int test() {
   Ce projet nous a permis de nous rendre compte de la difficulté d'écrire un
   compilateur correct. Nous avons pu faire un compilateur fonctionnant assez
   rapidement sur quelques exemples simples, mais avoir une gestion des erreurs
-  correcte est très compliquée.
+  correcte est très compliqué.
 
-  Nous n'avons même pas essayé d'optimiser le code généré mais nous avons pu
-  nous rendre compte de la difficulté que cela peut avoir.
+  Nous n'avons même pas essayé d'optimiser le code généré, mais nous avons pu
+  nous rendre compte de la difficulté que cela peut présenter.
 
   Nous avons trouvé ce projet très intéressant, il nous a permis de découvrir
   les problèmes liés à la compilation et le langage intermédiaire \llvm{}.
