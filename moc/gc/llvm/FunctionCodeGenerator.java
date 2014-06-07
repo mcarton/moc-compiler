@@ -11,7 +11,7 @@ import moc.type.*;
 
 /**
  * This class exists only to lighten Machine.
- * It contains all stuffs relating functions.
+ * It contains all stuffs related to functions.
  */
 final class FunctionCodeGenerator {
     Machine machine;
@@ -102,33 +102,42 @@ final class FunctionCodeGenerator {
     ) {
         String vtable = getVtable((ClassType)type.getPointee(), selfType, self);
 
+        String loadedMethods = cg().load("%mocc.method**", vtable);
+
         int methodIndex = method.getClassType().getMethods().indexOf(method);
-        String loadedMethod = cg().load("%mocc.method*", vtable);
         String methodPtr = cg().getelementptr(
-            "%mocc.method", loadedMethod,
-            new String[] {"i32", Integer.toString(methodIndex), "i32", "1"}
+            "%mocc.method*", loadedMethods,
+            new String[] {"i64", Integer.toString(methodIndex)}
         );
-        String loadedMethodPtr = cg().load("void (...)*", methodPtr);
+        String loadedMethodPtr = cg().load("%mocc.method*", methodPtr);
+
+        String functionPtr = cg().getelementptr(
+            "%mocc.method", loadedMethodPtr, new String[] {"i64", "0", "i32", "1"}
+        );
+        String loadedFunction = cg().load("void (...)*", functionPtr);
 
         if (!returnsVoid) {
             String castMethodPtr = cg().cast(
                 "bitcast",
-                "void (...)*", loadedMethodPtr, returnTypeName + " (...)*"
+                "void (...)*", loadedFunction, returnTypeName + " (...)*"
             );
             return castMethodPtr;
         }
         else {
-            return loadedMethodPtr;
+            return loadedFunction;
         }
     }
 
     String getVtable(ClassType type, String selfType, String self) {
         ArrayList<String> parameters = new ArrayList<>(4);
-        parameters.add("i64");
-        parameters.add("0");
+        parameters.add("i64"); // first element of the array represented by
+        parameters.add("0");   // the given pointer
 
-        for (int i = 0, end = type.parentNumbers(); i <= end+1; ++i) {
-            parameters.add("i32");
+        // one dereferencement for each parent,
+        // plus one for the vtable,
+        // plus one for the method array
+        for (int i = 0, end = type.parentNumbers(); i < end+2; ++i) {
+            parameters.add("i32"); 
             parameters.add("0");
         }
 

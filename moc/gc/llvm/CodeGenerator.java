@@ -21,7 +21,7 @@ final class CodeGenerator {
             + "declare void @llvm.memcpy.p0i8.p0i8.i64(i8* nocapture, i8* nocapture readonly, i64, i32, i1)\n"
             + "\n"
             + "%mocc.method = type { i8*, void (...)* }\n"
-            + "%mocc.vtable = type { %mocc.method* }\n"
+            + "%mocc.vtable = type { %mocc.method** }\n"
             + "\n"
         ;
 
@@ -397,19 +397,19 @@ final class CodeGenerator {
     }
 
     /** {@code
-     *      @vtablePtr.<name> = internal constant %mocc.method* bitcast (
-     *          [<size> x %mocc.method*]* @vtable.<name> to %mocc.method*
+     *      @vtablePtr.<name> = internal constant %mocc.method** bitcast (
+     *          [<size> x %mocc.method*]* @vtable.<name> to %mocc.method**
      *      )
      *  }
      */
     void vtablePtr(String name, int size) {
         declAppend("@vtablePtr.");
         declAppend(name);
-        declAppend(" = internal constant %mocc.method* bitcast ([");
+        declAppend(" = internal constant %mocc.method** bitcast ([");
         declAppend(size);
         declAppend(" x %mocc.method*]* @vtable.");
         declAppend(name);
-        declAppend(" to %mocc.method*)\n\n");
+        declAppend(" to %mocc.method**)\n\n");
     }
 
     // function declaration

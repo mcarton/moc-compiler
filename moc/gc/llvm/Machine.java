@@ -311,12 +311,13 @@ public final class Machine extends AbstractMachine {
         String typeNamePtr = typeName + '*';
         String tmpCastedPtr = cg.cast("bitcast", "i8*", allocated, typeNamePtr);
 
+        // note: we cannot create an array of class, so that is ok here
         if (type.isClass()) {
             ClassType clazz = (ClassType)type;
             String name = clazz.getName();
             String vtable = fcg.getVtable(clazz, typeName, tmpCastedPtr);
-            String tmp = cg.load("%mocc.method*", "@vtablePtr." + name);
-            cg.store("%mocc.method*", tmp, vtable);
+            String tmp = cg.load("%mocc.method**", "@vtablePtr." + name);
+            cg.store("%mocc.method**", tmp, vtable);
         }
 
         return new Expr(new Location(tmpCastedPtr), cg.get());
