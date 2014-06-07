@@ -23,6 +23,8 @@ public final class Machine extends AbstractMachine {
     CodeGenerator cg = new CodeGenerator(this);
     FunctionCodeGenerator fcg = new FunctionCodeGenerator(this);
 
+    String currentClassName;
+
     public Machine(int verbosity, ArrayList<String> warnings) {
         super(verbosity, warnings);
 
@@ -70,16 +72,16 @@ public final class Machine extends AbstractMachine {
     }
 
     @Override
-    public void beginMethod(Method meth) {
+    public void beginMethod(Method method) {
         lastTmp = 0;
         ++block;
-
-        // TODO
+        currentClassName = cg.typeName(method.getClassType());
     }
 
     @Override
     public void endMethod() {
         block = 0;
+        currentClassName = null;
     }
 
     @Override
@@ -363,8 +365,12 @@ public final class Machine extends AbstractMachine {
     public Expr genIdent(InfoVar info) {
         Location location = (Location)info.getLoc();
         if (location.isMember()) {
+            String className = cg.typeName(location.getClassType());
+            String casted = cg.cast(
+                "bitcast", currentClassName + '*', "%self", className + '*'
+            );
             String tmp = cg.getelementptr(
-                cg.typeName(location.getClassType()), "%self",
+                className, casted,
                 new String[]{
                     "i64", "0", // there are no type errors here
                     "i32", Integer.toString(location.getMemberNumber())
