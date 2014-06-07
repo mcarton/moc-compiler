@@ -156,7 +156,7 @@ public class Machine extends AbstractMachine {
         cg.append(block);
 
         if (returnType.isVoid()) {
-            cg.ret(0, paramSize(parameters));
+            cg.ret(0, parametersSize);
         }
 
         return cg.get();
