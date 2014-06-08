@@ -296,45 +296,40 @@ public class Machine extends AbstractMachine {
     }
     @Override
     public Expr genString(int length, String txt) {
+        String name = "string_" + ++labelCount;
+        cg.declLabel(name);
         boolean backslash = false;
-        int size = 0;
         for (int i = 1; i < txt.length()-1; ++i) { // exludes ""
             switch (txt.charAt(i)) {
                 case '\\':
                     if (backslash) {
                         cg.declLoadl("'\\\\'");
-                        ++size;
                     }
                     backslash = !backslash;
                     break;
                 case '0':
                     cg.declLoadl(backslash ? "'\\0'" : "'0'");
-                    ++size;
                     backslash = false;
                     break;
                 case 'n':
                     cg.declLoadl(backslash ? "'\\n'" : "'n'");
-                    ++size;
                     backslash = false;
                     break;
                 case 't':
                     cg.declLoadl(backslash ? "'\\t'" : "'t'");
-                    ++size;
                     backslash = false;
                     break;
                 case '"':
                     cg.declLoadl(backslash ? "'\\\"'" : "'\"'");
-                    ++size;
                     backslash = false;
                     break;
                 default:
                     cg.declLoadl("'" + txt.charAt(i) + "'");
-                    ++size;
                     backslash = false;
             }
         }
         cg.declLoadl(0);
-        cg.loada(currentAddress-initialOffset + "[CB]");
+        cg.loada(name);
         return new Expr(cg.get(), true);
     }
     @Override

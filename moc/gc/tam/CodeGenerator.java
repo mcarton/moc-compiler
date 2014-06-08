@@ -55,6 +55,12 @@ final class CodeGenerator {
         declarationSb.append(what);
     }
 
+    void declLabel(String name) {
+        declAppend(name);
+        declAppend(':');
+        skipLine();
+    }
+
     void declLoadl(Object what) {
         declAppend("LOADL ");
         declAppend(what);
